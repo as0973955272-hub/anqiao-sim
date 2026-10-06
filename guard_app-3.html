@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>安橋人生模擬器</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;margin:0;padding:0 0 70px;background:#eef4ff;color:#10213f;font-size:16px}
+header{background:#1d4ed8;color:#fff;padding:12px 14px;font-weight:bold;position:sticky;top:0;z-index:20;display:flex;justify-content:space-between}
+section,.card{background:#fff;margin:10px;padding:12px;border:1px solid #c3d3ee;border-radius:8px}
+h2{font-size:16px;margin:0 0 8px}
+input,select{font:inherit;padding:9px;border:1px solid #9bb5e6;border-radius:6px;width:100%;min-width:0;background:#fff}
+.f{display:flex;gap:8px;margin-bottom:8px;align-items:center}.f label{flex:0 0 auto;font-size:14px}
+.item{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.item .c{flex:0 0 64px;text-align:center}.item input[type=checkbox]{width:26px;height:26px;flex:0 0 auto}
+.pc{border:1px solid #d3def2;border-radius:8px;padding:8px;margin-bottom:8px;background:#f7faff}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:14px;align-items:center}
+.chip{padding:5px 10px;border:1px solid #9bb5e6;border-radius:16px;background:#fff}
+.chip.x{background:#c00000;color:#fff;border-color:#c00000}
+button{font:inherit;padding:9px 14px;border:0;border-radius:6px;background:#5b6b8a;color:#fff}
+.del{background:#b3261e;padding:9px 11px;flex:0 0 auto}.add{background:#2563eb;width:100%}.go{background:#1d4ed8;font-weight:bold;width:100%;padding:13px;margin-top:6px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #c3d3ee;display:flex;z-index:30}
+nav button{flex:1;background:none;color:#566;padding:13px 4px;border-radius:0}nav button.on{color:#1d4ed8;font-weight:bold;border-top:3px solid #1d4ed8}
+.warn{color:#b3261e;font-size:14px;white-space:pre-line;margin:0 12px}.hint{font-size:13px;color:#566;margin:4px 0}
+.wrap{overflow:auto;margin:10px;max-height:75vh;border:1px solid #333;background:#fff}
+table{border-collapse:separate;border-spacing:0;font-size:14px;width:100%}
+td,th{border-right:1px solid #ccc;border-bottom:1px solid #ccc;padding:4px 6px;text-align:center;white-space:nowrap;min-width:30px}
+th{background:#cfe0fb;position:sticky;top:0;z-index:2}
+.s1{position:sticky;left:0;background:#fff;z-index:1;min-width:64px;font-weight:bold}th.s1{background:#cfe0fb;z-index:3}
+.t{background:#cfe0fb;color:#0b3d91;font-size:17px;text-align:left;position:static}
+.r{color:#c00000;font-weight:bold}
+.duty{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;border:1px solid #d3def2;border-radius:10px;margin-bottom:8px;background:#fff}
+.bd{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 auto;margin-right:10px}
+.ok{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0}.lt{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.ms{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}.of{background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}.nn{background:#f1f5f9;color:#94a3b8;border:1px dashed #cbd5e1}
+.mod{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:50}.mod.open{display:flex}
+.mc{background:#fff;width:100%;border-radius:18px 18px 0 0;padding:16px;max-height:90vh;overflow:auto}
+.up{display:block;border:2px dashed #3b82f6;background:#eff6ff;border-radius:10px;padding:16px;text-align:center;font-weight:bold;color:#1d4ed8}
+.bc{display:flex;gap:10px;border:1px solid #d3def2;border-radius:8px;padding:8px;margin-bottom:8px;background:#f7faff}
+.bc img{width:64px;height:64px;object-fit:cover;border-radius:6px;flex:0 0 auto;background:#ddd}
+.row{display:flex;gap:8px}.row>*{flex:1}
+@media print{header,section,nav,.warn,.noprint{display:none}.wrap{max-height:none}}
+.c1{color:#059669;font-weight:700}.c2{color:#d97706;font-weight:700}.c3{color:#dc2626;font-weight:700}.c4{color:#4338ca}#sumG td,#sumG th{min-width:34px;padding:3px 2px;font-size:12px}
+.wbtn{width:100%;max-width:360px;padding:15px;margin:6px 0;font-size:18px;background:#fff;color:#1d4ed8;font-weight:bold;border-radius:10px}.sl{display:flex;align-items:center;gap:10px;background:#ffffff26;border-radius:10px;padding:12px;margin-bottom:8px;font-size:17px}
+</style></head><body>
+<div id="wel" style="position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#0b2f78,#1d4ed8 55%,#3b82f6);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto">
+<div style="font-size:56px">🛡️</div>
+<h1 style="font-size:26px;margin:10px 0 8px;line-height:1.35">歡迎來到<br>安橋人生模擬器</h1>
+<div style="font-size:14px;opacity:.92;margin-bottom:26px">作者：安橋台南辦公室　陳正和 經理</div>
+<button class="wbtn" onclick="newSave()">＋ 新增存檔</button>
+<button class="wbtn" onclick="toggleLoad()">📂 載入存檔</button>
+<div id="slots" style="width:100%;max-width:360px;margin-top:10px"></div>
+<button class="wbtn" id="wback" style="display:none;background:#ffffff33;color:#fff;font-size:16px" onclick="$('wel').style.display='none'">返回目前存檔</button>
+</div>
+<header><span>🛡 安橋人生模擬器 <button onclick="showWel()" style="padding:3px 8px;font-size:12px;margin-left:6px;background:#ffffff40">存檔</button></span><span style="font-size:12px;text-align:right"><span id="hd"></span><br><span id="sv"></span></span></header>
+
+<!-- 排班 -->
+<div id="p-roster">
+<section><h2>班別／基本設定</h2>
+<div class="f"><label>目前班別</label><select id="prof" onchange="switchProf(this.value)"></select></div>
+<div class="row" style="margin-bottom:8px"><button onclick="newProf()">＋ 新增班別</button><button class="del" onclick="delProf()">刪除此班別</button></div>
+<div class="f"><label>班表名稱</label><input type="text" id="site" onchange="save();drawProf();drawRoster()"></div>
+<div class="f"><label>月份</label><input type="month" id="ym" onchange="save();drawRoster()"></div>
+<div class="row"><div class="f"><label>上班</label><input type="time" id="st" onchange="save()"></div><div class="f"><label>時數</label><input type="number" id="ln" min="1" max="24" onchange="save()"></div></div>
+<div class="f"><label>每人每月休幾天</label><input type="number" id="rest" min="0" max="15" onchange="save()"></div>
+</section>
+<section><h2>哨點</h2><div class="hint">勾選＝本月啟用。代號就是班表格子顯示的字。</div>
+<div id="posts"></div><button class="add" onclick="addPost()">＋ 新增哨點</button></section>
+<section><h2>人員</h2><div class="hint">點哨點代號＝禁止此人排該哨點（變紅）。人員同時用於工時核對。</div>
+<div id="ppl"></div><button class="add" onclick="addPerson()">＋ 新增人員</button>
+<button class="add" style="background:#5b6b8a;margin-top:8px" onclick="anon()">🔒 一鍵匿名（姓名改成人員1、2…，清除編號）</button>
+<button class="go" onclick="gen()">產生班表</button></section>
+<div class="warn" id="warn"></div>
+<div class="wrap" id="out" style="display:none"></div>
+<div class="wrap" id="stat" style="display:none"></div>
+<div class="row noprint" style="margin:0 10px"><button onclick="window.print()">列印班表</button><button onclick="rosterCsv()">班表 CSV</button><button onclick="imgRoster()">🖼 存成圖片</button></div>
+</div>
+
+<!-- 今日核對 -->
+<div id="p-today" style="display:none">
+<div class="card f" style="margin-bottom:0"><label>📅 班別日期</label><input type="date" id="dt" onchange="drawToday()"></div>
+<div class="card"><div style="font-size:14px" id="lg"></div></div>
+<div id="duty" style="margin:10px"></div>
+<div class="row" style="margin:0 10px"><button class="go" style="margin:0" onclick="imgToday()">🖼 產生今日核對圖片</button></div>
+</div>
+
+<!-- 月總結 -->
+<div id="p-sum" style="display:none">
+<div class="card f" style="margin-bottom:0"><label>月份</label><input type="month" id="sm" onchange="drawSum()"></div>
+<div class="wrap" id="sumT"></div>
+<div class="hint" style="margin:0 12px">◯準時 △遲到 ✕缺卡 休休假。遲到時數＝上班打卡晚於規定時間的總和。缺卡包含「班表有排班但沒打卡紀錄」的過去日期。</div>
+<h2 style="margin:10px 12px 0">時數表</h2><div class="wrap" id="sumG"></div>
+<div class="row" style="margin:10px"><button onclick="sumCsv()">匯出 CSV</button><button onclick="imgSum()">🖼 產生圖片</button></div>
+<section><h2>資料備份</h2><div class="hint">備份檔只含班表與打卡紀錄，圖片不在內。</div><div class="row"><button onclick="backup()">下載備份</button><button onclick="$('rf').click()">還原備份</button></div>
+<input type="file" id="rf" accept=".json" style="display:none" onchange="restore(this)"></section>
+</div>
+
+<nav><button id="n-roster" class="on" onclick="tab('roster')">排班</button><button id="n-today" onclick="tab('today')">今日核對</button><button id="n-sum" onclick="tab('sum')">月總結</button></nav>
+
+<!-- 彈窗：單筆登記 -->
+<div class="mod" id="m1"><div class="mc">
+<h2 id="m1t"></h2>
+<div class="f"><label>狀態</label><select id="mst" onchange="onSt()"><option value="ok">◯ 準時</option><option value="late">△ 遲到</option><option value="miss">✕ 缺卡</option><option value="off">休 休假</option></select></div>
+<div id="tf"><div class="row"><div><label class="hint">上班打卡</label><input type="time" id="mi" oninput="tm()"></div><div><label class="hint">下班打卡</label><input type="time" id="mo" oninput="ah()"></div></div>
+<div class="f" style="margin-top:8px"><label>工時</label><input type="number" id="mh" step="0.1" min="0" max="24"></div></div>
+<div class="f"><label>備註</label><input type="text" id="mn" placeholder="例：遲到原因、卡機號碼"></div>
+<div class="f"><label>📎 圖片</label><button type="button" onclick="$('pf').click()" style="flex:1">新增圖片</button></div>
+<input type="file" id="pf" accept="image/*" multiple style="display:none" onchange="addImgs(this)">
+<div id="th" class="chips" style="margin-bottom:10px"></div>
+<div class="row"><button class="del" onclick="delRec()">清除</button><button class="go" style="margin:0;flex:2" onclick="saveRec()">儲存</button></div>
+<button style="width:100%;margin-top:8px" onclick="cancelRec()">關閉</button>
+</div></div>
+<div class="mod" id="m4"><div class="mc"><div class="hint">可下載、分享，或長按圖片直接儲存</div><div style="overflow:auto;max-height:62vh;border:1px solid #ccc"><img id="im"></div><div class="row" style="margin-top:8px"><button class="go" style="margin:0" onclick="dlImg()">下載</button><button onclick="shareImg()">分享</button><button onclick="cm('m4')">關閉</button></div></div></div>
+<div class="mod" id="m3" onclick="cm('m3')" style="align-items:center;background:#000e"><img id="vi" style="width:100%;max-height:100vh;object-fit:contain"></div>
+<div id="toast" style="position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#222c;color:#fff;padding:10px 16px;border-radius:10px;display:none;z-index:99"></div>
+
+<script>
+const $=id=>document.getElementById(id),pad=n=>String(n).padStart(2,"0");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const KEY="guard_all_v1",KEY2="guard_root_v2",WK="日一二三四五六";
+const ds=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const shiftDay=(s,n)=>{const p=s.split("-");return ds(new Date(+p[0],+p[1]-1,+p[2]+n))};
+function today(){const d=new Date();if(d.getHours()<12)d.setDate(d.getDate()-1);return ds(d)}
+const mk=(n,i)=>({uid:"u"+i,id:"",name:n,ban:[]});
+const newS=()=>({ym:today().slice(0,7),site:"夜班班表",rest:6,
+posts:["安檢哨(主哨)","安檢哨(副哨1)","安檢哨(副哨2)","大門哨(主哨)","大門哨(副哨)","機動哨(主哨)","機動哨(副哨)","碼頭哨","停車場哨","中控哨"].map((n,i)=>({code:String(i+1),name:n,on:true})),
+ppl:Array.from({length:12},(_,i)=>"人員"+(i+1)).map(mk),roster:{},rec:{}});let S=newS();
+let ROOT=null,IDX=[];
+const LS=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+IDX=LS("guard_idx")||[];
+if(!IDX.length){const t=LS(KEY2)||(LS(KEY)?{cur:"p1",list:{p1:Object.assign(newS(),LS(KEY))}}:null);
+if(t&&t.list){const id="s"+Date.now();t.saveId=id;t.saveName="存檔1";IDX=[{id,name:"存檔1",savedAt:t.savedAt||Date.now()}];try{localStorage.setItem("guard_idx",JSON.stringify(IDX));localStorage.setItem("guard_slot_"+id,JSON.stringify(t))}catch(e){}}}
+function fix(){Object.values(ROOT.list).forEach(p=>{p.start=p.start||"19:00";p.len=p.len||12;p.roster=p.roster||{};p.rec=p.rec||{}});if(!ROOT.list[ROOT.cur])ROOT.cur=Object.keys(ROOT.list)[0];S=ROOT.list[ROOT.cur]}
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+function readF(){S.ym=$("ym").value||S.ym;S.site=$("site").value||S.site;S.rest=+$("rest").value;S.start=$("st").value||"19:00";S.len=+$("ln").value||12}
+function save(){readF();persist()}
+function saveIdx(){try{localStorage.setItem("guard_idx",JSON.stringify(IDX))}catch(e){}ready.then(()=>tx("s","readwrite",q=>q.put(IDX,"idx")))}
+let pt;function persist(){clearTimeout(pt);pt=setTimeout(persistNow,250)}
+function flush(){clearTimeout(pt);persistNow()}
+function persistNow(){if(!ROOT)return;ROOT.savedAt=Date.now();const id=ROOT.saveId;let e=IDX.find(x=>x.id==id);if(!e){e={id};IDX.push(e)}e.name=ROOT.saveName;e.savedAt=ROOT.savedAt;
+try{localStorage.setItem("guard_slot_"+id,JSON.stringify(ROOT))}catch(x){}
+saveIdx();ready.then(()=>tx("s","readwrite",q=>q.put(ROOT,id))).then(()=>{const d=new Date();$("sv").textContent="💾 "+ROOT.saveName+" "+pad(d.getHours())+":"+pad(d.getMinutes())})}
+function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",2500)}
+const om=id=>$(id).classList.add("open"),cm=id=>$(id).classList.remove("open");
+function tab(t){["roster","today","sum"].forEach(k=>{$("p-"+k).style.display=k==t?"block":"none";$("n-"+k).className=k==t?"on":""});
+window.scrollTo(0,0);if(t=="today")drawToday();if(t=="sum")drawSum()}
+
+/* ---------- 哨點／人員設定 ---------- */
+function drawPosts(){$("posts").innerHTML=S.posts.map((p,i)=>`<div class="item"><input type="checkbox" ${p.on?"checked":""} onchange="S.posts[${i}].on=this.checked;save();drawPpl()"><input class="c" value="${esc(p.code)}" placeholder="代號" onchange="chCode(${i},this.value)"><input value="${esc(p.name)}" placeholder="名稱" onchange="S.posts[${i}].name=this.value;save()"><button class="del" onclick="delPost(${i})">刪</button></div>`).join("")}
+function drawPpl(){$("ppl").innerHTML=S.ppl.map((p,i)=>`<div class="pc"><div class="item" style="margin:0"><input style="flex:0 0 92px" value="${esc(p.id)}" placeholder="編號(選填)" onchange="S.ppl[${i}].id=this.value;save()"><input value="${esc(p.name)}" placeholder="姓名" onchange="S.ppl[${i}].name=this.value;save()"><button class="del" onclick="delPerson(${i})">刪</button></div><div class="chips">禁止：${S.posts.map((q,k)=>q.on?`<span class="chip ${p.ban.includes(q.code)?"x":""}" onclick="tg(${i},${k})">${esc(q.code)}</span>`:"").join("")}</div></div>`).join("")}
+function tg(i,k0){const c=S.posts[k0].code,b=S.ppl[i].ban,k=b.indexOf(c);k<0?b.push(c):b.splice(k,1);save();drawPpl()}
+function addPost(){const n=S.posts.map(p=>parseInt(p.code)||0);S.posts.push({code:String(Math.max(0,...n)+1),name:"",on:true});save();drawPosts();drawPpl()}
+function delPost(i){if(!confirm("刪除哨點 "+S.posts[i].code+"？"))return;const c=S.posts[i].code;S.posts.splice(i,1);S.ppl.forEach(p=>p.ban=p.ban.filter(x=>x!==c));save();drawPosts();drawPpl()}
+function chCode(i,v){v=v.trim();const o=S.posts[i].code;if(!v||S.posts.some((p,k)=>k!=i&&p.code===v)){alert("代號空白或重複");drawPosts();return}S.posts[i].code=v;S.ppl.forEach(p=>p.ban=p.ban.map(x=>x===o?v:x));save();drawPpl()}
+function addPerson(){S.ppl.push({uid:"u"+Date.now(),id:"",name:"",ban:[]});save();drawPpl()}
+function delPerson(i){if(!confirm("刪除 "+(S.ppl[i].name||"此人")+"？（已有的紀錄仍會保留在資料裡）"))return;S.ppl.splice(i,1);save();drawPpl()}
+
+/* ---------- 自動排班 ---------- */
+function hung(a){const n=a.length,u=Array(n+1).fill(0),v=Array(n+1).fill(0),p=Array(n+1).fill(0),w=Array(n+1).fill(0);
+for(let i=1;i<=n;i++){p[0]=i;let j0=0;const mv=Array(n+1).fill(Infinity),us=Array(n+1).fill(false);
+do{us[j0]=true;const i0=p[j0];let dl=Infinity,j1=0;
+for(let j=1;j<=n;j++)if(!us[j]){const c=a[i0-1][j-1]-u[i0]-v[j];if(c<mv[j]){mv[j]=c;w[j]=j0}if(mv[j]<dl){dl=mv[j];j1=j}}
+for(let j=0;j<=n;j++)if(us[j]){u[p[j]]+=dl;v[j]-=dl}else mv[j]-=dl;j0=j1}while(p[j0]);
+do{const j1=w[j0];p[j0]=p[j1];j0=j1}while(j0)}
+const r=[];for(let j=1;j<=n;j++)r[p[j]-1]=j-1;return r}
+function gen(){save();
+if(S.roster[S.ym]&&!confirm(S.ym+" 已有班表，要重新產生並覆蓋嗎？（該月打卡紀錄不受影響）"))return;
+const [Y,M]=S.ym.split("-").map(Number),D=new Date(Y,M,0).getDate(),Q=S.rest;
+const E=S.posts.filter(p=>p.on&&p.code),pe=S.ppl,N=pe.length,warn=[];
+if(!E.length||!N){$("warn").textContent="請先新增哨點和人員";return}
+if(N<E.length)warn.push(`人數(${N})少於啟用哨點(${E.length})，每天會有哨點空缺。`);
+const total=N*Q,base=Math.floor(total/D),ex=total-base*D,left=pe.map(()=>Q),off=pe.map(()=>Array(D).fill(false));
+const sk=pe.map(()=>0);
+for(let d=0;d<D;d++){let s=base+(d*7%D<ex?1:0);s=Math.min(s,Math.max(0,N-E.length));
+pe.map((_,i)=>i).filter(i=>left[i]>0&&!(d&&off[i][d-1])).sort((a,b)=>left[b]-left[a]+(sk[b]-sk[a])*.25+(Math.random()-.5)*1.5).slice(0,s).forEach(i=>{off[i][d]=true;left[i]--});pe.forEach((_,i)=>sk[i]=off[i][d]?0:sk[i]+1)}
+left.forEach((l,i)=>{if(l>0)warn.push(`${pe[i].name} 休假少 ${l} 天（人數不足）`)});
+const cnt=pe.map(()=>({})),lp=pe.map(()=>""),cells={};pe.forEach(p=>cells[p.uid]=Array(D).fill(""));
+for(let d=0;d<D;d++){const W=pe.map((_,i)=>i).filter(i=>!off[i][d]),n=Math.max(W.length,E.length);
+const cost=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>{if(i>=W.length||j>=E.length)return 0;const w=W[i],c=E[j].code;
+if(pe[w].ban.includes(c))return 1e6;return(cnt[w][c]||0)*10+(lp[w]===c?4:0)+Math.random()}));
+const r=hung(cost);
+W.forEach((w,i)=>{const j=r[i];if(j<E.length){const c=E[j].code;if(cost[i][j]>=1e6)warn.push(`${M}/${d+1} ${pe[w].name} 被迫排到禁止哨點 ${c}`);
+cells[pe[w].uid][d]=c;cnt[w][c]=(cnt[w][c]||0)+1;lp[w]=c}else{cells[pe[w].uid][d]="備";lp[w]=""}});
+off.forEach((o,k)=>{if(o[d])cells[pe[k].uid][d]="休"});
+if(W.length<E.length)warn.push(`${M}/${d+1} 上班 ${W.length} 人，有哨點空缺`)}
+S.roster[S.ym]={D,cells,names:Object.fromEntries(pe.map(p=>[p.uid,p.name])),site:S.site,codes:E.map(e=>e.code)};
+save();$("warn").textContent=warn.slice(0,12).join("\n");drawRoster()}
+function drawRoster(){const R=S.roster[S.ym];if(!R){$("out").style.display=$("stat").style.display="none";return}
+const [Y,M]=S.ym.split("-").map(Number),D=R.D,ids=Object.keys(R.cells);
+let h=`<table><tr><th class="t" colspan="${D+1}">${M}月班表　駐點:${esc(S.site)}</th></tr><tr><th class="s1">姓名</th>`;
+for(let i=1;i<=D;i++){const w=new Date(Y,M-1,i).getDay();h+=`<th class="${w%6==0?"r":""}">${i}<br>${WK[w]}</th>`}h+="</tr>";
+ids.forEach(u=>{h+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+R.cells[u].map(c=>c=="休"?`<td class="r">休</td>`:`<td>${c}</td>`).join("")+"</tr>"});
+$("out").innerHTML=h+"</table>";$("out").style.display="block";
+let s=`<table><tr><th class="s1">次數</th>`+R.codes.map(c=>`<th>${esc(c)}</th>`).join("")+"<th>上班</th></tr>";
+ids.forEach(u=>{s+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+R.codes.map(c=>`<td>${R.cells[u].filter(x=>x===c).length}</td>`).join("")+`<td>${R.cells[u].filter(x=>x!="休").length}</td></tr>`});
+$("stat").innerHTML=s+"</table>";$("stat").style.display="block"}
+function dl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type||"text/csv"}));a.download=name;a.click()}
+function rosterCsv(){const R=S.roster[S.ym];if(!R)return toast("尚未產生班表");
+let t="\ufeff姓名,"+Array.from({length:R.D},(_,i)=>i+1).join(",")+"\n";
+Object.keys(R.cells).forEach(u=>t+=(R.names[u]||u)+","+R.cells[u].join(",")+"\n");dl("班表_"+S.ym+".csv",t)}
+
+/* ---------- 工時核對（手動登記） ---------- */
+const toMin=t=>{if(!t)return 0;const p=t.split(":");return(+p[0]||0)*60+(+p[1]||0)};
+function lateMin(i){if(!i)return 0;const m=(toMin(i)-toMin(S.start)+1440)%1440;return m>1080?0:Math.min(m,S.len*60)}
+function calcH(i,o){if(!i)return 0;const L=S.len*60,l=lateMin(i);let h=L-l;if(o){const ro=(toMin(o)-toMin(S.start)+1440)%1440;if(ro<L-10&&ro>l)h=ro-l}return Math.round(Math.max(0,h)/6)/10}
+const hm=m=>pad(Math.floor(((m%1440)+1440)%1440/60))+":"+pad(((m%60)+60)%60),dIn=()=>hm(toMin(S.start)-15),dOut=()=>hm(toMin(S.start)+S.len*60-10);
+function cellOf(u,date){const p=date.split("-"),R=S.roster[p[0]+"-"+p[1]];return R&&R.cells[u]?R.cells[u][+p[2]-1]:null}
+function postLabel(c){if(!c)return"（無班表）";if(c=="休")return"休假";if(c=="備")return"備勤";const p=S.posts.find(x=>x.code===c);return c+" "+(p?p.name:"")}
+/* 圖片存在 IndexedDB（不佔用設定資料的空間） */
+let db;const ready=new Promise(r=>{try{const q=indexedDB.open("guard_img",2);q.onupgradeneeded=()=>{const d=q.result;if(!d.objectStoreNames.contains("i"))d.createObjectStore("i");if(!d.objectStoreNames.contains("s"))d.createObjectStore("s")};q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>r()}catch(e){r()}});
+const tx=(n,m,f)=>new Promise(r=>{if(!db)return r(null);try{const t=db.transaction(n,m),q=f(t.objectStore(n));t.oncomplete=()=>r(q&&q.result);t.onerror=()=>r(null)}catch(e){r(null)}});
+const putImg=(id,b)=>tx("i","readwrite",s=>s.put(b,id)),getImg=id=>tx("i","readonly",s=>s.get(id)),delImg=id=>tx("i","readwrite",s=>s.delete(id));
+function shrink(f){return new Promise(r=>{const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(r,"image/jpeg",.7)};im.onerror=()=>r(null);im.src=u})}
+function drawToday(){const d=$("dt").value||today();$("hd").textContent=d;$("lg").innerHTML=`<b>${esc(S.site)}</b>　上班 ${S.start}，${S.len} 小時<br><b class="c1">◯</b>準時　<b class="c2">△</b>遲到　<b class="c3">✕</b>缺卡　<b class="c4">休</b>休假`;const R=S.rec[d]||{};let n=0;
+$("duty").innerHTML=S.ppl.map(m=>{const c=cellOf(m.uid,d),r=R[m.uid],st=r?r.st:(c=="休"?"off":"none");if(st!="none")n++;
+const B={ok:["ok","◯"],late:["lt","△"],miss:["ms","✕"],off:["of","休"],none:["nn","？"]}[st];
+const tl=(st=="ok"||st=="late")?`${esc(r.in)} ~ ${esc(r.out||"--:--")} • <b>${r.h} h</b>`+(st=="late"?` • <b style="color:#d97706">遲到${lateMin(r.in)}分</b>`:""):st=="off"?"本日休假":st=="miss"?"缺卡":"尚未登記";
+const clip=r&&r.imgs&&r.imgs.length?` 📎${r.imgs.length}`:"",nt=r&&r.note?`<div style="font-size:12px;color:#889">${esc(r.note)}</div>`:"";
+return `<div class="duty"><div style="display:flex;align-items:center;min-width:0"><span class="bd ${B[0]}">${B[1]}</span><div><b>${esc(m.name)}</b> <span style="font-size:13px;color:#1d4ed8">${esc(postLabel(c))}</span>${clip}<div style="font-size:13px;color:#566">${tl}</div>${nt}</div></div><button onclick="openRec('${m.uid}')">${st=="none"?"登記":"修改"}</button></div>`}).join("")}
+let cur=null,curImgs=[],added=[],toDel=[];
+function openRec(u){cur=u;const d=$("dt").value,m=S.ppl.find(x=>x.uid==u),r=(S.rec[d]||{})[u],c=cellOf(u,d);
+$("m1t").textContent=m.name+"　"+d+"　"+postLabel(c);
+$("mst").value=r?r.st:(c=="休"?"off":"ok");$("mi").value=r&&r.in||dIn();$("mo").value=r&&r.out||dOut();
+$("mh").value=r?r.h:calcH(dIn(),dOut());$("mn").value=r&&r.note||"";curImgs=(r&&r.imgs||[]).slice();added=[];toDel=[];onSt();drawTh();om("m1")}
+function onSt(){const s=$("mst").value,w=s=="ok"||s=="late";$("tf").style.display=w?"block":"none";if(!w)$("mh").value=0;else ah()}
+function tm(){const s=$("mst").value,i=$("mi").value;if(i&&(s=="ok"||s=="late"))$("mst").value=lateMin(i)>0?"late":"ok";ah()}
+function ah(){$("mh").value=calcH($("mi").value,$("mo").value)}
+function saveRec(){const d=$("dt").value,s=$("mst").value,w=s=="ok"||s=="late";
+(S.rec[d]=S.rec[d]||{})[cur]={in:w?$("mi").value:"",out:w?$("mo").value:"",st:s,h:w?+$("mh").value:0,note:$("mn").value.trim(),imgs:curImgs.slice()};
+toDel.forEach(delImg);added=[];toDel=[];save();cm("m1");drawToday();toast("已儲存")}
+function cancelRec(){added.forEach(delImg);added=[];toDel=[];cm("m1")}
+function delRec(){if(!confirm("清除這筆紀錄和附加的圖片？"))return;const d=$("dt").value;if(S.rec[d])delete S.rec[d][cur];curImgs.concat(toDel).forEach(delImg);added=[];toDel=[];save();cm("m1");drawToday()}
+async function addImgs(inp){const fs=[...inp.files];inp.value="";await ready;if(!db)return toast("此瀏覽器不支援存圖");
+for(const f of fs){const b=await shrink(f);if(!b)continue;const id="i"+Date.now()+Math.random().toString(36).slice(2,6);await putImg(id,b);curImgs.push(id);added.push(id)}drawTh()}
+async function drawTh(){await ready;const h=$("th");h.innerHTML="";for(const id of curImgs){const b=await getImg(id);if(!b)continue;const u=URL.createObjectURL(b),w=document.createElement("div");w.style.position="relative";
+w.innerHTML=`<img src="${u}" style="width:72px;height:72px;object-fit:cover;border-radius:6px" onclick="$('vi').src='${u}';om('m3')"><span class="chip x" style="position:absolute;top:-6px;right:-6px;padding:0 7px" onclick="rmImg('${id}')">×</span>`;h.appendChild(w)}}
+function rmImg(id){curImgs=curImgs.filter(x=>x!==id);if(added.includes(id)){added=added.filter(x=>x!==id);delImg(id)}else toDel.push(id);drawTh()}
+
+/* ---------- 月總結／時數表 ---------- */
+function stats(){const mo=$("sm").value||today().slice(0,7),p=mo.split("-"),D=new Date(+p[0],+p[1],0).getDate(),td=today(),out=[];
+S.ppl.forEach(m=>{const s={name:m.name,work:0,ok:0,late:0,lm:0,miss:0,off:0,h:0,days:[]};
+for(let d=1;d<=D;d++){const day=mo+"-"+pad(d),r=(S.rec[day]||{})[m.uid],c=cellOf(m.uid,day);let x="";
+if(day<=td){if(r){if(r.st=="ok"||r.st=="late"){s.work++;s[r.st]++;if(r.st=="late")s.lm+=lateMin(r.in);x={st:r.st,h:r.h}}else if(r.st=="off"){s.off++;x={st:"off"}}else{s.miss++;x={st:"miss"}}s.h+=+r.h||0}
+else if(c=="休"){s.off++;x={st:"off"}}else if(c&&day<td){s.miss++;x={st:"miss"}}}
+s.days.push(x)}out.push(s)});return{mo,D,out}}
+function drawSum(){const{D,out}=stats();
+$("sumT").innerHTML=`<table><tr><th class="s1">姓名</th><th>出勤</th><th>◯準時</th><th>△遲到</th><th>遲到時數</th><th>✕缺卡</th><th>休</th><th>總工時</th></tr>`+out.map(s=>`<tr><td class="s1">${esc(s.name)}</td><td>${s.work}</td><td class="c1">${s.ok}</td><td class="${s.late?"c2":""}">${s.late}次</td><td class="${s.lm?"c2":""}">${(s.lm/60).toFixed(1)}h<div style="font-size:11px">${s.lm}分</div></td><td class="${s.miss?"c3":""}">${s.miss}</td><td>${s.off}</td><td><b>${s.h.toFixed(1)}</b></td></tr>`).join("")+"</table>";
+let g=`<table><tr><th class="s1">姓名</th>`+Array.from({length:D},(_,i)=>`<th>${i+1}</th>`).join("")+"</tr>";
+out.forEach(s=>{g+=`<tr><td class="s1">${esc(s.name)}</td>`+s.days.map(x=>!x?"<td></td>":x.st=="ok"?`<td class="c1">◯<br>${x.h}</td>`:x.st=="late"?`<td class="c2">△<br>${x.h}</td>`:x.st=="miss"?`<td class="c3">✕</td>`:`<td class="c4">休</td>`).join("")+"</tr>"});
+$("sumG").innerHTML=g+"</table>"}
+function sumCsv(){const{mo,D,out}=stats();let t="\ufeff"+S.site+" "+mo+"\n姓名,出勤,準時,遲到次數,遲到分鐘,遲到時數,缺卡,休假,總工時\n"+out.map(s=>[s.name,s.work,s.ok,s.late,s.lm,(s.lm/60).toFixed(1),s.miss,s.off,s.h.toFixed(1)].join(",")).join("\n");
+t+="\n\n時數表\n姓名,"+Array.from({length:D},(_,i)=>i+1).join(",")+"\n"+out.map(s=>s.name+","+s.days.map(x=>!x?"":x.st=="ok"?"◯"+x.h:x.st=="late"?"△"+x.h:x.st=="miss"?"✕":"休").join(",")).join("\n");
+dl(S.site+"_工時_"+mo+".csv",t)}
+/* ---------- 班別 ---------- */
+function drawProf(){$("prof").innerHTML=Object.keys(ROOT.list).map(k=>`<option value="${k}" ${k==ROOT.cur?"selected":""}>${esc(ROOT.list[k].site)}</option>`).join("")}
+function switchProf(id){save();ROOT.cur=id;S=ROOT.list[id];flush();init()}
+function newProf(){const n=prompt("新班別名稱（例：早班）");if(!n||!n.trim())return;save();const id="p"+Date.now(),o=JSON.parse(JSON.stringify(S));
+o.site=n.trim();o.roster={};o.rec={};o.start=/早|日/.test(n)?"07:00":"19:00";ROOT.list[id]=o;ROOT.cur=id;S=o;flush();init();toast("已新增班別，請確認上班時間")}
+function delProf(){if(Object.keys(ROOT.list).length<2)return alert("至少要保留一個班別");if(!confirm("刪除「"+S.site+"」及其所有班表、打卡紀錄與圖片？"))return;
+Object.values(S.rec).forEach(d=>Object.values(d).forEach(r=>(r.imgs||[]).forEach(delImg)));delete ROOT.list[ROOT.cur];ROOT.cur=Object.keys(ROOT.list)[0];S=ROOT.list[ROOT.cur];flush();init()}
+function backup(){readF();flush();dl("排班工時備份_"+ds(new Date())+".json",JSON.stringify(ROOT),"application/json")}
+function restore(inp){const f=inp.files[0];inp.value="";if(!f)return;const rd=new FileReader();rd.onload=e=>{try{let d=JSON.parse(e.target.result);if(d.ppl&&d.posts)d={cur:"p1",list:{p1:d}};if(!d.list)throw 0;
+if(!confirm("還原會覆蓋目前所有資料，確定？"))return;d.saveId=ROOT.saveId;d.saveName=ROOT.saveName;ROOT=d;fix();flush();init();toast("還原完成")}catch(x){alert("備份檔無效")}};rd.readAsText(f)}
+
+/* ---------- 產生圖片 ---------- */
+const FNT='"Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif';let IB,IF;
+function mkImg(title,heads,rows,cw,fit,fn){
+const sc=2,hh=heads.some(h=>h&&h.t2)?44:34,rh=rows.some(r=>r.some(c=>c&&c.t2))?38:30,th=44,W=cw.reduce((a,b)=>a+b,0),H=th+hh+rows.length*rh+8;
+const cv=document.createElement("canvas");cv.width=W*sc;cv.height=H*sc;const g=cv.getContext("2d");g.scale(sc,sc);g.fillStyle="#fff";g.fillRect(0,0,W,H);g.textBaseline="middle";
+g.fillStyle="#cfe0fb";g.fillRect(0,0,W,th);g.fillStyle="#0b3d91";g.font="bold 20px "+FNT;g.textAlign="left";g.fillText(title,10,th/2);
+const cell=(x,y,w,h,o,bg,bold)=>{o=o&&typeof o=="object"?o:{t:o};const t=o.t==null?"":String(o.t);if(bg||o.bg){g.fillStyle=o.bg||bg;g.fillRect(x,y,w,h)}
+g.strokeStyle="#555";g.lineWidth=1;g.strokeRect(x+.5,y+.5,w,h);g.textAlign="center";g.fillStyle=o.c||"#111";g.font=(bold||o.b?"bold ":"")+"14px "+FNT;
+if(o.t2){g.fillText(t,x+w/2,y+h*.33);g.font="12px "+FNT;g.fillText(String(o.t2),x+w/2,y+h*.73)}else g.fillText(t,x+w/2,y+h/2)};
+let x=0;heads.forEach((h,i)=>{cell(x,th,cw[i],hh,h,"#cfe0fb",1);x+=cw[i]});
+rows.forEach((r,j)=>{x=0;r.forEach((o,i)=>{cell(x,th+hh+j*rh,cw[i],rh,o,i==0?"#eaf2ff":"",i==0);x+=cw[i]})});
+cv.toBlob(b=>{if(IB)URL.revokeObjectURL($("im").src);IB=b;IF=fn+".png";$("im").src=URL.createObjectURL(b);$("im").style.width=fit?"100%":W+"px";om("m4")},"image/png")}
+const dayHead=(Y,M,D)=>Array.from({length:D},(_,i)=>{const w=new Date(Y,M-1,i+1).getDay();return{t:String(i+1),t2:WK[w],c:w%6==0?"#c00000":"#111"}});
+function imgRoster(){const R=S.roster[S.ym];if(!R)return toast("尚未產生班表");const[Y,M]=S.ym.split("-").map(Number),ids=Object.keys(R.cells),D=R.D;
+mkImg(M+"月班表　駐點:"+S.site,[{t:"姓名"}].concat(dayHead(Y,M,D)),ids.map(u=>[{t:R.names[u]||u}].concat(R.cells[u].map(c=>c=="休"?{t:"休",c:"#c00000"}:{t:c}))),[78].concat(Array(D).fill(32)),0,S.site+"_班表_"+S.ym)}
+function imgToday(){const d=$("dt").value||today(),R=S.rec[d]||{};
+const rows=S.ppl.map(m=>{const c=cellOf(m.uid,d),r=R[m.uid],st=r?r.st:(c=="休"?"off":"none"),w=st=="ok"||st=="late";
+const B={ok:{t:"◯",c:"#059669"},late:{t:"△",c:"#d97706",t2:"遲到"+(r?lateMin(r.in):0)+"分"},miss:{t:"✕",c:"#dc2626"},off:{t:"休",c:"#4338ca"},none:{t:"－",c:"#999"}}[st];
+return[{t:m.name},{t:postLabel(c)},B,{t:w?r.in:""},{t:w?r.out:""},{t:w?String(r.h):""},{t:r&&r.note||""}]});
+mkImg(S.site+"　"+d+" 今日核對",["姓名","哨點","狀態","上班","下班","工時","備註"].map(t=>({t})),rows,[82,150,64,58,58,52,130],1,S.site+"_今日_"+d)}
+function imgSum(){const{mo,D,out}=stats(),[Y,M]=mo.split("-").map(Number);
+const heads=[{t:"姓名"}].concat(dayHead(Y,M,D),["準時","遲到","遲到h","缺卡","總工時"].map(t=>({t})));
+const rows=out.map(s=>[{t:s.name}].concat(s.days.map(x=>!x?"":x.st=="ok"?{t:"◯",t2:x.h,c:"#059669"}:x.st=="late"?{t:"△",t2:x.h,c:"#d97706"}:x.st=="miss"?{t:"✕",c:"#dc2626"}:{t:"休",c:"#4338ca"}),
+[{t:s.ok},{t:s.late+"次",c:s.late?"#d97706":""},{t:(s.lm/60).toFixed(1),c:s.lm?"#d97706":""},{t:s.miss,c:s.miss?"#dc2626":""},{t:s.h.toFixed(1),b:1}]));
+mkImg(M+"月時數表　"+S.site,heads,rows,[78].concat(Array(D).fill(34),[44,50,54,44,58]),0,S.site+"_時數表_"+mo)}
+function dlImg(){const a=document.createElement("a");a.href=URL.createObjectURL(IB);a.download=IF;a.click()}
+async function shareImg(){try{const f=new File([IB],IF,{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});else toast("此瀏覽器不支援分享，請用下載或長按圖片")}catch(e){}}
+
+/* ---------- 歡迎／存檔 ---------- */
+let wOpen=false;const fmt=t=>{const d=new Date(t);return(d.getMonth()+1)+"/"+d.getDate()+" "+pad(d.getHours())+":"+pad(d.getMinutes())};
+function drawWel(show){if(show)$("wel").style.display="flex";$("wback").style.display=ROOT?"block":"none";const L=IDX.slice().sort((a,b)=>b.savedAt-a.savedAt);
+$("slots").innerHTML=wOpen?(L.length?L.map(e=>`<div class="sl"><div style="flex:1;text-align:left" onclick="loadSave('${e.id}')"><b>${esc(e.name)}</b>${ROOT&&ROOT.saveId==e.id?" （目前）":""}<div style="font-size:12px;opacity:.85">上次存檔 ${fmt(e.savedAt)}</div></div><span onclick="delSave('${e.id}')" style="font-size:20px">🗑</span></div>`).join(""):"<div>目前沒有存檔，請先新增存檔</div>"):""}
+function showWel(){if(ROOT){readF();flush()}wOpen=false;drawWel(true)}
+function toggleLoad(){wOpen=!wOpen;drawWel(true)}
+function enter(){$("wel").style.display="none";init();tab("roster")}
+function newSave(){const n=prompt("新存檔名稱","存檔"+(IDX.length+1));if(n===null)return;if(ROOT){readF();flush()}
+ROOT={cur:"p1",list:{p1:newS()},saveId:"s"+Date.now(),saveName:n.trim()||"存檔"+(IDX.length+1)};fix();flush();enter();toast("已建立新存檔")}
+async function loadSave(id){const a=LS("guard_slot_"+id);await ready;const b=await tx("s","readonly",q=>q.get(id));let d=a;if(b&&(!a||(b.savedAt||0)>(a.savedAt||0)))d=b;
+if(!d||!d.list)return alert("存檔讀取失敗");if(ROOT&&ROOT.saveId!=id){readF();flush()}ROOT=d;ROOT.saveId=id;ROOT.saveName=(IDX.find(e=>e.id==id)||{}).name||d.saveName||"存檔";fix();enter();toast("已載入："+ROOT.saveName)}
+async function delSave(id){const e=IDX.find(x=>x.id==id);if(!e||!confirm("刪除存檔「"+e.name+"」？班表、打卡紀錄與圖片都會一併刪除，無法復原。"))return;
+const d=LS("guard_slot_"+id);if(d&&d.list)Object.values(d.list).forEach(p=>Object.values(p.rec||{}).forEach(r=>Object.values(r).forEach(x=>(x.imgs||[]).forEach(delImg))));
+try{localStorage.removeItem("guard_slot_"+id)}catch(x){}ready.then(()=>tx("s","readwrite",q=>q.delete(id)));IDX=IDX.filter(x=>x.id!=id);saveIdx();if(ROOT&&ROOT.saveId==id)ROOT=null;drawWel(false)}
+
+function anon(){if(!confirm("所有班別的人員姓名會改成「人員1、2…」，編號清空，無法復原。確定？"))return;
+Object.values(ROOT.list).forEach(p=>{p.ppl.forEach((m,i)=>{m.name="人員"+(i+1);m.id=""});Object.values(p.roster).forEach(R=>{Object.keys(R.names||{}).forEach(u=>{const m=p.ppl.find(x=>x.uid==u);R.names[u]=m?m.name:"已刪除人員"})})});
+readF();flush();init();toast("已全部匿名（備註與班表名稱不受影響）")}
+addEventListener("pagehide",()=>{if(ROOT){readF();flush()}});document.addEventListener("visibilitychange",()=>{if(document.hidden&&ROOT){readF();flush()}});
+function init(){$("ym").value=S.ym;$("site").value=S.site;$("rest").value=S.rest;$("st").value=S.start;$("ln").value=S.len;$("dt").value=today();$("sm").value=today().slice(0,7);drawProf();drawPosts();drawPpl();drawRoster();$("hd").textContent=today();$("warn").textContent="";$("out").style.display=S.roster[S.ym]?"block":"none"}
+drawWel(true);
+ready.then(async()=>{const x=await tx("s","readonly",q=>q.get("idx"));if(Array.isArray(x))x.forEach(e=>{const l=IDX.find(k=>k.id==e.id);if(!l)IDX.push(e);else if((e.savedAt||0)>(l.savedAt||0))Object.assign(l,e)});drawWel(false)});
+</script></body></html>
