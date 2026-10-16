@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="安橋排班"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>安橋人生模擬器</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;margin:0;padding:0 0 70px;background:#eef4ff;color:#10213f;font-size:16px}
+header{background:#1d4ed8;color:#fff;padding:12px 14px;font-weight:bold;position:sticky;top:0;z-index:20;display:flex;justify-content:space-between}
+section,.card{background:#fff;margin:10px;padding:12px;border:1px solid #c3d3ee;border-radius:8px}
+h2{font-size:16px;margin:0 0 8px}
+input,select{font:inherit;padding:9px;border:1px solid #9bb5e6;border-radius:6px;width:100%;min-width:0;background:#fff}
+.f{display:flex;gap:8px;margin-bottom:8px;align-items:center}.f label{flex:0 0 auto;font-size:14px}
+.item{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.item .c{flex:0 0 64px;text-align:center}.item input[type=checkbox]{width:26px;height:26px;flex:0 0 auto}
+.pc{border:1px solid #d3def2;border-radius:8px;padding:8px;margin-bottom:8px;background:#f7faff}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:14px;align-items:center}
+.chip{padding:5px 10px;border:1px solid #9bb5e6;border-radius:16px;background:#fff}
+.chip.x{background:#c00000;color:#fff;border-color:#c00000}
+button{font:inherit;padding:9px 14px;border:0;border-radius:6px;background:#5b6b8a;color:#fff}
+.del{background:#b3261e;padding:9px 11px;flex:0 0 auto}.add{background:#2563eb;width:100%}.go{background:#1d4ed8;font-weight:bold;width:100%;padding:13px;margin-top:6px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #c3d3ee;display:flex;z-index:30}
+nav button{flex:1;background:none;color:#566;padding:13px 4px;border-radius:0}nav button.on{color:#1d4ed8;font-weight:bold;border-top:3px solid #1d4ed8}
+.warn{color:#b3261e;font-size:14px;white-space:pre-line;margin:0 12px}.hint{font-size:13px;color:#566;margin:4px 0}
+.wrap{overflow:auto;margin:10px;max-height:75vh;border:1px solid #333;background:#fff}
+table{border-collapse:separate;border-spacing:0;font-size:14px;width:100%}
+td,th{border-right:1px solid #ccc;border-bottom:1px solid #ccc;padding:4px 6px;text-align:center;white-space:nowrap;min-width:30px}
+th{background:#cfe0fb;position:sticky;top:0;z-index:2}
+.s1{position:sticky;left:0;background:#fff;z-index:1;min-width:64px;font-weight:bold}th.s1{background:#cfe0fb;z-index:3}
+.t{background:#cfe0fb;color:#0b3d91;font-size:17px;text-align:left;position:static}
+.r{color:#c00000;font-weight:bold}
+.duty{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;border:1px solid #d3def2;border-radius:10px;margin-bottom:8px;background:#fff}
+.bd{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 auto;margin-right:10px}
+.ok{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0}.lt{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.ms{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}.of{background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}.nn{background:#f1f5f9;color:#94a3b8;border:1px dashed #cbd5e1}
+.mod{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:50}.mod.open{display:flex}
+.mc{background:#fff;width:100%;border-radius:18px 18px 0 0;padding:16px;max-height:90vh;overflow:auto}
+.up{display:block;border:2px dashed #3b82f6;background:#eff6ff;border-radius:10px;padding:16px;text-align:center;font-weight:bold;color:#1d4ed8}
+.bc{display:flex;gap:10px;border:1px solid #d3def2;border-radius:8px;padding:8px;margin-bottom:8px;background:#f7faff}
+.bc img{width:64px;height:64px;object-fit:cover;border-radius:6px;flex:0 0 auto;background:#ddd}
+.row{display:flex;gap:8px}.row>*{flex:1}
+@media print{header,section,nav,.warn,.noprint{display:none}.wrap{max-height:none}}
+.c1{color:#059669;font-weight:700}.c2{color:#d97706;font-weight:700}.c3{color:#dc2626;font-weight:700}.c4{color:#4338ca}#sumG td,#sumG th{min-width:34px;padding:3px 2px;font-size:12px}
+.wbtn{width:100%;max-width:360px;padding:15px;margin:6px 0;font-size:18px;background:#fff;color:#1d4ed8;font-weight:bold;border-radius:10px}.sl{display:flex;align-items:center;gap:10px;background:#ffffff26;border-radius:10px;padding:12px;margin-bottom:8px;font-size:17px}
+.w1{background:#fff3b0}.w2{background:#ffb4b4}
+.rb{display:inline-block;padding:2px 8px;border-radius:10px;color:#fff;font-size:12px;margin-left:6px}.rl{padding:6px 2px;border-bottom:1px solid #e3ebf8;white-space:pre-wrap;line-height:1.6;font-size:15px}
+details.ra{background:#fff;border:1px solid #c3d3ee;border-radius:8px;margin-bottom:8px;padding:8px 10px}details.ra summary{font-weight:bold;cursor:pointer}mark{background:#ffe27a}
+#out td:not(.s1){cursor:pointer}
+th.v{padding:6px 2px;min-width:34px;font-size:13px;line-height:1.25;vertical-align:bottom;font-weight:bold}
+header{padding-top:calc(12px + env(safe-area-inset-top,0px))}nav{padding-bottom:env(safe-area-inset-bottom,0px)}body{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+</style></head><body>
+<div id="wel" style="position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#0b2f78,#1d4ed8 55%,#3b82f6);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto">
+<div style="font-size:56px">🛡️</div>
+<h1 style="font-size:26px;margin:10px 0 8px;line-height:1.35">歡迎來到<br>安橋人生模擬器</h1>
+<div style="font-size:15px;margin:-2px 0 10px;opacity:.95">安橋物業勤務排班與工時管理系統</div>
+<div style="font-size:14px;opacity:.92;margin-bottom:26px">作者：安橋　陳正和</div>
+<button class="wbtn" onclick="newSave()">＋ 新增存檔</button>
+<button class="wbtn" onclick="toggleLoad()">📂 載入存檔</button>
+<button class="wbtn" onclick="$('imf').click()">📥 匯入別人分享的班表檔</button><input type="file" id="imf" accept=".json" style="display:none" onchange="importFile(this)">
+<button class="wbtn" id="inst" style="display:none;background:#fde68a;color:#7c4a00" onclick="installApp()">📲 安裝到手機主畫面（像 App 一樣）</button>
+<div id="slots" style="width:100%;max-width:360px;margin-top:10px"></div>
+<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.3</div>
+<button class="wbtn" id="wback" style="display:none;background:#ffffff33;color:#fff;font-size:16px" onclick="$('wel').style.display='none'">返回目前存檔</button>
+</div>
+<header><span>🛡 安橋人生模擬器 <button onclick="showWel()" style="padding:3px 8px;font-size:12px;margin-left:6px;background:#ffffff40">存檔</button></span><span style="font-size:12px;text-align:right"><span id="hd"></span><br><span id="sv"></span></span></header>
+
+<!-- 排班 -->
+<div id="bk" class="noprint" style="display:none;background:#fff4e5;color:#8a4b00;padding:8px 12px;align-items:center;gap:8px;font-size:14px"><span style="flex:1">⚠ 已 <b id="bkd">0</b> 天沒備份。換手機或清除瀏覽器資料，存檔會全部消失。</span><button style="padding:6px 10px;white-space:nowrap" onclick="shareBackup()">立即備份</button></div>
+<div id="p-roster">
+<section><h2>班別／基本設定</h2>
+<div class="f"><label>案場／班別</label><select id="prof" onchange="switchProf(this.value)"></select></div>
+<div class="row" style="margin-bottom:8px"><button onclick="newProf()">＋ 新增班別</button><button class="del" onclick="delProf()">刪除此班別</button></div>
+<div class="f"><label>班表名稱</label><input type="text" id="site" onchange="save();drawProf();drawRoster()"></div>
+<div class="f"><label>月份</label><input type="month" id="ym" onchange="save();drawRoster();drawPpl()"></div>
+<div class="row"><div class="f"><label>上班</label><input type="time" id="st" onchange="save()"></div><div class="f"><label>時數</label><input type="number" id="ln" min="1" max="24" onchange="save()"></div></div>
+<div class="f"><label>每月應休天數</label><input type="number" id="rest" min="0" max="15" onchange="save();drawRoster()"></div>
+<div class="f"><label>學習者每月跟哨目標（次）</label><input type="number" id="trq" min="0" max="15" onchange="save()"></div>
+<div class="row"><div class="f"><label>正常工時</label><input type="number" id="nh" onchange="save();drawRoster()"></div><div class="f"><label>工時上限</label><input type="number" id="xh" onchange="save();drawRoster()"></div></div>
+</section>
+<section><h2>哨點</h2><div class="hint">勾選＝本月啟用。代號就是班表格子顯示的字。最右邊數字＝該哨點需要幾人（例：北碼頭哨 2 人）。</div>
+<div id="posts"></div><button class="add" onclick="addPost()">＋ 新增哨點</button>
+<button class="add" style="background:#5b6b8a;margin-top:8px" onclick="applyDefPosts()">套用預設 13 個哨點</button></section>
+<section><h2>人員</h2><div class="hint">點哨點代號＝禁止此人排該哨點（變紅）。人員同時用於工時核對。</div>
+<div id="ppl"></div><button class="add" onclick="addPerson()">＋ 新增人員</button>
+<button class="add" style="background:#0d9488;margin-top:8px" onclick="hirePerson()">👤 新人到職（只重排之後的班表）</button>
+<button class="add" style="background:#5b6b8a;margin-top:8px" onclick="anon()">🔒 一鍵匿名（姓名改成人員1、2…，清除編號）</button>
+</section>
+<section><h2>預先指定休假／上班</h2><div class="hint">選人員後點日期切換：空白→休→班→空白。產生班表時會先鎖定，其他格子再自動排。</div>
+<div class="f"><label>人員</label><select id="lp" onchange="drawLock()"></select></div><div id="lk" class="chips"></div>
+<button class="go" onclick="gen()">產生班表</button>
+<div class="f" style="margin-top:10px"><label>局部重排</label><select id="rfd"></select><button onclick="regenFrom()">從此日起重排</button></div><div class="hint">新人到職、有人離職或請長假時用：只重排所選日期之後的班表，前面已排好（或手動改過）的日子不會動。新增人員後用這裡重排，新人在所選日期之前會顯示「－」。有人離職：刪除該人員後，再從離職隔天起重排。</div></section>
+<div class="warn" id="warn"></div>
+<div class="warn" id="chk" style="color:#8a1c14"></div>
+<div class="hint" style="margin:0 12px">ℹ 檢核只計算：連勤 6／7 天、應休天數、月工時、兩班間隔 11 小時。不含加班費、國定假日與公司特別規定，實際請以勞基法與公司規定為準，發布前請再看一遍。</div>
+<div class="row" style="margin:0 10px 6px"><button onclick="undoCell()">↶ 復原上一步修改</button></div>
+<div class="hint" style="margin:0 12px">💡 點班表任一格可手動修改（也可與他人對調）；黃底＝連勤 6 天、紅底＝連勤 7 天，點擊可查看連勤區間。</div>
+<div class="wrap" id="out" style="display:none"></div>
+<div class="wrap" id="stat" style="display:none"></div>
+<div class="row noprint" style="margin:0 10px"><button onclick="window.print()">列印班表</button><button onclick="rosterCsv()">班表 CSV</button><button onclick="imgRoster()">🖼 存成圖片</button></div>
+<div class="row noprint" style="margin:8px 10px 0"><button onclick="shareLink()">🔗 分享班表連結</button><button onclick="shareFile()">📤 分享班表檔</button></div>
+<div class="hint" style="margin:4px 12px">分享的是「目前這一刻」的班表快照，對方匯入後會變成他自己的一份，之後兩邊不會自動同步。</div>
+</div>
+
+<!-- 今日核對 -->
+<div id="p-today" style="display:none">
+<div class="card"><div class="f"><label>套用班表</label><select id="tp" onchange="tpChange()"></select></div>
+<div class="f" style="margin-bottom:0"><button onclick="dayGo(-1)" style="padding:9px 16px">◀</button><input type="date" id="dt" onchange="drawToday()" style="text-align:center"><button onclick="dayGo(1)" style="padding:9px 16px">▶</button></div></div>
+<div class="card"><div class="f"><label>發布時間</label><input type="time" id="tt" onchange="buildTx()"></div>
+<div class="f" style="margin-bottom:0"><label>緊急應變負責人</label><select id="te" onchange="saveEmg()"></select></div></div>
+<div class="card"><label class="hint">今日上哨名單（依所選班表自動產生，可直接修改文字後再複製）</label><textarea id="tx" rows="17" style="width:100%;font:inherit;padding:8px;border:1px solid #9bb5e6;border-radius:6px;margin-top:4px"></textarea>
+<div id="tinfo" style="font-size:14px;margin-top:6px;line-height:1.7"></div></div>
+<div class="row" style="margin:0 10px"><button class="go" style="margin:0" onclick="copyTx()">📋 複製</button><button style="margin:0" onclick="shareTx()">分享</button><button style="margin:0" onclick="imgTx()">🖼 圖片</button></div>
+</div>
+
+<!-- 哨點學習進度 -->
+<div id="p-sum" style="display:none">
+<div class="card"><div class="hint">點格子切換：<b class="c1">✔會</b> → <b class="c3">✕不會</b> → <b class="c2">學習中</b>。產生班表時，只會把人正式排在「會」的哨點；「學習中」的人會在人手有餘的日子自動排去跟哨（班表上顯示「學」，不佔哨點名額）；學習中格子右下的小數字＝本月已跟哨次數。學會後點到 ✔ 即可。</div></div>
+<div class="wrap" id="lt"></div>
+<div class="card"><div class="f"><label>快速設定</label><select id="lq"></select></div><div class="row"><button onclick="learnAll(1)">全部會</button><button class="del" onclick="learnAll(0)">全部不會</button><button style="background:#d97706" onclick="learnAll(2)">全部學習中</button></div></div>
+<div class="row" style="margin:10px"><button onclick="learnImg()">🖼 產生進度圖片</button><button onclick="learnCsv()">匯出 CSV</button></div>
+<section><h2>資料備份</h2><div class="hint">備份檔含班表、人員與學習進度。</div><div class="row"><button onclick="shareBackup()">分享備份</button><button onclick="backup()">下載備份</button><button onclick="$('rf').click()">還原備份</button></div>
+<input type="file" id="rf" accept=".json" style="display:none" onchange="restore(this)"></section>
+</div>
+
+<div id="p-rule" style="display:none">
+<div class="card"><input type="text" id="rq" placeholder="搜尋關鍵字（例：曠職、遲到、睡覺）" oninput="drawRule()"><div class="chips" id="rc"></div><div class="hint">資料來源：安橋公司工作規則 第六章第二節（第57、63～71條）。僅供查閱，實際處分以公司正式公告與主管核決為準。</div></div>
+<div id="rl" style="margin:10px"></div></div>
+
+<nav><button id="n-rule" onclick="tab('rule')">懲處規則</button><button id="n-roster" class="on" onclick="tab('roster')">排班</button><button id="n-today" onclick="tab('today')">今日班表</button><button id="n-sum" onclick="tab('sum')">哨點學習</button></nav>
+
+<div class="mod" id="m4"><div class="mc"><div class="hint">可下載、分享，或長按圖片直接儲存</div><div style="overflow:auto;max-height:62vh;border:1px solid #ccc"><img id="im"></div><div class="row" style="margin-top:8px"><button class="go" style="margin:0" onclick="dlImg()">下載</button><button onclick="shareImg()">分享</button><button onclick="cm('m4')">關閉</button></div></div></div>
+<div class="mod" id="m5"><div class="mc"><div style="display:flex;justify-content:space-between;align-items:center"><h2 id="m5t"></h2><button onclick="cm('m5')" style="background:#5b6b8a;padding:6px 12px">✕</button></div><div id="m5i" style="color:#8a1c14;white-space:pre-line;font-size:14px;margin-bottom:8px"></div><div class="hint">點選要改成的內容：</div><div id="m5b" class="chips"></div><div class="f" style="margin-top:14px"><label>與他人對調</label><select id="m5s"></select><button onclick="swapCell()">對調</button></div></div></div>
+<div id="toast" style="position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#222c;color:#fff;padding:10px 16px;border-radius:10px;display:none;z-index:99"></div>
+
+<script>
+const $=id=>document.getElementById(id),pad=n=>String(n).padStart(2,"0");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const KEY="guard_all_v1",KEY2="guard_root_v2",WK="日一二三四五六";
+const ds=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const shiftDay=(s,n)=>{const p=s.split("-");return ds(new Date(+p[0],+p[1]-1,+p[2]+n))};
+function today(){const d=new Date();if(d.getHours()<12)d.setDate(d.getDate()-1);return ds(d)}
+const mk=(n,i)=>({uid:"u"+i,id:"",name:n,ban:[]});
+const newS=()=>({ym:today().slice(0,7),site:"夜班班表",rest:8,norm:240,maxh:288,
+posts:[["安檢主哨",1],["安檢副哨",2],["大門主哨",1],["大門副哨",1],["機動主哨",1],["機動副哨",1],["3B哨",1],["南碼頭哨",1],["北碼頭哨",2],["東回收哨",1],["西回收哨",1],["收發室",1],["中控哨",2]].map((a,i)=>({code:String(i+1),name:a[0],need:a[1],on:true})),
+ppl:Array.from({length:24},(_,i)=>"人員"+(i+1)).map(mk),roster:{},rec:{}});let S=newS();
+let ROOT=null,IDX=[];
+const LS=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+IDX=LS("guard_idx")||[];
+if(!IDX.length){const t=LS(KEY2)||(LS(KEY)?{cur:"p1",list:{p1:Object.assign(newS(),LS(KEY))}}:null);
+if(t&&t.list){const id="s"+Date.now();t.saveId=id;t.saveName="存檔1";IDX=[{id,name:"存檔1",savedAt:t.savedAt||Date.now()}];try{localStorage.setItem("guard_idx",JSON.stringify(IDX));localStorage.setItem("guard_slot_"+id,JSON.stringify(t))}catch(e){}}}
+function fix(){Object.values(ROOT.list).forEach(p=>{p.start=p.start||"19:00";p.norm=p.norm||240;p.maxh=p.maxh||288;p.len=p.len||12;p.roster=p.roster||{};p.rec=p.rec||{};p.lock=p.lock||{};p.emg=p.emg||{};Object.values(p.roster).forEach(R=>Object.keys(R.cells||{}).forEach(u=>{R.cells[u]=R.cells[u].map(c=>c=="備"?"休":c)}))});if(!ROOT.list[ROOT.cur])ROOT.cur=Object.keys(ROOT.list)[0];S=ROOT.list[ROOT.cur]}
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+function readF(){S.ym=$("ym").value||S.ym;S.site=$("site").value||S.site;S.rest=+$("rest").value;S.start=$("st").value||"19:00";S.norm=+$("nh").value||240;S.maxh=+$("xh").value||288;S.len=+$("ln").value||12;S.trq=$("trq").value===""?4:Math.max(0,+$("trq").value||0)}
+function save(){readF();persist()}
+function saveIdx(){try{localStorage.setItem("guard_idx",JSON.stringify(IDX))}catch(e){}ready.then(()=>tx("s","readwrite",q=>q.put(IDX,"idx")))}
+let pt;function persist(){clearTimeout(pt);pt=setTimeout(persistNow,250)}
+function flush(){clearTimeout(pt);persistNow()}
+function persistNow(){if(!ROOT)return;if(!ROOT.lastBackup)ROOT.lastBackup=Date.now();ROOT.savedAt=Date.now();const id=ROOT.saveId;let e=IDX.find(x=>x.id==id);if(!e){e={id};IDX.push(e)}e.name=ROOT.saveName;e.savedAt=ROOT.savedAt;
+try{localStorage.setItem("guard_slot_"+id,JSON.stringify(ROOT))}catch(x){}
+saveIdx();ready.then(()=>tx("s","readwrite",q=>q.put(ROOT,id))).then(()=>{const d=new Date();$("sv").textContent="💾 "+ROOT.saveName+" "+pad(d.getHours())+":"+pad(d.getMinutes())+(Date.now()-ROOT.lastBackup>6048e5?" ⚠久未備份":"");bkBanner()})}
+function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",2500)}
+const om=id=>$(id).classList.add("open"),cm=id=>$(id).classList.remove("open");
+function tab(t){["roster","today","sum","rule"].forEach(k=>{$("p-"+k).style.display=k==t?"block":"none";$("n-"+k).className=k==t?"on":""});
+window.scrollTo(0,0);if(t=="today"){drawTp();drawToday()}if(t=="sum")drawLearn();if(t=="rule")drawRule()}
+
+/* ---------- 哨點／人員設定 ---------- */
+function drawPosts(){$("posts").innerHTML=S.posts.map((p,i)=>`<div class="item"><input type="checkbox" ${p.on?"checked":""} onchange="S.posts[${i}].on=this.checked;save();drawPpl()"><input class="c" value="${esc(p.code)}" placeholder="代號" onchange="chCode(${i},this.value)"><input value="${esc(p.name)}" placeholder="名稱" onchange="S.posts[${i}].name=this.value;save()"><input class="c" style="flex:0 0 52px" type="number" min="1" max="9" value="${p.need||1}" title="需要幾人" onchange="S.posts[${i}].need=Math.max(1,+this.value||1);save()"><button class="del" onclick="delPost(${i})">刪</button></div>`).join("")}
+const cutOf=(p,ym)=>+((p.cm||{})[ym])||0;
+function setCut(i,v){const p=S.ppl[i];p.cm=p.cm||{};v=Math.max(0,Math.min(15,Math.round(+v||0)));v>0?p.cm[S.ym]=v:delete p.cm[S.ym];save();drawPpl();drawRoster()}
+const banned=(p,c)=>p.ban.includes(c)||(p.nl||[]).includes(c);
+const hrsOf=(p,ym)=>+((p.hm||{})[ym])||0;
+function setHrs(i,v){const p=S.ppl[i];p.hm=p.hm||{};v=+v||0;v>0?p.hm[S.ym]=v:delete p.hm[S.ym];save();drawPpl();drawRoster()}
+function drawPpl(){drawLock();$("ppl").innerHTML=S.ppl.map((p,i)=>`<div class="pc"><div class="item" style="margin:0"><input style="flex:0 0 92px" value="${esc(p.id)}" placeholder="編號(選填)" onchange="S.ppl[${i}].id=this.value;save()"><input value="${esc(p.name)}" placeholder="姓名" onchange="S.ppl[${i}].name=this.value;save()"><button class="del" onclick="delPerson(${i})">刪</button></div><div class="f" style="margin-top:6px"><label style="font-size:13px">本月目標時數</label><input type="number" min="0" max="400" placeholder="選填，例：240" value="${hrsOf(p,S.ym)||""}" onchange="setHrs(${i},this.value)"><span style="font-size:13px;white-space:nowrap">${hrsOf(p,S.ym)?"≈ "+Math.round(hrsOf(p,S.ym)/S.len)+" 天":""}</span></div><div class="f" style="margin-top:6px"><label style="font-size:13px">想少上班</label><input type="number" min="0" max="15" placeholder="本月少幾天，例：3" value="${cutOf(p,S.ym)||""}" onchange="setCut(${i},this.value)"><span style="font-size:13px;white-space:nowrap">${cutOf(p,S.ym)?"－"+cutOf(p,S.ym)*S.len+" h":""}</span></div><div class="chips">禁止：${S.posts.map((q,k)=>q.on?`<span class="chip ${p.ban.includes(q.code)?"x":""}" onclick="tg(${i},${k})">${esc(q.code)}</span>`:"").join("")}</div></div>`).join("")}
+function tg(i,k0){const c=S.posts[k0].code,b=S.ppl[i].ban,k=b.indexOf(c);k<0?b.push(c):b.splice(k,1);save();drawPpl()}
+function applyDefPosts(){if(!confirm("把哨點換成預設的 13 個（安檢主哨…中控哨）？\n名稱相同的哨點，人員的「禁止／學習進度」會保留，其他會清掉。\n已排好的班表不會動，要重新按「產生班表」。"))return;
+const nw=newS().posts,mp={};S.posts.forEach(o=>{const n=nw.find(x=>x.name===o.name);if(n)mp[o.code]=n.code});const tr=a=>(a||[]).map(x=>mp[x]).filter(Boolean);
+S.ppl.forEach(p=>{p.ban=tr(p.ban);p.nl=tr(p.nl);p.lr=tr(p.lr)});S.posts=nw;save();drawPosts();drawPpl();drawLearn();toast("已套用預設哨點")}
+function addPost(){const n=S.posts.map(p=>parseInt(p.code)||0);S.posts.push({code:String(Math.max(0,...n)+1),name:"",on:true});save();drawPosts();drawPpl()}
+function delPost(i){if(!confirm("刪除哨點 "+S.posts[i].code+"？"))return;const c=S.posts[i].code;S.posts.splice(i,1);S.ppl.forEach(p=>{p.ban=p.ban.filter(x=>x!==c);p.nl=(p.nl||[]).filter(x=>x!==c);p.lr=(p.lr||[]).filter(x=>x!==c)});save();drawPosts();drawPpl()}
+function chCode(i,v){v=v.trim();const o=S.posts[i].code;if(!v||S.posts.some((p,k)=>k!=i&&p.code===v)){alert("代號空白或重複");drawPosts();return}S.posts[i].code=v;S.ppl.forEach(p=>{p.ban=p.ban.map(x=>x===o?v:x);p.nl=(p.nl||[]).map(x=>x===o?v:x);p.lr=(p.lr||[]).map(x=>x===o?v:x)});save();drawPpl()}
+function addPerson(){S.ppl.push({uid:"u"+Date.now(),id:"",name:"",ban:[]});save();drawPpl()}
+function delPerson(i){if(!confirm("刪除 "+(S.ppl[i].name||"此人")+"？（已有的紀錄仍會保留在資料裡）"))return;S.ppl.splice(i,1);save();drawPpl()}
+
+/* ---------- 法規檢核 ---------- */
+function prevYM(){const[y,m]=S.ym.split("-").map(Number);return m==1?(y-1)+"-12":y+"-"+pad(m-1)}
+function stk(u){const R=S.roster[S.ym],P=S.roster[prevYM()];let c=0;if(P&&P.cells[u]){const a=P.cells[u];for(let i=a.length-1;i>=0&&a[i]&&a[i]!="休"&&a[i]!="—";i--)c++}return R.cells[u].map(x=>x=="休"||x=="—"?(c=0):(++c))}
+function gapList(){const out=[],per={};
+Object.values(ROOT.list).forEach(p=>[prevYM(),S.ym].forEach(ym=>{const R=p.roster[ym];if(!R)return;const[y,m]=ym.split("-").map(Number),st=toMin(p.start);
+Object.keys(R.cells).forEach(u=>R.cells[u].forEach((c,i)=>{if(c&&c!="休"&&c!="—"){const a=Date.UTC(y,m-1,i+1)/6e4+st;(per[u]=per[u]||[]).push([a,a+p.len*60,R.names[u]||u,ym+"-"+pad(i+1)])}}))}));
+Object.values(per).forEach(L=>{L.sort((a,b)=>a[0]-b[0]);for(let i=1;i<L.length;i++){const g=(L[i][0]-L[i-1][1])/60;if(g<11&&L[i][3].indexOf(S.ym)==0)out.push(`🔴 ${L[i][2]} ${L[i][3].slice(5)} 與前一班間隔僅 ${g.toFixed(1)} 小時（需≥11）`)}});return out}
+function chkList(){const R=S.roster[S.ym];if(!R)return[];const w=[],ids=Object.keys(R.cells),M=+S.ym.slice(5);
+ids.forEach(u=>{const n=R.names[u]||u,mx=Math.max(0,...stk(u)),r=R.cells[u].filter(c=>c=="休").length,dm=R.cells[u].filter(c=>c!="—").length,rq=Math.round(S.rest*dm/R.D),h=(dm-r)*S.len;
+if(mx>=7)w.push(`🔴 ${n} 連續上班 ${mx} 天`);else if(mx>=6)w.push(`🟡 ${n} 連續上班 ${mx} 天`);
+if(r<rq)w.push(`🔴 ${n} 休假 ${r} 天，未達應休 ${rq} 天`);
+if(h>S.maxh)w.push(`🔴 ${n} 預排 ${h} 小時，超過上限 ${S.maxh}`);else if(h>S.norm)w.push(`🟡 ${n} 預排 ${h} 小時（加班 ${h-S.norm}）`);const t=hrsOf(S.ppl.find(x=>x.uid==u)||{},S.ym);if(t&&h>t)w.push(`🔴 ${n} 預排 ${h} 小時，超過本人目標 ${t} 小時`);else if(t&&h<=t-S.len)w.push(`🟡 ${n} 預排 ${h} 小時，低於本人目標 ${t} 小時`)});
+for(let d=0;d<R.D;d++){const v=(R.slots||R.codes.length)-ids.filter(u=>R.codes.includes(R.cells[u][d])&&!trf(R,u,d)).length;if(v>0)w.push(`🔴 ${M}/${d+1} 缺 ${v} 個哨點無人值勤`)}
+for(let d=0;d<R.D;d++){const c={};ids.forEach(u=>{const v=R.cells[u][d];if(R.codes.includes(v)&&!trf(R,u,d))c[v]=(c[v]||0)+1});Object.keys(c).forEach(k=>{if(c[k]>((R.need||{})[k]||1))w.push(`🔴 ${M}/${d+1} 哨點 ${k} 排了 ${c[k]} 人，超過需求 ${(R.need||{})[k]||1} 人`)})}
+ids.forEach(u=>{const m=S.ppl.find(x=>x.uid==u);if(m)R.cells[u].forEach((c,d)=>{if(banned(m,c)&&!trf(R,u,d))w.push(`🔴 ${R.names[u]||u} ${M}/${d+1} 排到禁止／未學會的哨點 ${c}`)})});
+ids.forEach(u=>{const p=S.ppl.find(x=>x.uid==u);if(p&&cutOf(p,S.ym)>0){const wk=v=>R.cells[v].filter(c=>c!="休"&&c!="—").length,h=wk(u),avg=ids.reduce((a,v)=>a+wk(v),0)/ids.length;if(h>=avg)w.push(`🟡 ${R.names[u]||u} 想少上班，但上班天數 ${h} 天不低於平均 ${avg.toFixed(1)} 天（人手不足，無法減少）`)}});
+return w.concat(gapList())}
+
+/* ---------- 預先指定／格子編輯 ---------- */
+function drawLock(){const sel=$("lp");if(!sel)return;const v=sel.value;sel.innerHTML=S.ppl.map(p=>`<option value="${p.uid}">${esc(p.name||p.id||"(未命名)")}</option>`).join("");if(S.ppl.some(p=>p.uid==v))sel.value=v;
+const u=sel.value;if(!u){$("lk").innerHTML="";return}const D=new Date(+S.ym.slice(0,4),+S.ym.slice(5),0).getDate(),l=((S.lock||{})[S.ym]||{})[u]||{};
+$("lk").innerHTML=Array.from({length:D},(_,i)=>{const d=i+1,x=l[d];return`<span class="chip ${x=="休"?"x":""}" style="${x=="班"?"background:#1d4ed8;color:#fff;border-color:#1d4ed8;":""}min-width:44px;text-align:center" onclick="tgLock(${d})">${d}${x?"<br>"+x:""}</span>`}).join("")}
+function tgLock(d){const u=$("lp").value;S.lock=S.lock||{};const a=S.lock[S.ym]=S.lock[S.ym]||{},l=a[u]=a[u]||{},x=l[d];if(!x)l[d]="休";else if(x=="休")l[d]="班";else delete l[d];save();drawLock()}
+let ec=null;
+function editCell(u,i){const R=S.roster[S.ym];if(!R)return;const k=stk(u),cur=R.cells[u][i],M=+S.ym.slice(5),y=+S.ym.slice(0,4),pm=M==1?12:M-1,pd=new Date(y,M-1,0).getDate();
+const f=x=>x>=0?M+"/"+(x+1):pm+"/"+(pd+x+1);let info="";
+if(cur!="休"){let fw=0;while(i+fw+1<R.D&&R.cells[u][i+fw+1]!="休"&&R.cells[u][i+fw+1]!="—")fw++;const tot=k[i]+fw,a=i-(k[i]-1),b=i+fw;
+if(tot>=6)info=(tot>=7?"🔴":"🟡")+" 連續上班 "+tot+" 天：\n"+f(a)+(a<0?"（上月）":"")+" ～ "+f(b)+(b==R.D-1?"（月底，下月續算）":"")+"\n這是第 "+k[i]+" 天上班"}
+ec={u,i,opts:["休"].concat(R.codes)};$("m5t").textContent=(R.names[u]||u)+"　"+M+"/"+(i+1)+"　目前："+cur;$("m5i").textContent=info;
+$("m5b").innerHTML=ec.opts.map((c,j)=>`<span class="chip ${c==cur?"x":""}" style="${c==cur?"background:#1d4ed8;border-color:#1d4ed8;":""}padding:10px 18px;font-size:17px" onclick="setCell(${j})">${esc(c)}</span>`).join("");$("m5s").innerHTML=Object.keys(R.cells).filter(v=>v!=u).map(v=>`<option value="${v}">${esc(R.names[v]||v)}（${esc(R.cells[v][i])}）</option>`).join("");om("m5")}
+let UN=[];
+function snap(){const R=S.roster[S.ym];UN.push({k:ROOT.cur+"|"+S.ym,c:JSON.stringify(R.cells),t:JSON.stringify(R.tr||{})});if(UN.length>20)UN.shift()}
+function undoCell(){const R=S.roster[S.ym],k=ROOT.cur+"|"+S.ym;if(!R||!UN.length||UN[UN.length-1].k!=k)return toast("沒有可復原的修改");const u0=UN.pop();R.cells=JSON.parse(u0.c);R.tr=JSON.parse(u0.t||"{}");save();drawRoster();toast("已復原上一步")}
+function swapCell(){const R=S.roster[S.ym],v=$("m5s").value;if(!v)return;snap();const a=R.cells[ec.u],b=R.cells[v],t=a[ec.i];a[ec.i]=b[ec.i];b[ec.i]=t;if(R.tr){if(R.tr[ec.u])R.tr[ec.u][ec.i]=0;if(R.tr[v])R.tr[v][ec.i]=0}cm("m5");save();drawRoster();toast("已對調 "+(R.names[ec.u]||"")+" 與 "+(R.names[v]||"")+" 的 "+ +S.ym.slice(5)+"/"+(ec.i+1)+" 班")}
+function setCell(j){const R=S.roster[S.ym],v=ec.opts[j],m=S.ppl.find(x=>x.uid==ec.u);snap();R.cells[ec.u][ec.i]=v;if(R.tr&&R.tr[ec.u])R.tr[ec.u][ec.i]=0;cm("m5");save();drawRoster();
+toast(m&&banned(m,v)?"⚠ 此人被禁止或尚未學會哨點 "+v:"已改為 "+v)}
+
+/* ---------- 自動排班 ---------- */
+function hung(a){const n=a.length,u=Array(n+1).fill(0),v=Array(n+1).fill(0),p=Array(n+1).fill(0),w=Array(n+1).fill(0);
+for(let i=1;i<=n;i++){p[0]=i;let j0=0;const mv=Array(n+1).fill(Infinity),us=Array(n+1).fill(false);
+do{us[j0]=true;const i0=p[j0];let dl=Infinity,j1=0;
+for(let j=1;j<=n;j++)if(!us[j]){const c=a[i0-1][j-1]-u[i0]-v[j];if(c<mv[j]){mv[j]=c;w[j]=j0}if(mv[j]<dl){dl=mv[j];j1=j}}
+for(let j=0;j<=n;j++)if(us[j]){u[p[j]]+=dl;v[j]-=dl}else mv[j]-=dl;j0=j1}while(p[j0]);
+do{const j1=w[j0];p[j0]=p[j1];j0=j1}while(j0)}
+const r=[];for(let j=1;j<=n;j++)r[p[j]-1]=j-1;return r}
+const isLrn=(p,c)=>(p.lr||[]).includes(c)&&(p.nl||[]).includes(c)&&!p.ban.includes(c);
+const trf=(R,u,i)=>!!(R&&R.tr&&R.tr[u]&&R.tr[u][i]);
+function genCore(f0){const old=S.roster[S.ym],[Y,M]=S.ym.split("-").map(Number),D=new Date(Y,M,0).getDate(),Q=S.rest,TRQ=S.trq==null?4:+S.trq;
+const E0=S.posts.filter(p=>p.on&&p.code),E=[];E0.forEach(p=>{for(let k=0;k<(p.need||1);k++)E.push(p)});const pe=S.ppl,N=pe.length,warn=[];
+if(!E.length||!N)return null;
+const na=pe.map(()=>Array(D).fill(false));
+if(f0>0)pe.forEach((p,i)=>{if(!old.cells[p.uid])for(let d=0;d<f0;d++)na[i][d]=true});
+const Dm=na.map(a=>a.filter(x=>!x).length),tro=pe.map(p=>E0.every(e=>banned(p,e.code)));
+const empN=Array.from({length:D},(_,d)=>pe.filter((_,i)=>!na[i][d]&&!tro[i]).length);
+if(Math.max(...empN)<E.length)warn.push(`可獨立值哨的人數(${Math.max(...empN)})少於啟用哨點位子(${E.length})，每天會有哨點空缺。`);
+E0.forEach(p=>{const n=pe.filter(x=>!banned(x,p.code)).length;if(n<(p.need||1))warn.push(`哨點「${p.name||p.code}」只有 ${n} 人會（學習進度／禁止），需要 ${p.need||1} 人`);else if(n==(p.need||1))warn.push(`哨點「${p.name||p.code}」會的人剛好 ${n} 人＝需求，這些人無法輪休，每月必有幾天要硬排別人，建議再教會 1～2 人`)});
+pe.forEach((p,i)=>{if(tro[i]&&!E0.some(e=>isLrn(p,e.code)))warn.push(`${p.name||"某人"} 所有哨點都是「不會」，也沒有「學習中」的哨點，無法安排上班（請到「哨點學習」設定）`)});
+const used=pe.map(p=>{const a=old&&old.cells[p.uid];let n=0;if(a)for(let d=0;d<f0;d++)if(a[d]=="休")n++;return n});
+const Q0=pe.map((p,i)=>{const t=hrsOf(p,S.ym);return t>0?Math.max(0,Math.min(Dm[i],Dm[i]-Math.round(t/S.len))):Math.round(Q*Dm[i]/D)}),cr=pe.map(p=>cutOf(p,S.ym));
+let cap=0;for(let d=f0;d<D;d++)cap+=Math.max(0,empN[d]-E.length);
+const allow=Math.floor(Math.max(0,cap-Q0.reduce((a,q,i)=>a+(tro[i]?0:Math.max(0,q-used[i])),0))*.5),req=cr.reduce((a,b)=>a+b,0),fc=req>allow?allow/req:1,Qs=Q0.map((q,i)=>Math.min(Dm[i],q+Math.floor(cr[i]*fc)));
+if(req>0&&fc<1)warn.push("想少上班的天數因人手不足，只能部分減少");
+const Rd=D-f0,total=Qs.reduce((a,q,i)=>a+Math.max(0,q-used[i]),0),base=Math.floor(total/Rd),ex=total-base*Rd,left=Qs.map((q,i)=>Math.max(0,q-used[i])),off=pe.map(()=>Array(D).fill(false));
+pe.forEach((p,i)=>{const a=old&&old.cells[p.uid];for(let d=0;d<f0;d++)off[i][d]=!!a&&a[d]=="休"});
+const LK=(S.lock||{})[S.ym]||{};pe.forEach((p,i)=>{const l=LK[p.uid]||{};let n=0;for(let d=f0;d<D;d++)if(l[d+1]=="休"&&!na[i][d]){off[i][d]=true;n++}left[i]=Math.max(0,left[i]-n)});
+const T=pe.map((p,i)=>Dm[i]-Qs[i]),wd=pe.map(()=>0),el=pe.map(()=>0),protect=pe.map(p=>hrsOf(p,S.ym)>0?4:0),trOK=w=>hrsOf(pe[w],S.ym)==0&&cutOf(pe[w],S.ym)==0;
+const PV=S.roster[prevYM()],trail=u=>{let c=0;const a=PV&&PV.cells[u];if(a)for(let i=a.length-1;i>=0&&a[i]&&a[i]!="休"&&a[i]!="—";i--)c++;return c},sk=pe.map(p=>trail(p.uid)),pr=pe.map(p=>{const a=PV&&PV.cells[p.uid];return!!a&&a[a.length-1]=="休"});
+const cnt=pe.map(()=>({})),trn=pe.map(()=>({})),trP={},lp=pe.map(()=>""),cells={},trm={},ww=pe.map(()=>0),tw=pe.map(()=>0),isWk=d=>{const w=new Date(Y,M-1,d+1).getDay();return w==0||w==6};
+pe.forEach((p,i)=>{cells[p.uid]=Array(D).fill("");trm[p.uid]=Array(D).fill(0);const a=old&&old.cells[p.uid],t=old&&old.tr&&old.tr[p.uid];
+for(let d=0;d<f0;d++){const c=a?a[d]:"—";cells[p.uid][d]=c;if(!na[i][d])el[i]++;
+if(c&&c!="休"&&c!="—"){wd[i]++;lp[i]=c;sk[i]++;if(isWk(d))ww[i]++;if(t&&t[d]){trm[p.uid][d]=1;tw[i]++;trn[i][c]=(trn[i][c]||0)+1;trP[c]=(trP[c]||0)+1}else cnt[i][c]=(cnt[i][c]||0)+1}else{lp[i]="";sk[i]=0}}});
+const mxm=d=>{const W=pe.map((_,i)=>i).filter(i=>!off[i][d]&&!na[i][d]),mt=Array(W.length).fill(-1);let r=0;const tr=(j,sn)=>{for(let a=0;a<W.length;a++){if(sn[a]||banned(pe[W[a]],E[j].code))continue;sn[a]=1;if(mt[a]<0||tr(mt[a],sn)){mt[a]=j;return true}}return false};for(let j=0;j<E.length;j++)if(tr(j,[]))r++;return r};
+for(let d=f0;d<D;d++){let s=base+((d-f0)*7%Rd<ex?1:0);s=Math.min(s,Math.max(0,empN[d]-E.length));s=Math.max(0,s-off.filter((o,i)=>o[d]&&!na[i][d]).length);
+pe.map((_,i)=>i).filter(i=>!na[i][d]&&!off[i][d]&&!(d&&na[i][d-1])&&(LK[pe[i].uid]||{})[d+1]!="班"&&(left[i]>0||sk[i]>=6)&&!(d?off[i][d-1]:pr[i])).sort((a,b)=>((sk[b]>=6)-(sk[a]>=6))*100+(left[b]-left[a])/(D-d)*8+(sk[b]-sk[a])*.25+(isWk(d)?(ww[b]-ww[a])*1.5:0)+(Math.random()-.5)*1.5).reduce((pk,i)=>{if(pk.n>=s)return pk;const fz=sk[i]>=6;off[i][d]=true;const m=mxm(d);if(!fz&&m<pk.b){off[i][d]=false;return pk}left[i]--;pk.n++;pk.b=Math.min(pk.b,m);return pk},{n:0,b:mxm(d)});pe.forEach((_,i)=>{sk[i]=(off[i][d]||na[i][d])?0:sk[i]+1;if(isWk(d)&&!off[i][d]&&!na[i][d])ww[i]++})}
+left.forEach((l,i)=>{if(l>0)warn.push(`${pe[i].name} 休假少 ${l} 天（人數不足）`)});
+const doRest=(w,d)=>{off[w][d]=true;lp[w]="";cells[pe[w].uid][d]="休"};
+for(let d=f0;d<D;d++){pe.forEach((p,i)=>{if(na[i][d])cells[p.uid][d]="—";else el[i]++});
+const W=[],TR=[];pe.forEach((_,i)=>{if(off[i][d]||na[i][d])return;(tro[i]?TR:W).push(i)});
+const sur=Math.max(0,W.length-E.length),tp=[];
+if(sur>0)E0.forEach(p=>{if(W.some(w=>trOK(w)&&isLrn(pe[w],p.code)))tp.push(p.code)});
+tp.sort((a,b)=>(trP[a]||0)-(trP[b]||0));const tc=tp.slice(0,sur),n=Math.max(W.length,E.length);
+const cost=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>{if(i>=W.length)return 0;const w=W[i],rc=(T[w]*(el[w]/Math.max(1,Dm[w]))-wd[w])*3+protect[w];
+if(j>=E.length){const t=tc[j-E.length];return t&&trOK(w)&&isLrn(pe[w],t)?rc-6-(tw[w]<TRQ*el[w]/Math.max(1,Dm[w])?4:0)+(trn[w][t]||0)*2:rc}
+const c=E[j].code;if(banned(pe[w],c))return 1e6;return(cnt[w][c]||0)*10+(lp[w]===c?4:0)+Math.random()}));
+const r=hung(cost),tdn=[];
+W.forEach((w,i)=>{const j=r[i];if(j<E.length){const c=E[j].code;if(cost[i][j]>=1e6)warn.push(`${M}/${d+1} ${pe[w].name} 被迫排到禁止／未學會的哨點 ${c}`);
+cells[pe[w].uid][d]=c;cnt[w][c]=(cnt[w][c]||0)+1;lp[w]=c;wd[w]++}else{const t=tc[j-E.length];if(t&&trOK(w)&&isLrn(pe[w],t))tdn.push([w,t]);else doRest(w,d)}});
+const has=t=>pe.some(q=>cells[q.uid][d]===t&&!trm[q.uid][d]);
+const putTr=(w,t)=>{cells[pe[w].uid][d]=t;trm[pe[w].uid][d]=1;trn[w][t]=(trn[w][t]||0)+1;trP[t]=(trP[t]||0)+1;wd[w]++;tw[w]++;lp[w]=""};
+tdn.forEach(([w,t])=>has(t)?putTr(w,t):doRest(w,d));
+const tdy={};TR.forEach(w=>{const o=E0.filter(q=>isLrn(pe[w],q.code)&&has(q.code)).map(q=>q.code).sort((a,b)=>((tdy[a]||0)-(tdy[b]||0))||((trn[w][a]||0)-(trn[w][b]||0)));
+if(o.length){tdy[o[0]]=(tdy[o[0]]||0)+1;putTr(w,o[0])}else doRest(w,d)});
+off.forEach((o,k)=>{if(o[d]&&!na[k][d])cells[pe[k].uid][d]="休"});
+if(W.length<E.length)warn.push(`${M}/${d+1} 上班 ${W.length} 人，有哨點空缺`)}
+const names=Object.fromEntries(pe.map(p=>[p.uid,p.name]));
+if(f0>0)Object.keys(old.cells).forEach(u=>{if(!cells[u]){cells[u]=old.cells[u].map((c,d)=>d<f0?c:"—");trm[u]=(old.tr&&old.tr[u])||Array(D).fill(0);names[u]=(old.names||{})[u]||u}});
+const trShort=[];let trN=0;if(TRQ>0)pe.forEach((p,i)=>{if(E0.some(e=>isLrn(p,e.code))&&trOK(i)){const nd=Math.ceil(TRQ*Dm[i]/D);if(tw[i]<nd){trN+=nd-tw[i];trShort.push(`${p.name||"某人"} 本月只跟哨 ${tw[i]} 次（目標 ${nd} 次；人手有餘的日子不夠）`)}}});
+return{R:{D,cells,tr:trm,names,site:S.site,codes:E0.map(e=>e.code),need:Object.fromEntries(E0.map(e=>[e.code,e.need||1])),slots:E.length},warn,trShort,trN}}
+function scoreR(r){const R=r.R,ids=Object.keys(R.cells),Y=+S.ym.slice(0,4),M=+S.ym.slice(5),bak=S.roster[S.ym];S.roster[S.ym]=R;let ck=[];try{ck=chkList()}finally{S.roster[S.ym]=bak}
+const reds=ck.filter(x=>x[0]=="🔴").length,yel=ck.length-reds;let sp=0;
+R.codes.forEach(c=>{const a=ids.map(u=>{const p=S.ppl.find(x=>x.uid==u);return p&&!banned(p,c)?R.cells[u].filter((x,d)=>x===c&&!trf(R,u,d)).length:null}).filter(x=>x!==null);if(a.length)sp+=Math.max(...a)-Math.min(...a)});
+const wk=ids.map(u=>R.cells[u].filter((x,d)=>x!="休"&&x!="—"&&[0,6].includes(new Date(Y,M-1,d+1).getDay())).length);
+return reds*1000+r.warn.length*500+r.trN*30+yel*20+sp*10+(Math.max(...wk)-Math.min(...wk))*15}
+function gen(f0){UN=[];save();f0=+f0||0;const old=S.roster[S.ym];if(f0>0&&!old)f0=0;
+const [Y,M]=S.ym.split("-").map(Number),D=new Date(Y,M,0).getDate();
+if(f0>=D)return toast("這個日期已超過月底");
+if(!S.posts.some(p=>p.on&&p.code)||!S.ppl.length){$("warn").textContent="請先新增哨點和人員";return}
+if(f0==0&&old&&!confirm(S.ym+" 已有班表，要重新產生並覆蓋嗎？"))return;
+autoBackup();const TRIES=30;let best=null;
+for(let k=0;k<TRIES;k++){const r=genCore(f0);if(!r)return;r.sc=scoreR(r);if(!best||r.sc<best.sc)best=r}
+S.roster[S.ym]=best.R;save();
+$("warn").textContent=(f0>0?"（已從 "+M+"/"+(f0+1)+" 起重排，之前的班表沒有動）\n":"")+"（已試排 "+TRIES+" 種組合，挑出最好的一種）\n"+best.warn.concat(best.trShort).slice(0,12).join("\n");drawRoster()}
+function regenFrom(){const R=S.roster[S.ym];if(!R)return toast("本月還沒有班表，請先按「產生班表」");const f=+$("rfd").value-1;if(f<=0)return gen();const M=+S.ym.slice(5);if(!confirm("從 "+M+"/"+(f+1)+" 起重新排後面的班表？\n（"+M+"/"+f+" 以前的班表不會動）"))return;gen(f)}
+function drawRFD(){const q=$("rfd");if(!q)return;const v=q.value,D=new Date(+S.ym.slice(0,4),+S.ym.slice(5),0).getDate(),M=+S.ym.slice(5);q.innerHTML=Array.from({length:D},(_,i)=>`<option value="${i+1}">${M}/${i+1}</option>`).join("");const t=today();q.value=v&&+v<=D?v:(t.slice(0,7)==S.ym?+t.slice(8):1)}
+function hirePerson(){const n=prompt("新人姓名");if(n===null||!n.trim())return;
+const codes=S.posts.filter(x=>x.on&&x.code).map(x=>x.code),learn=confirm("新人先設成「學習中」嗎？\n按「確定」＝所有哨點都標為學習中，系統會自動安排他跟哨學習，不會讓他單獨值哨。\n按「取消」＝先全部標為「會」，之後再到「哨點學習」調整。");
+const p={uid:"u"+Date.now(),id:"",name:n.trim(),ban:[]};if(learn){p.nl=codes.slice();p.lr=codes.slice()}
+S.ppl.push(p);save();drawPpl();drawLearn();
+const R=S.roster[S.ym];if(!R)return toast("已新增 "+p.name);
+const M=+S.ym.slice(5),t=today(),v=prompt("已新增 "+p.name+"。\n新人從 "+M+" 月幾號開始上班？（填數字，之前的班表不動；取消＝先不重排）",t.slice(0,7)==S.ym?+t.slice(8):1);
+if(v===null)return toast("已新增 "+p.name+"，之後可按「從此日起重排」");const d=Math.round(+v);if(!(d>=1&&d<=R.D))return alert("請填 1～"+R.D);gen(d-1)}
+function drawRoster(){drawRFD();const R=S.roster[S.ym];if(!R){$("out").style.display=$("stat").style.display="none";$("chk").textContent="";return}
+const [Y,M]=S.ym.split("-").map(Number),D=R.D,ids=Object.keys(R.cells);
+let h=`<table><tr><th class="t" colspan="${D+1}">${M}月班表　駐點:${esc(S.site)}</th></tr><tr><th class="s1">姓名</th>`;
+for(let i=1;i<=D;i++){const w=new Date(Y,M-1,i).getDay();h+=`<th class="${w%6==0?"r":""}">${i}<br>${WK[w]}</th>`}h+="</tr>";
+ids.forEach(u=>{h+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+(()=>{const k=stk(u);return R.cells[u].map((c,i)=>c=="休"?`<td class="r" onclick="editCell('${u}',${i})">休</td>`:c=="—"?`<td style="color:#bbb">－</td>`:`<td class="${k[i]>=7?"w2":k[i]>=6?"w1":""}" onclick="editCell('${u}',${i})">${c}${trf(R,u,i)?'<small style="color:#d97706">學</small>':""}</td>`).join("")})()+"</tr>"});
+h+=`<tr><td class="s1">缺額</td>`+Array.from({length:D},(_,d)=>{const v=(R.slots||R.codes.length)-ids.filter(u=>R.codes.includes(R.cells[u][d])&&!trf(R,u,d)).length;return v>0?`<td class="c3">${v}</td>`:"<td></td>"}).join("")+"</tr>";
+$("out").innerHTML=h+"</table>";$("out").style.display="block";
+let s=`<table><tr><th class="s1">次數</th>`+R.codes.map(c=>`<th>${esc(c)}</th>`).join("")+"<th>上班</th><th>連勤</th><th>休</th><th>預排h</th><th>目標h</th><th>加班h</th><th>假日班</th></tr>";
+ids.forEach(u=>{const c=R.cells[u],mx=Math.max(0,...stk(u)),r=c.filter(x=>x=="休").length,dm=c.filter(x=>x!="—").length,rq=Math.round(S.rest*dm/R.D),h=(dm-r)*S.len,t=hrsOf(S.ppl.find(x=>x.uid==u)||{},S.ym);
+s+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+R.codes.map(k=>`<td>${c.filter((x,i)=>x===k&&!trf(R,u,i)).length}</td>`).join("")+`<td>${dm-r}</td><td class="${mx>=7?"c3":mx>=6?"c2":""}">${mx}</td><td class="${r<rq?"c3":""}">${r}</td><td class="${h>S.maxh?"c3":h>S.norm?"c2":""}">${h}</td><td class="${t&&h>t?"c3":t&&h<t?"c2":""}">${t||""}</td><td>${Math.max(0,h-S.norm)}</td><td>${c.filter((x,i)=>x!="休"&&x!="—"&&[0,6].includes(new Date(Y,M-1,i+1).getDay())).length}</td></tr>`});
+$("stat").innerHTML=s+"</table>";$("stat").style.display="block";$("chk").textContent=chkList().slice(0,25).join("\n")}
+function dl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type||"text/csv"}));a.download=name;a.click()}
+function rosterCsv(){const R=S.roster[S.ym];if(!R)return toast("尚未產生班表");
+let t="\ufeff姓名,"+Array.from({length:R.D},(_,i)=>i+1).join(",")+"\n";
+Object.keys(R.cells).forEach(u=>t+=(R.names[u]||u)+","+R.cells[u].map((c,i)=>c+(trf(R,u,i)?"(學)":"")).join(",")+"\n");dl("班表_"+S.ym+".csv",t)}
+
+const toMin=t=>{if(!t)return 0;const p=t.split(":");return(+p[0]||0)*60+(+p[1]||0)};
+function cellOf(u,date){const p=date.split("-"),R=S.roster[p[0]+"-"+p[1]];return R&&R.cells[u]?R.cells[u][+p[2]-1]:null}
+function postLabel(c){if(!c)return"（無班表）";if(c=="休")return"休假";const p=S.posts.find(x=>x.code===c);return c+" "+(p?p.name:"")}
+let db;const ready=new Promise(r=>{try{const q=indexedDB.open("guard_img",2);q.onupgradeneeded=()=>{const d=q.result;if(!d.objectStoreNames.contains("i"))d.createObjectStore("i");if(!d.objectStoreNames.contains("s"))d.createObjectStore("s")};q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>r()}catch(e){r()}});
+const tx=(n,m,f)=>new Promise(r=>{if(!db)return r(null);try{const t=db.transaction(n,m),q=f(t.objectStore(n));t.oncomplete=()=>r(q&&q.result);t.onerror=()=>r(null)}catch(e){r(null)}});
+const putImg=(id,b)=>tx("i","readwrite",s=>s.put(b,id)),getImg=id=>tx("i","readonly",s=>s.get(id)),delImg=id=>tx("i","readwrite",s=>s.delete(id));
+/* ---------- 班別 ---------- */
+function drawProf(){$("prof").innerHTML=Object.keys(ROOT.list).map(k=>`<option value="${k}" ${k==ROOT.cur?"selected":""}>${esc(ROOT.list[k].site)}</option>`).join("")}
+function switchProf(id){save();ROOT.cur=id;S=ROOT.list[id];flush();init()}
+function newProf(){const n=prompt("新班別名稱（例：早班）");if(!n||!n.trim())return;save();const id="p"+Date.now(),o=JSON.parse(JSON.stringify(S));
+o.site=n.trim();o.roster={};o.rec={};o.start=/早|日/.test(n)?"07:00":"19:00";ROOT.list[id]=o;ROOT.cur=id;S=o;flush();init();toast("已新增班別，請確認上班時間")}
+function delProf(){if(Object.keys(ROOT.list).length<2)return alert("至少要保留一個班別");if(!confirm("刪除「"+S.site+"」及其所有班表、打卡紀錄與圖片？"))return;autoBackup(true);
+Object.values(S.rec).forEach(d=>Object.values(d).forEach(r=>(r.imgs||[]).forEach(delImg)));delete ROOT.list[ROOT.cur];ROOT.cur=Object.keys(ROOT.list)[0];S=ROOT.list[ROOT.cur];flush();init()}
+function autoBackup(force){if(!ROOT)return;if(force||!ROOT.lastAuto||Date.now()-ROOT.lastAuto>6e5){ROOT.lastAuto=Date.now();backup(true);toast("已自動下載備份檔")}}
+function bkBanner(){const el=$("bk");if(!el||!ROOT)return;const d=Math.floor((Date.now()-(ROOT.lastBackup||Date.now()))/864e5);el.style.display=d>=7?"flex":"none";$("bkd").textContent=d}
+async function shareBackup(){readF();flush();const txt=JSON.stringify(ROOT),n="排班備份_"+ds(new Date())+".json";
+try{const f=new File([txt],n,{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"安橋排班備份"});ROOT.lastBackup=Date.now();flush();bkBanner();return toast("已分享備份")}}catch(e){if(e&&e.name=="AbortError")return}
+backup();bkBanner();toast("已下載備份檔，請存到雲端")}
+function backup(auto){ROOT.lastBackup=Date.now();readF();flush();const d=new Date();dl((auto?"自動備份_":"排班工時備份_")+ds(d)+"_"+pad(d.getHours())+pad(d.getMinutes())+".json",JSON.stringify(ROOT),"application/json")}
+function restore(inp){const f=inp.files[0];inp.value="";if(!f)return;const rd=new FileReader();rd.onload=e=>{try{let d=JSON.parse(e.target.result);if(d.ppl&&d.posts)d={cur:"p1",list:{p1:d}};if(!d.list)throw 0;
+if(!confirm("還原會覆蓋目前所有資料，確定？"))return;autoBackup(true);d.saveId=ROOT.saveId;d.saveName=ROOT.saveName;ROOT=d;fix();flush();init();toast("還原完成")}catch(x){alert("備份檔無效")}};rd.readAsText(f)}
+
+/* ---------- 分享班表 ---------- */
+const b64u=u=>{let t="";u.forEach(c=>t+=String.fromCharCode(c));return btoa(t).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
+const unb64u=t=>{t=t.replace(/-/g,"+").replace(/_/g,"/");while(t.length%4)t+="=";return Uint8Array.from(atob(t),c=>c.charCodeAt(0))};
+async function zipStr(str){const cs=new CompressionStream("gzip"),w=cs.writable.getWriter();w.write(new TextEncoder().encode(str));w.close();return b64u(new Uint8Array(await new Response(cs.readable).arrayBuffer()))}
+async function unzipStr(b){const ds=new DecompressionStream("gzip"),w=ds.writable.getWriter();w.write(unb64u(b));w.close();return new TextDecoder().decode(await new Response(ds.readable).arrayBuffer())}
+function shareObj(){readF();const o=JSON.parse(JSON.stringify(S));delete o.rec;return o}
+async function shareLink(){
+if(!/^https?:/.test(location.protocol))return alert("用「連結」分享，程式必須放在網頁上（例如 GitHub Pages）對方才能開啟。\n目前是本機檔案，請改用「分享班表檔」。");
+if(typeof CompressionStream=="undefined")return alert("這個瀏覽器不支援連結壓縮，請改用「分享班表檔」");
+const url=location.origin+location.pathname+"#d="+await zipStr(JSON.stringify(shareObj()));
+if(url.length>8000&&!confirm("連結很長（"+url.length+" 字），部分通訊軟體可能截斷，建議改用「分享班表檔」。仍要分享？"))return;
+if(navigator.share){try{await navigator.share({title:S.site+" 班表",text:S.site+" 班表（用瀏覽器開啟後可匯入）",url});return}catch(e){if(e&&e.name=="AbortError")return}}
+try{await navigator.clipboard.writeText(url);toast("連結已複製")}catch(e){prompt("複製這串連結：",url)}}
+async function shareFile(){const txt=JSON.stringify(shareObj()),n=(S.site||"班表")+"_分享.json";
+try{const f=new File([txt],n,{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:S.site+" 班表"});return}}catch(e){if(e&&e.name=="AbortError")return}
+dl(n,txt,"application/json")}
+function adopt(o){if(!o||!o.ppl||!o.posts)throw 0;const q=Object.assign(newS(),o);q.site=(o.site||"班表")+"（分享）";
+if(ROOT){const id="p"+Date.now();ROOT.list[id]=q;ROOT.cur=id;fix();flush();init();toast("已匯入為新班別："+q.site)}
+else{ROOT={cur:"p1",list:{p1:q},saveId:"s"+Date.now(),saveName:"分享-"+(o.site||"班表")};fix();flush();enter();toast("已匯入為新存檔")}}
+function importFile(inp){const f=inp.files[0];inp.value="";if(!f)return;const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.list)return alert("這是完整備份檔，請用「還原備份」");adopt(d)}catch(x){alert("分享檔無效")}};rd.readAsText(f)}
+/* ---------- 產生圖片 ---------- */
+const FNT='"Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif';let IB,IF;
+function mkImg(title,heads,rows,cw,fit,fn,foot){
+const W0=cw.reduce((a,b)=>a+b,0),per=Math.max(10,Math.floor(W0/15)-2),FL=[];(foot||"").split("\n").forEach(l=>{for(let i=0;i<l.length;i+=per)FL.push(l.slice(i,i+per))});
+const sc=2,hh=heads.some(h=>h&&h.t2)?44:34,rh=rows.some(r=>r.some(c=>c&&c.t2))?38:30,th=44,W=cw.reduce((a,b)=>a+b,0),H=th+hh+rows.length*rh+8+(FL.length?FL.length*22+16:0);
+const cv=document.createElement("canvas");cv.width=W*sc;cv.height=H*sc;const g=cv.getContext("2d");g.scale(sc,sc);g.fillStyle="#fff";g.fillRect(0,0,W,H);g.textBaseline="middle";
+g.fillStyle="#cfe0fb";g.fillRect(0,0,W,th);g.fillStyle="#0b3d91";g.font="bold 20px "+FNT;g.textAlign="left";g.fillText(title,10,th/2);
+const cell=(x,y,w,h,o,bg,bold)=>{o=o&&typeof o=="object"?o:{t:o};const t=o.t==null?"":String(o.t);if(bg||o.bg){g.fillStyle=o.bg||bg;g.fillRect(x,y,w,h)}
+g.strokeStyle="#555";g.lineWidth=1;g.strokeRect(x+.5,y+.5,w,h);g.textAlign="center";g.fillStyle=o.c||"#111";g.font=(bold||o.b?"bold ":"")+"14px "+FNT;
+if(o.t2){g.fillText(t,x+w/2,y+h*.33);g.font="12px "+FNT;g.fillText(String(o.t2),x+w/2,y+h*.73)}else g.fillText(t,x+w/2,y+h/2)};
+let x=0;heads.forEach((h,i)=>{cell(x,th,cw[i],hh,h,"#cfe0fb",1);x+=cw[i]});
+rows.forEach((r,j)=>{x=0;r.forEach((o,i)=>{cell(x,th+hh+j*rh,cw[i],rh,o,i==0?"#eaf2ff":"",i==0);x+=cw[i]})});
+if(FL.length){g.textAlign="left";g.fillStyle="#111";g.font="14px "+FNT;FL.forEach((l,k)=>g.fillText(l,10,th+hh+rows.length*rh+24+k*22))}
+cv.toBlob(b=>{if(IB)URL.revokeObjectURL($("im").src);IB=b;IF=fn+".png";$("im").src=URL.createObjectURL(b);$("im").style.width=fit?"100%":W+"px";om("m4")},"image/png")}
+const dayHead=(Y,M,D)=>Array.from({length:D},(_,i)=>{const w=new Date(Y,M-1,i+1).getDay();return{t:String(i+1),t2:WK[w],c:w%6==0?"#c00000":"#111"}});
+function legendText(){const R=S.roster[S.ym],e=R.codes.map(c=>{const p=S.posts.find(x=>x.code===c);return c+"＝"+(p&&p.name?p.name:"（未命名）")}),L=[];for(let i=0;i<e.length;i+=4)L.push(e.slice(i,i+4).join("　"));return"【哨點代號】\n"+L.join("\n")+"\n休＝休假"+(R.tr&&Object.values(R.tr).some(a=>a.some(x=>x))?"　學＝跟哨學習":"")}
+function imgRoster(){const R=S.roster[S.ym];if(!R)return toast("尚未產生班表");const[Y,M]=S.ym.split("-").map(Number),ids=Object.keys(R.cells),D=R.D;
+mkImg(M+"月班表　駐點:"+S.site,[{t:"姓名"}].concat(dayHead(Y,M,D)),ids.map(u=>[{t:R.names[u]||u}].concat(R.cells[u].map((c,i)=>c=="休"?{t:"休",c:"#c00000"}:c=="—"?{t:"－",c:"#bbbbbb"}:trf(R,u,i)?{t:c+"學",c:"#d97706"}:{t:c}))),[78].concat(Array(D).fill(32)),0,S.site+"_班表_"+S.ym,legendText())}
+function dlImg(){const a=document.createElement("a");a.href=URL.createObjectURL(IB);a.download=IF;a.click()}
+async function shareImg(){try{const f=new File([IB],IF,{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});else toast("此瀏覽器不支援分享，請用下載或長按圖片")}catch(e){}}
+
+/* ---------- 懲處規則（安橋公司工作規則 第六章第二節） ---------- */
+const RULES=[
+{n:"57",t:"獎懲目的",c:"#5b6b8a",l:["為提高員工工作效率，激發上進心，增進本公司服務品質，並維護本公司優良形象，特訂定獎懲規定。","任何獎懲均應查明事實，依本章所述規定，參考往例斟酌員工之動機、行為、平日表現、事後態度等予以增減處理，以發揮激勵或警告效果，並維持獎懲之一致性或公平性。"]},
+{n:"63",t:"懲處種類",c:"#5b6b8a",l:["本公司員工之懲處，分為降職、大過、小過、申誡等 4 種。"]},
+{n:"64",t:"免職（解僱）",c:"#b3261e",l:["員工有下列情事者，除第一款外應自知悉其情形之日起，30 日內予以免職(解僱):",
+"一、受有期徒刑以上刑之宣告確定，而未諭知緩刑或未准易科罰金者。",
+"二、訂立勞動契約時為虛偽意思表示，或人事資料所填不實，或冒名頂替，使公司誤信而有受損害之虞者。",
+"三、對於雇主、雇主家屬、雇主代理人或其他共同工作之同仁(勞工)，實施暴行、威脅、恫嚇或重大侮辱之行為者。",
+"四、故意損耗、破壞、丟棄車輛、機器、設備、工具、材、物料、產品或其他公物文件，或侵佔挪用公司或客戶委託代管之公款公物者。",
+"五、無正當理由連續曠職 3 日，或 1 個月內曠職達 6 日者。",
+"六、違反勞動契約或工作規則，情節重大者，並應依個案事實認定：",
+"　(一)攜帶槍砲、彈藥、刀械等法定管制品至公司或服務場所者。",
+"　(二)利用公司名義，在外招搖撞騙，致公司信譽蒙受重大損害，影響公司安全秩序者。",
+"　(三)煽動怠工或非法罷工，聚眾鬧事，打架鬥毆影響公司或委託客戶業務秩序，有具體事實者。",
+"　(四)於工作執勤中，有賭博及性騷擾或性侵害，及妨害善良風俗之行為，經查證屬實者。故意洩露公司與客戶業務上或技術上之資料、秘密，致公司遭受損害者",
+"　(五)受僱期間，怠忽職守致生變故，嚴重違反安全衛生工作守則，或其他之故意或重大過失，致公司或委託客戶蒙受重大損失或人員傷害者。",
+"　(六)受僱期間從事違法亂紀（嚴重違反法令與第 43 條紀律）、詐欺背信、或營私舞弊行為，經查屬實者。",
+"　(七)張貼、散發或宣傳煽動性不實文字、圖畫，或指摘、傳述、散布不實謠言，足以破壞勞資雙方感情或毀損公司信譽，有具體事證者。",
+"　(八)偷竊公司或委託客戶、工作人員之財物、公物及產品，情節重大者。",
+"　(九)受僱期間，未經公司同意，私下籌組或投資、兼任與本公司業務相競爭之企業者。",
+"　(十)一年內經功過相抵，仍記大過 3 次並符法定事由者。",
+"　(十一)將個人、團體裝備借予他人從事不法行為致公司遭受嚴重損失或影響信譽形象者。",
+"　(十二)受僱期間，偽造證明，請假不實，圖利自己或他人有具體事證者。",
+"　(十三)於工作執勤中，有性騷擾或性侵害犯罪行為，經查證屬實者。",
+"　(十四)意圖性騷擾，乘人不及抗拒而為親吻、擁抱或觸摸其臀部、胸部或其他身體隱私處之行為者，涉及刑責（可處 2 年以下有期徒刑、拘役或科或併科新臺幣 10 萬元以下罰金），或性侵害犯罪，經查證屬實者。",
+"　(十五)其他性騷擾行為，情節嚴重者。"]},
+{n:"65",t:"降職與大過",c:"#c2410c",l:["員工有下列情事者，予以降職（降等、降級，如涉薪資變動應與員工議定）或記大過：",
+"一、擅自變更作業執行、違反安全衛生工作守則、勤務交接不清、或因重大疏失，致使公司蒙受重大損失者。",
+"二、因過失破壞或遺失經管之重要文件、機件、物件、設備或工具，浪費材物料、能源，致使公司蒙受重大損失者。",
+"三、撕毀公文、公告、造謠生事等重大惡行者。",
+"四、上班或勤務執行時或公司聚會時違規喝酒、吸食毒品藥物；上班前喝酒、吸食毒品藥物致工作時酒醉、神智不清；或於公司或客戶場所酗酒或滋事，影響公司或委託客戶秩序與安寧者。",
+"五、冒用他人識別證，偽造識別證，或將自己識別證借給他人使用者。",
+"六、請他人代打卡、簽到，或幫他人打卡、簽到者。",
+"七、偽造記錄、竄改他人記錄、塗改或故意遺失毀損出勤卡(簽到簿)，作弊偷勤者。",
+"八、拒絕聽從主管人員合理指揮監督、工作分配和調動調整，無理取鬧，蓄意怠工，態度頑劣且無悔意，或經勸導仍不聽從者。",
+"九、連續曠職 2 日，或 1 個月內曠職達 3 日，或年度累積曠職 4 日者。",
+"十、非「同仁信箱」經辦人員或其主管，私自拆閱同仁投書者。",
+"十一、執勤時躺臥睡覺者。",
+"十二、執行職務發覺重大違法違紀事件，知情不報，致公司或委託客戶蒙受損害者；或屬下有重大違法違紀事件，主管知情包庇者。",
+"十三、將個人、團體裝備借予他人，致公司或客戶遭受損害。",
+"十四、行為不檢（違反法令、倫理道德、公司管理制度與各項命令），嚴重影響公司信譽形象者。",
+"十五、其他性騷擾行為經查屬實者。",
+"十六、見同事危難，無正當理由不予主動支援者。",
+"十七、違反第 43 條第 7 款規定兼職者。",
+"十八、保全人員無正當理由擅離職守或早退，致保全崗哨無人值勤者。機電人員無正當理由擅離職守，及其餘人員無正當理由擅離職守致公司或客戶蒙受重大損失。",
+"十九、半年內再犯第 66 條第 1 款至第 5 款記小過之懲處者。",
+"二十、使用非法軟體者，或未簽署切結書使用公司電腦者。",
+"二十一、違反勞動契約、工作規則，情節嚴重者。"]},
+{n:"66",t:"小過",c:"#d97706",l:["員工有下列情事者，予以記小過：",
+"一、對上級指示或有期限之命令與工作任務，未申報正當理由而未能如期完成、敷衍塞責、處理不當或故意違抗者。",
+"二、未經許可進入或帶他人進入公司或委託客戶之管制場所、值勤車輛，或假借職務上之便利，擅由未辦好手續之人員通過關卡，進入管制區者。",
+"三、值勤時或非執勤時於工作地點或客戶場所違規吸煙、吃檳榔、非用膳時間地點進食，或攜帶棍棒、刀械、火藥、汽油、瓦斯、強酸、強鹼、毒性物質等具攻擊性、縱火性或毒性之危險物品或動植物進入公司或委託客戶場所者。",
+"四、執行職務不盡職負責，投機取巧，隱瞞矇蔽者。",
+"五、故意或重大過失違反管理制度與作業準則規定；或因過失損壞遺失重要文件、機件、物件、設備或工具，浪費材物料、能源，但已依法賠償公司損失者。",
+"六、未經許可不俟交接先行下班，致勤務秩序混亂者。",
+"七、主管查勤，通風報信有具體事證者。",
+"八、值勤趴睡、瞌睡，人、車經過崗位毫無警覺者。",
+"九、年度累積曠職 2 日者，或連續曠職 1.5 日者。",
+"十、對同仁惡意攻訐、誣告或蓄意製造事端者，或在公司或客戶場所吵架謾罵、態度惡劣者。",
+"十一、向職位較低員工或向客戶，借貸金錢或私人代為保管財物者。",
+"十二、未經核准擅自使用勤務車輛者。",
+"十三、駐點夜間回報缺失，已連續 2 個月受申誡以上處分，其後仍連續再犯應受申誡處分者，或每月夜間回報缺失累計 10 次者。",
+"十四、知曉同仁重大違法、違紀情事，無正當理由知情不報者。",
+"十五、除第 65 條第 18 款外，無正當理由擅離職守，情節輕微者。",
+"十六、半年內再犯第 67 條第 1 至第 4 款申誡之懲處者，但經常遲到者除外。",
+"十七、因重大過失致工作發生錯誤，致使公司或客戶蒙受損失者。",
+"十八、違反勞動契約與工作規則者。"]},
+{n:"67",t:"申誡",c:"#a16207",l:["員工有下列情事者，予以申誡：",
+"一、執勤期間，未依規定穿著制服，服裝不整，蓬頭垢面，儀容不佳，裝飾、髮型怪異，彩色染髮，刺青者。",
+"二、勤務時間，談天、嬉戲、閱讀書報雜誌、聽音樂廣播、看電視或倒臥休息，怠忽工作，破壞工作場所清潔者。",
+"三、保全人員未經核准擅自調班，或經常遲到、早退（保全人員每月 2 次以上）及曠職，致前後班同仁無法交班或同組同仁無法工作者。",
+"四、無故不參加勤前教育、勤務會議與在職訓練者。",
+"五、故意不按管理制度與作業準則規定，情節輕微者。",
+"六、遺失識別證、稽核證，原因屬不可原諒者。",
+"七、服務客戶態度不佳，或處理業務有失時效，引起不良後果者；擅自使用客戶財物者。",
+"八、執勤時打瞌睡者。",
+"九、因過失致工作發生錯誤，或未完成工作任務，情節輕微者。",
+"十、駐點夜間回報缺失，每月累計 5 次者，或現場主任、（副）股長因所屬同仁駐點夜間回報缺失，累計 3 人次受處分者。",
+"十一、年度累積曠職 1 日者。",
+"十二、1 個月內忘記打卡次數累積 2 次者。",
+"十三、違反勞動契約、工作規則，情節輕微者。"]},
+{n:"68",t:"獎懲計算",c:"#5b6b8a",l:["申誡 3 次等於小過 1 次；小過 3 次等於大過 1 次，嘉獎 3 次等於小功 1 次；小功 3 次等於大功 1 次。降等係降一職等，並依升等、加薪規定，逆向計算減薪；降級係降一～二級；降等降級者 1 年內不得升等、晉級、或調任主管職務。"]},
+{n:"69",t:"功過相抵",c:"#5b6b8a",l:["有下列功過者得相互抵銷：","一、記大過 1 次抵記大功 1 次。","二、記小過 1 次抵記小功 1 次。","三、記申誡 1 次抵記嘉獎 1 次。"]},
+{n:"70",t:"主管責任",c:"#5b6b8a",l:["員工因功獲獎，各級主管督導有功者，亦得連帶獎勵，員工因過獲懲，各級主管監督不週者，亦應連帶懲處。"]},
+{n:"71",t:"獎懲作業",c:"#5b6b8a",l:["員工獎懲由主管於 1 週內填寫電子表單中之「人事獎懲通知單」，經事業處總監、人才與企業文化處總監核決（若事業處總監、人才與企業文化處總監意見不同時，呈總經理核定）。如直屬主管拖延或怠於簽報懲處案時，由稽核人員逕行簽報並議處失職主管。"]}];
+const RC=[["all","全部"],["64","免職"],["65","大過"],["66","小過"],["67","申誡"],["z","計算／程序"],["att","出勤相關"]],ATT=/曠職|遲到|早退|打卡|簽到|出勤|擅離|調班|代打|交接|睡|偷勤|請假/;
+let rf="all";
+function setRf(k){rf=k;drawRule()}
+function drawRule(){const q=($("rq").value||"").trim(),re=q?new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g"):null;
+$("rc").innerHTML=RC.map(c=>`<span class="chip ${c[0]==rf?"x":""}" style="${c[0]==rf?"background:#1d4ed8;border-color:#1d4ed8":""}" onclick="setRf('${c[0]}')">${c[1]}</span>`).join("");
+let h="",tot=0;RULES.forEach(a=>{if(["64","65","66","67"].includes(rf)&&a.n!=rf)return;if(rf=="z"&&!["57","63","68","69","70","71"].includes(a.n))return;
+const hit=re&&re.test(a.t);if(re)re.lastIndex=0;
+const L=a.l.filter(x=>(rf!="att"||ATT.test(x))&&(!re||hit||(re.lastIndex=0,re.test(x))));if(!L.length)return;tot+=L.length;
+h+=`<details class="ra" ${q||rf=="att"||["64","65","66","67"].includes(rf)?"open":""}><summary>第 ${a.n} 條　${a.t}<span class="rb" style="background:${a.c}">${L.length} 項</span></summary>`+L.map(x=>{let e=esc(x);if(re){re.lastIndex=0;e=e.replace(re,m=>"<mark>"+m+"</mark>")}return`<div class="rl">${e}</div>`}).join("")+"</details>"});
+$("rl").innerHTML=h||'<div class="hint">找不到符合的條文</div>'}
+
+/* ---------- 歡迎／存檔 ---------- */
+let wOpen=false;const fmt=t=>{const d=new Date(t);return(d.getMonth()+1)+"/"+d.getDate()+" "+pad(d.getHours())+":"+pad(d.getMinutes())};
+function drawWel(show){if(show)$("wel").style.display="flex";$("wback").style.display=ROOT?"block":"none";const L=IDX.slice().sort((a,b)=>b.savedAt-a.savedAt);
+$("slots").innerHTML=wOpen?(L.length?L.map(e=>`<div class="sl"><div style="flex:1;text-align:left" onclick="loadSave('${e.id}')"><b>${esc(e.name)}</b>${ROOT&&ROOT.saveId==e.id?" （目前）":""}<div style="font-size:12px;opacity:.85">上次存檔 ${fmt(e.savedAt)}</div></div><span onclick="delSave('${e.id}')" style="font-size:20px">🗑</span></div>`).join(""):"<div>目前沒有存檔，請先新增存檔</div>"):""}
+function showWel(){if(ROOT){readF();flush()}wOpen=false;drawWel(true)}
+function toggleLoad(){wOpen=!wOpen;drawWel(true)}
+function enter(){$("wel").style.display="none";init();tab("roster")}
+function newSave(){const n=prompt("新存檔名稱","存檔"+(IDX.length+1));if(n===null)return;if(ROOT){readF();flush()}
+ROOT={cur:"p1",list:{p1:newS()},saveId:"s"+Date.now(),saveName:n.trim()||"存檔"+(IDX.length+1)};fix();flush();enter();toast("已建立新存檔")}
+async function loadSave(id){const a=LS("guard_slot_"+id);await ready;const b=await tx("s","readonly",q=>q.get(id));let d=a;if(b&&(!a||(b.savedAt||0)>(a.savedAt||0)))d=b;
+if(!d||!d.list)return alert("存檔讀取失敗");if(ROOT&&ROOT.saveId!=id){readF();flush()}ROOT=d;ROOT.saveId=id;ROOT.saveName=(IDX.find(e=>e.id==id)||{}).name||d.saveName||"存檔";fix();enter();toast("已載入："+ROOT.saveName)}
+async function delSave(id){const e=IDX.find(x=>x.id==id);if(!e||!confirm("刪除存檔「"+e.name+"」？班表、打卡紀錄與圖片都會一併刪除，無法復原。"))return;
+const d=LS("guard_slot_"+id);if(d&&d.list)Object.values(d.list).forEach(p=>Object.values(p.rec||{}).forEach(r=>Object.values(r).forEach(x=>(x.imgs||[]).forEach(delImg))));
+try{localStorage.removeItem("guard_slot_"+id)}catch(x){}ready.then(()=>tx("s","readwrite",q=>q.delete(id)));IDX=IDX.filter(x=>x.id!=id);saveIdx();if(ROOT&&ROOT.saveId==id)ROOT=null;drawWel(false)}
+
+function anon(){if(!confirm("所有班別的人員姓名會改成「人員1、2…」，編號清空，無法復原。確定？"))return;autoBackup(true);
+Object.values(ROOT.list).forEach(p=>{p.ppl.forEach((m,i)=>{m.name="人員"+(i+1);m.id=""});Object.values(p.roster).forEach(R=>{Object.keys(R.names||{}).forEach(u=>{const m=p.ppl.find(x=>x.uid==u);R.names[u]=m?m.name:"已刪除人員"})})});
+readF();flush();init();toast("已全部匿名（備註與班表名稱不受影響）")}
+addEventListener("pagehide",()=>{if(ROOT){readF();flush()}});document.addEventListener("visibilitychange",()=>{if(document.hidden&&ROOT){readF();flush()}});
+/* ---------- 今日班表 ---------- */
+function defDate(){const d=new Date();if(toMin(S.start)>=720&&d.getHours()<12)d.setDate(d.getDate()-1);return ds(d)}
+function drawTp(){const v=$("tp").value;$("tp").innerHTML=Object.keys(ROOT.list).map(k=>`<option value="${k}">${esc(ROOT.list[k].site)}</option>`).join("");$("tp").value=ROOT.list[v]?v:ROOT.cur}
+function tpP(){return ROOT.list[$("tp").value]||S}
+function tpChange(){$("tt").value=tpP().start||"19:00";drawToday()}
+function dayGo(n){$("dt").value=shiftDay($("dt").value||defDate(),n);drawToday()}
+function todayData(){const P=tpP(),d=$("dt").value||defDate(),i=+d.slice(8)-1,R=P.roster[d.slice(0,7)];
+if(!R||!R.cells)return{P,d,R:null};
+const nm=u=>(P.ppl.find(x=>x.uid==u)||{}).name||R.names[u]||u,ids=Object.keys(R.cells);
+const rows=R.codes.map(c=>{const p=P.posts.find(x=>x.code===c),us=ids.filter(u=>R.cells[u][i]===c&&!trf(R,u,i)),ts=ids.filter(u=>R.cells[u][i]===c&&trf(R,u,i));return{c,label:(p&&p.name)||c,need:(R.need||{})[c]||1,uids:us,names:us.map(nm),trs:ts.map(nm)}});
+return{P,d,R,nm,rows,off:ids.filter(u=>R.cells[u][i]=="休").map(nm)}}
+function drawToday(){const T=todayData();$("hd").textContent=T.d;
+if(!T.R){$("tx").value="";$("tinfo").innerHTML=`<span class="c3">「${esc(T.P.site)}」在 ${T.d.slice(0,7)} 還沒有班表，請先到「排班」頁產生。</span>`;$("te").innerHTML='<option value="">（不指定）</option>';return}
+const on=[].concat(...T.rows.map(r=>r.uids)),P=T.P;P.emg=P.emg||{};let e=P.emg[T.d];
+if(e===undefined){for(let k=1;k<=7&&e===undefined;k++){const v=P.emg[shiftDay(T.d,-k)];if(v&&on.includes(v))e=v}}
+$("te").innerHTML='<option value="">（不指定）</option>'+on.map(u=>`<option value="${u}">${esc(T.nm(u))}</option>`).join("");$("te").value=on.includes(e)?e:"";
+buildTx()}
+function buildTx(){const T=todayData();if(!T.R)return;const M=+T.d.slice(5,7),D=+T.d.slice(8),e=$("te").value;
+let t=M+"/"+D+" "+($("tt").value||T.P.start)+"  上哨人員\n"+T.rows.map(r=>r.label+"："+(r.names.length?r.names.join("、"):"（空缺）")+(r.trs.length?"（跟哨學習："+r.trs.join("、")+"）":"")).join("\n");
+if(e)t+="\n緊急應變負責人："+T.nm(e);$("tx").value=t;
+const lack=T.rows.filter(r=>r.names.length<r.need).map(r=>`<div class="c3">⚠ 「${esc(r.label)}」缺 ${r.need-r.names.length} 人</div>`).join("");
+$("tinfo").innerHTML=lack+`<div>休假（${T.off.length}）：${T.off.length?esc(T.off.join("、")):"無"}</div>`}
+function saveEmg(){const T=todayData();if(!T.R)return;T.P.emg=T.P.emg||{};T.P.emg[T.d]=$("te").value;persist();buildTx()}
+function copyTx(){const t=$("tx");if(!t.value)return toast("沒有內容可複製");t.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}
+if(ok)toast("已複製，可貼到 LINE");else if(navigator.clipboard)navigator.clipboard.writeText(t.value).then(()=>toast("已複製，可貼到 LINE"),()=>toast("複製失敗，請長按文字手動複製"))}
+function shareTx(){const v=$("tx").value;if(!v)return toast("沒有內容");if(navigator.share)navigator.share({text:v}).catch(()=>{});else copyTx()}
+function imgTx(){const T=todayData();if(!T.R)return toast("此日期沒有班表");const e=$("te").value,M=+T.d.slice(5,7),D=+T.d.slice(8),tm=$("tt").value||T.P.start;
+const rows=T.rows.map(r=>[{t:r.label,b:1},{t:(r.names.length?r.names.join("、"):"（空缺）")+(r.trs.length?"（學："+r.trs.join("、")+"）":""),c:r.names.length<r.need?"#dc2626":""}]);
+if(e)rows.push([{t:"緊急應變負責人",b:1},{t:T.nm(e)}]);
+mkImg(M+"/"+D+" "+tm+"　上哨人員",[{t:"哨點"},{t:"人員"}],rows,[150,300],1,"上哨名單_"+T.d,"休假："+(T.off.length?T.off.join("、"):"無"))}
+
+/* ---------- 哨點學習進度 ---------- */
+const learnPosts=()=>S.posts.filter(p=>p.on&&p.code);
+const lst=(p,c)=>!(p.nl||[]).includes(c)?0:(p.lr||[]).includes(c)?2:1;
+const LS3=[{t:"✔",k:"c1",x:"會"},{t:"✕",k:"c3",x:"不會"},{t:"學",k:"c2",x:"學習中"}],LC3=["#059669","#dc2626","#d97706"];
+function drawLearn(){const E=learnPosts(),q=$("lq"),v=q.value,R=S.roster[S.ym];q.innerHTML=S.ppl.map((p,i)=>`<option value="${i}">${esc(p.name||p.id||"(未命名)")}</option>`).join("");if(v&&S.ppl[+v])q.value=v;
+const stk_=t=>[...String(t)].map(esc).join("<br>");
+let h=`<table><tr><th class="s1">姓名</th>`+E.map(p=>`<th class="v">${stk_(p.name||p.code)}</th>`).join("")+"<th>進度</th></tr>";
+S.ppl.forEach((p,i)=>{const n=E.filter(x=>lst(p,x.code)==0).length;
+h+=`<tr><td class="s1">${esc(p.name||p.id||"?")}</td>`+E.map(x=>{const st=lst(p,x.code),tn=st==2&&R&&R.cells[p.uid]?R.cells[p.uid].filter((c,d)=>c===x.code&&trf(R,p.uid,d)).length:0;return`<td class="${LS3[st].k}" style="cursor:pointer" onclick="tgLearn(${i},${S.posts.indexOf(x)})">${LS3[st].t}${tn?"<small>"+tn+"</small>":""}</td>`}).join("")+`<td>${n}/${E.length}<br>${E.length?Math.round(n/E.length*100):0}%</td></tr>`});
+h+=`<tr><td class="s1">會的人數</td>`+E.map(x=>{const n=S.ppl.filter(p=>lst(p,x.code)==0).length;return`<td class="${n<(x.need||1)?"c3":""}"><b>${n}</b></td>`}).join("")+"<td></td></tr>";
+h+=`<tr><td class="s1">學習中</td>`+E.map(x=>{const n=S.ppl.filter(p=>lst(p,x.code)==2).length;return`<td class="c2">${n||""}</td>`}).join("")+"<td></td></tr>";
+$("lt").innerHTML=h+"</table>"}
+function tgLearn(i,k){const p=S.ppl[i],c=S.posts[k].code,st=lst(p,c);p.nl=p.nl||[];p.lr=p.lr||[];
+if(st==0)p.nl.push(c);else if(st==1)p.lr.push(c);else{p.nl=p.nl.filter(x=>x!==c);p.lr=p.lr.filter(x=>x!==c)}persist();drawLearn()}
+function learnAll(v){const p=S.ppl[+$("lq").value];if(!p)return;const E=learnPosts().map(x=>x.code);p.nl=(p.nl||[]).filter(c=>!E.includes(c));p.lr=(p.lr||[]).filter(c=>!E.includes(c));if(v!=1)p.nl=p.nl.concat(E);if(v==2)p.lr=p.lr.concat(E);persist();drawLearn();toast((p.name||"此人")+(v==1?" 全部設為會":v==2?" 全部設為學習中":" 全部設為不會"))}
+function learnImg(){const E=learnPosts();if(!E.length||!S.ppl.length)return toast("沒有資料");
+const rows=S.ppl.map(p=>{const n=E.filter(x=>lst(p,x.code)==0).length;return[{t:p.name||p.id||"?"}].concat(E.map(x=>{const st=lst(p,x.code);return{t:LS3[st].t,c:LC3[st]}}),[{t:n+"/"+E.length,b:1}])});
+rows.push([{t:"會的人數"}].concat(E.map(x=>{const n=S.ppl.filter(p=>lst(p,x.code)==0).length;return{t:n,b:1,c:n<(x.need||1)?"#dc2626":""}}),[{t:""}]));
+mkImg(S.site+" 哨點學習進度",[{t:"姓名"}].concat(E.map(x=>({t:x.name||x.code})),[{t:"進度"}]),rows,[84].concat(E.map(()=>76),[64]),0,S.site+"_哨點學習進度")}
+function learnCsv(){const E=learnPosts();let t="﻿"+S.site+" 哨點學習進度\n姓名,"+E.map(x=>x.name||x.code).join(",")+",已學會數,進度%\n";
+S.ppl.forEach(p=>{const n=E.filter(x=>lst(p,x.code)==0).length;t+=[p.name||p.id||"?"].concat(E.map(x=>LS3[lst(p,x.code)].x),[n,E.length?Math.round(n/E.length*100):0]).join(",")+"\n"});dl(S.site+"_哨點學習進度.csv",t)}
+
+function init(){$("ym").value=S.ym;$("site").value=S.site;$("rest").value=S.rest;$("st").value=S.start;$("nh").value=S.norm;$("xh").value=S.maxh;$("ln").value=S.len;$("trq").value=S.trq==null?4:S.trq;drawProf();drawPosts();drawPpl();drawRoster();$("warn").textContent="";$("out").style.display=S.roster[S.ym]?"block":"none";$("dt").value=defDate();$("tt").value=S.start;drawTp();$("hd").textContent=$("dt").value}
+document.querySelectorAll(".mod").forEach(m=>m.addEventListener("click",e=>{if(e.target!==m)return;cm(m.id)}));
+let DIP=null;
+const isStd=()=>(typeof matchMedia!="undefined"&&matchMedia("(display-mode: standalone)").matches)||(typeof navigator!="undefined"&&navigator.standalone);
+function showInst(){const b=$("inst");if(!b)return;const ios=/iphone|ipad|ipod/i.test((typeof navigator!="undefined"&&navigator.userAgent)||"");b.style.display=!isStd()&&typeof location!="undefined"&&/^https?:/.test(location.protocol)&&(DIP||ios)?"block":"none"}
+async function installApp(){if(DIP){DIP.prompt();try{await DIP.userChoice}catch(e){}DIP=null;showInst()}else alert("iPhone：點 Safari 下方的「分享」按鈕，選「加入主畫面」。")}
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();DIP=e;showInst()});
+addEventListener("appinstalled",()=>{DIP=null;showInst()});
+if(typeof navigator!="undefined"&&"serviceWorker" in navigator&&typeof location!="undefined"&&/^https?:/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{});
+showInst();
+drawWel(true);
+if(typeof location!="undefined"&&/^#d=/.test(location.hash||""))(async()=>{try{const o=JSON.parse(await unzipStr(location.hash.slice(3)));history.replaceState(null,"",location.pathname);if(confirm("收到分享的班表「"+(o.site||"")+"」。\n要匯入成新存檔嗎？"))adopt(o)}catch(e){alert("分享連結無法讀取")}})();
+ready.then(async()=>{const x=await tx("s","readonly",q=>q.get("idx"));if(Array.isArray(x))x.forEach(e=>{const l=IDX.find(k=>k.id==e.id);if(!l)IDX.push(e);else if((e.savedAt||0)>(l.savedAt||0))Object.assign(l,e)});drawWel(false)});
+</script></body></html>
