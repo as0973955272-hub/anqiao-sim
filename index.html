@@ -66,7 +66,7 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <button class="wbtn" onclick="$('imf').click()">📥 匯入別人分享的班表檔</button><input type="file" id="imf" accept=".json" style="display:none" onchange="importFile(this)">
 <button class="wbtn" id="inst" style="display:none;background:#fde68a;color:#7c4a00" onclick="installApp()">📲 安裝到手機主畫面（像 App 一樣）</button>
 <div id="slots" style="width:100%;max-width:360px;margin-top:10px"></div>
-<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.5</div>
+<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.6</div>
 <button class="wbtn" id="wback" style="display:none;background:#ffffff33;color:#fff;font-size:16px" onclick="$('wel').style.display='none'">返回目前存檔</button>
 </div>
 <header><span>🛡 安橋人生模擬器 <button onclick="showWel()" style="padding:3px 8px;font-size:12px;margin-left:6px;background:#ffffff40">存檔</button></span><span style="font-size:12px;text-align:right"><span id="hd"></span><br><span id="sv"></span></span></header>
@@ -114,12 +114,12 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <!-- 今日核對 -->
 <div id="p-today" style="display:none">
 <div class="card"><div class="f"><label>套用班表</label><select id="tp" onchange="tpChange()"></select></div>
-<div class="f" style="margin-bottom:0"><button onclick="dayGo(-1)" style="padding:9px 16px">◀</button><input type="date" id="dt" onchange="drawToday()" style="text-align:center"><button onclick="dayGo(1)" style="padding:9px 16px">▶</button></div></div>
+<div class="f" style="margin-bottom:0"><button onclick="dayGo(-1)" style="padding:9px 16px">◀</button><input type="date" id="dt" onchange="drawToday()" style="text-align:center"><button onclick="dayGo(1)" style="padding:9px 16px">▶</button><button onclick="$('dt').value=defDate();drawToday()" style="padding:9px 10px;white-space:nowrap;flex:none">今天</button></div></div>
+<div class="card"><label class="hint">今日上哨名單（依所選班表自動產生，可直接修改文字後再複製）</label><textarea id="tx" rows="11" style="width:100%;font:inherit;padding:8px;border:1px solid #9bb5e6;border-radius:6px;margin-top:4px"></textarea>
+<div id="tinfo" style="font-size:14px;margin-top:6px;line-height:1.7"></div></div>
+<div class="row" style="margin:0 10px 10px"><button class="go" style="margin:0" onclick="copyTx()">📋 複製</button><button style="margin:0" onclick="shareTx()">分享</button><button style="margin:0" onclick="imgTx()">🖼 圖片</button></div>
 <div class="card"><div class="f"><label>發布時間</label><input type="time" id="tt" onchange="buildTx()"></div>
 <div class="f" style="margin-bottom:0"><label>緊急應變負責人</label><select id="te" onchange="saveEmg()"></select></div></div>
-<div class="card"><label class="hint">今日上哨名單（依所選班表自動產生，可直接修改文字後再複製）</label><textarea id="tx" rows="17" style="width:100%;font:inherit;padding:8px;border:1px solid #9bb5e6;border-radius:6px;margin-top:4px"></textarea>
-<div id="tinfo" style="font-size:14px;margin-top:6px;line-height:1.7"></div></div>
-<div class="row" style="margin:0 10px"><button class="go" style="margin:0" onclick="copyTx()">📋 複製</button><button style="margin:0" onclick="shareTx()">分享</button><button style="margin:0" onclick="imgTx()">🖼 圖片</button></div>
 </div>
 
 <!-- 哨點學習進度 -->
@@ -140,7 +140,7 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 
 <div class="mod" id="m4"><div class="mc"><div class="hint">可下載、分享，或長按圖片直接儲存</div><div style="overflow:auto;max-height:62vh;border:1px solid #ccc"><img id="im"></div><div class="row" style="margin-top:8px"><button class="go" style="margin:0" onclick="dlImg()">下載</button><button onclick="shareImg()">分享</button><button onclick="cm('m4')">關閉</button></div></div></div>
 <div class="mod" id="m6"><div class="mc"><div style="display:flex;justify-content:space-between;align-items:center"><h2>批次貼上人員名單</h2><button onclick="cm('m6')" style="background:#5b6b8a;padding:6px 12px">✕</button></div><div class="hint">一行一個姓名，可以從 LINE 或 Excel 直接貼上。名單只存在這支手機，不會上傳。</div><textarea id="bt" rows="11" style="width:100%;font:inherit;padding:8px;border:1px solid #9bb5e6;border-radius:6px"></textarea><label class="hint" style="display:block;margin:8px 0"><input type="checkbox" id="bd" style="width:auto;margin-right:6px">同時存成「預設名單」（之後新存檔、新班別會自動帶入）</label><div class="row"><button class="go" style="margin:0" onclick="applyBatch(1)">取代目前人員</button><button style="margin:0" onclick="applyBatch(0)">加入目前人員</button></div><button style="margin-top:8px;width:100%" onclick="loadDefNames()">帶入我的預設名單</button></div></div>
-<div class="mod" id="m5"><div class="mc"><div style="display:flex;justify-content:space-between;align-items:center"><h2 id="m5t"></h2><button onclick="cm('m5')" style="background:#5b6b8a;padding:6px 12px">✕</button></div><div id="m5i" style="color:#8a1c14;white-space:pre-line;font-size:14px;margin-bottom:8px"></div><div class="hint">點選要改成的內容：</div><div id="m5b" class="chips"></div><div class="f" style="margin-top:14px"><label>與他人對調</label><select id="m5s"></select><button onclick="swapCell()">對調</button></div></div></div>
+<div class="mod" id="m5"><div class="mc"><div style="display:flex;justify-content:space-between;align-items:center"><h2 id="m5t"></h2><button onclick="cm('m5')" style="background:#5b6b8a;padding:6px 12px">✕</button></div><div id="m5i" style="color:#8a1c14;white-space:pre-line;font-size:14px;margin-bottom:8px"></div><button id="m5l" onclick="leaveCell()" style="background:#b45309;width:100%;margin-bottom:10px;display:none">🤒 請假（自動找人補位）</button><div class="hint">點選要改成的內容：</div><div id="m5b" class="chips"></div><div class="f" style="margin-top:14px"><label>與他人對調</label><select id="m5s"></select><button onclick="swapCell()">對調</button></div></div></div>
 <div id="toast" style="position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#222c;color:#fff;padding:10px 16px;border-radius:10px;display:none;z-index:99"></div>
 
 <script>
@@ -266,7 +266,18 @@ const f=x=>x>=0?M+"/"+(x+1):pm+"/"+(pd+x+1);let info="";
 if(cur!="休"){let fw=0;while(i+fw+1<R.D&&R.cells[u][i+fw+1]!="休"&&R.cells[u][i+fw+1]!="—")fw++;const tot=k[i]+fw,a=i-(k[i]-1),b=i+fw;
 if(tot>=6)info=(tot>=7?"🔴":"🟡")+" 連續上班 "+tot+" 天：\n"+f(a)+(a<0?"（上月）":"")+" ～ "+f(b)+(b==R.D-1?"（月底，下月續算）":"")+"\n這是第 "+k[i]+" 天上班"}
 ec={u,i,opts:["休","備"].concat(R.codes)};$("m5t").textContent=(R.names[u]||u)+"　"+M+"/"+(i+1)+"　目前："+cur;$("m5i").textContent=info;
-$("m5b").innerHTML=ec.opts.map((c,j)=>`<span class="chip ${c==cur?"x":""}" style="${c==cur?"background:#1d4ed8;border-color:#1d4ed8;":""}padding:10px 18px;font-size:17px" onclick="setCell(${j})">${esc(c)}</span>`).join("");$("m5s").innerHTML=Object.keys(R.cells).filter(v=>v!=u).map(v=>`<option value="${v}">${esc(R.names[v]||v)}（${esc(R.cells[v][i])}）</option>`).join("");om("m5")}
+$("m5b").innerHTML=ec.opts.map((c,j)=>`<span class="chip ${c==cur?"x":""}" style="${c==cur?"background:#1d4ed8;border-color:#1d4ed8;":""}padding:10px 18px;font-size:17px" onclick="setCell(${j})">${esc(c)}</span>`).join("");$("m5s").innerHTML=Object.keys(R.cells).filter(v=>v!=u).map(v=>`<option value="${v}">${esc(R.names[v]||v)}（${esc(R.cells[v][i])}）</option>`).join("");$("m5l").style.display=R.codes.includes(cur)&&!trf(R,u,i)?"block":"none";om("m5")}
+function leaveCell(){const R=S.roster[S.ym];if(!R)return;const u=ec.u,i=ec.i,c=R.cells[u][i];if(!R.codes.includes(c))return;
+const nm=x=>R.names[x]||x,po=S.posts.find(x=>x.code===c),lb=po?po.name:c,dd=(+S.ym.slice(5))+"/"+(i+1);
+const ok=x=>{const p=S.ppl.find(y=>y.uid==x);return p&&!banned(p,c)&&!isLrn(p,c)},work=x=>R.cells[x].filter(v=>v!="休"&&v!="—").length,
+by=v=>Object.keys(R.cells).filter(x=>x!=u&&R.cells[x][i]==v&&ok(x)).sort((a,b)=>work(a)-work(b));
+snap();R.cells[u][i]="休";if(R.tr&&R.tr[u])R.tr[u][i]=0;cm("m5");
+const sb=by("備")[0];let msg;
+if(sb){R.cells[sb][i]=c;msg=`${nm(u)} ${dd} 請假，由備勤的 ${nm(sb)} 補「${lb}」`}
+else{const rs=by("休")[0];
+if(rs&&confirm(`${dd} 沒有備勤可補「${lb}」。\n要請休假中的 ${nm(rs)} 來補嗎？\n（他這天的休假會被取消）`)){R.cells[rs][i]=c;msg=`${nm(u)} 請假，由 ${nm(rs)} 取消休假來補「${lb}」`}
+else msg=`${nm(u)} 已改為休，「${lb}」目前缺 1 人`}
+save();drawRoster();toast(msg)}
 let UN=[];
 function snap(){const R=S.roster[S.ym];UN.push({k:ROOT.cur+"|"+S.ym,c:JSON.stringify(R.cells),t:JSON.stringify(R.tr||{})});if(UN.length>20)UN.shift()}
 function undoCell(){const R=S.roster[S.ym],k=ROOT.cur+"|"+S.ym;if(!R||!UN.length||UN[UN.length-1].k!=k)return toast("沒有可復原的修改");const u0=UN.pop();R.cells=JSON.parse(u0.c);R.tr=JSON.parse(u0.t||"{}");save();drawRoster();toast("已復原上一步")}
@@ -540,7 +551,7 @@ function drawWel(show){if(show)$("wel").style.display="flex";$("wback").style.di
 $("slots").innerHTML=wOpen?(L.length?L.map(e=>`<div class="sl"><div style="flex:1;text-align:left" onclick="loadSave('${e.id}')"><b>${esc(e.name)}</b>${ROOT&&ROOT.saveId==e.id?" （目前）":""}<div style="font-size:12px;opacity:.85">上次存檔 ${fmt(e.savedAt)}</div></div><span onclick="delSave('${e.id}')" style="font-size:20px">🗑</span></div>`).join(""):"<div>目前沒有存檔，請先新增存檔</div>"):""}
 function showWel(){if(ROOT){readF();flush()}wOpen=false;drawWel(true)}
 function toggleLoad(){wOpen=!wOpen;drawWel(true)}
-function enter(){$("wel").style.display="none";init();tab("roster")}
+function enter(){$("wel").style.display="none";try{localStorage.setItem("guard_last",ROOT.saveId)}catch(e){}init();const t=window.__t||"roster";window.__t=null;tab(t)}
 function newSave(){const n=prompt("新存檔名稱","存檔"+(IDX.length+1));if(n===null)return;if(ROOT){readF();flush()}
 ROOT={cur:"p1",list:{p1:newS()},saveId:"s"+Date.now(),saveName:n.trim()||"存檔"+(IDX.length+1)};fix();flush();enter();toast("已建立新存檔")}
 async function loadSave(id){const a=LS("guard_slot_"+id);await ready;const b=await tx("s","readonly",q=>q.get(id));let d=a;if(b&&(!a||(b.savedAt||0)>(a.savedAt||0)))d=b;
@@ -606,7 +617,7 @@ mkImg(S.site+" 哨點學習進度",[{t:"姓名"}].concat(E.map(x=>({t:x.name||x.
 function learnCsv(){const E=learnPosts();let t="﻿"+S.site+" 哨點學習進度\n姓名,"+E.map(x=>x.name||x.code).join(",")+",已學會數,進度%\n";
 S.ppl.forEach(p=>{const n=E.filter(x=>lst(p,x.code)==0).length;t+=[p.name||p.id||"?"].concat(E.map(x=>LS3[lst(p,x.code)].x),[n,E.length?Math.round(n/E.length*100):0]).join(",")+"\n"});dl(S.site+"_哨點學習進度.csv",t)}
 
-function init(){$("ym").value=S.ym;$("site").value=S.site;$("rest").value=S.rest;$("st").value=S.start;$("nh").value=S.norm;$("xh").value=S.maxh;$("ln").value=S.len;$("trq").value=S.trq==null?4:S.trq;$("sp").value=S.sp||"standby";drawProf();drawPosts();drawPpl();drawRoster();$("warn").textContent="";$("out").style.display=S.roster[S.ym]?"block":"none";$("dt").value=defDate();$("tt").value=S.start;drawTp();$("hd").textContent=$("dt").value}
+function init(){$("ym").value=S.ym;$("site").value=S.site;$("rest").value=S.rest;$("st").value=S.start;$("nh").value=S.norm;$("xh").value=S.maxh;$("ln").value=S.len;$("trq").value=S.trq==null?4:S.trq;$("sp").value=S.sp||"standby";drawProf();drawPosts();drawPpl();drawRoster();$("warn").textContent="";$("out").style.display=S.roster[S.ym]?"block":"none";$("dt").value=defDate();$("tt").value=S.start;drawTp();$("hd").textContent=$("dt").value;if(!window.__b){window.__b=1;const k=defDate().slice(0,7);if(S.roster[k]&&S.roster[k].cells)window.__t="today"}}
 document.querySelectorAll(".mod").forEach(m=>m.addEventListener("click",e=>{if(e.target!==m)return;cm(m.id)}));
 let DIP=null;
 const isStd=()=>(typeof matchMedia!="undefined"&&matchMedia("(display-mode: standalone)").matches)||(typeof navigator!="undefined"&&navigator.standalone);
@@ -618,5 +629,6 @@ if(typeof navigator!="undefined"&&"serviceWorker" in navigator&&typeof location!
 showInst();
 drawWel(true);
 if(typeof location!="undefined"&&/^#d=/.test(location.hash||""))(async()=>{try{const o=JSON.parse(await unzipStr(location.hash.slice(3)));history.replaceState(null,"",location.pathname);if(confirm("收到分享的班表「"+(o.site||"")+"」。\n要匯入成新存檔嗎？"))adopt(o)}catch(e){alert("分享連結無法讀取")}})();
-ready.then(async()=>{const x=await tx("s","readonly",q=>q.get("idx"));if(Array.isArray(x))x.forEach(e=>{const l=IDX.find(k=>k.id==e.id);if(!l)IDX.push(e);else if((e.savedAt||0)>(l.savedAt||0))Object.assign(l,e)});drawWel(false)});
+ready.then(async()=>{const x=await tx("s","readonly",q=>q.get("idx"));if(Array.isArray(x))x.forEach(e=>{const l=IDX.find(k=>k.id==e.id);if(!l)IDX.push(e);else if((e.savedAt||0)>(l.savedAt||0))Object.assign(l,e)});drawWel(false);
+if(!ROOT&&IDX.length&&!(typeof location!="undefined"&&/^#d=/.test(location.hash||""))){let last=null;try{last=localStorage.getItem("guard_last")}catch(e){}const e=IDX.find(k=>k.id==last)||IDX.slice().sort((a,b)=>(b.savedAt||0)-(a.savedAt||0))[0];if(e)loadSave(e.id)}});
 </script></body></html>
