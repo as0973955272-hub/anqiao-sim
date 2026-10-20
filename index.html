@@ -53,6 +53,7 @@ details.ra{background:#fff;border:1px solid #c3d3ee;border-radius:8px;margin-bot
 #out td:not(.s1){cursor:pointer}
 th.v{padding:6px 2px;min-width:34px;font-size:13px;line-height:1.25;vertical-align:bottom;font-weight:bold}
 header{padding-top:calc(12px + env(safe-area-inset-top,0px))}nav{padding-bottom:env(safe-area-inset-bottom,0px)}body{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3ee;border-radius:8px}details.sec>summary{font-weight:bold;cursor:pointer;padding:4px 0}details.sec[open]>summary{margin-bottom:8px}.gear{background:#5b6b8a;padding:9px 11px;flex:0 0 auto}
 </style></head><body>
 <div id="wel" style="position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#0b2f78,#1d4ed8 55%,#3b82f6);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto">
 <div style="font-size:56px">🛡️</div>
@@ -64,7 +65,7 @@ header{padding-top:calc(12px + env(safe-area-inset-top,0px))}nav{padding-bottom:
 <button class="wbtn" onclick="$('imf').click()">📥 匯入別人分享的班表檔</button><input type="file" id="imf" accept=".json" style="display:none" onchange="importFile(this)">
 <button class="wbtn" id="inst" style="display:none;background:#fde68a;color:#7c4a00" onclick="installApp()">📲 安裝到手機主畫面（像 App 一樣）</button>
 <div id="slots" style="width:100%;max-width:360px;margin-top:10px"></div>
-<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.3</div>
+<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.4</div>
 <button class="wbtn" id="wback" style="display:none;background:#ffffff33;color:#fff;font-size:16px" onclick="$('wel').style.display='none'">返回目前存檔</button>
 </div>
 <header><span>🛡 安橋人生模擬器 <button onclick="showWel()" style="padding:3px 8px;font-size:12px;margin-left:6px;background:#ffffff40">存檔</button></span><span style="font-size:12px;text-align:right"><span id="hd"></span><br><span id="sv"></span></span></header>
@@ -72,38 +73,40 @@ header{padding-top:calc(12px + env(safe-area-inset-top,0px))}nav{padding-bottom:
 <!-- 排班 -->
 <div id="bk" class="noprint" style="display:none;background:#fff4e5;color:#8a4b00;padding:8px 12px;align-items:center;gap:8px;font-size:14px"><span style="flex:1">⚠ 已 <b id="bkd">0</b> 天沒備份。換手機或清除瀏覽器資料，存檔會全部消失。</span><button style="padding:6px 10px;white-space:nowrap" onclick="shareBackup()">立即備份</button></div>
 <div id="p-roster">
-<section><h2>班別／基本設定</h2>
-<div class="f"><label>案場／班別</label><select id="prof" onchange="switchProf(this.value)"></select></div>
-<div class="row" style="margin-bottom:8px"><button onclick="newProf()">＋ 新增班別</button><button class="del" onclick="delProf()">刪除此班別</button></div>
-<div class="f"><label>班表名稱</label><input type="text" id="site" onchange="save();drawProf();drawRoster()"></div>
+<section>
+<div class="f"><label>班別</label><select id="prof" onchange="switchProf(this.value)"></select></div>
 <div class="f"><label>月份</label><input type="month" id="ym" onchange="save();drawRoster();drawPpl()"></div>
-<div class="row"><div class="f"><label>上班</label><input type="time" id="st" onchange="save()"></div><div class="f"><label>時數</label><input type="number" id="ln" min="1" max="24" onchange="save()"></div></div>
-<div class="f"><label>每月應休天數</label><input type="number" id="rest" min="0" max="15" onchange="save();drawRoster()"></div>
-<div class="f"><label>學習者每月跟哨目標（次）</label><input type="number" id="trq" min="0" max="15" onchange="save()"></div>
-<div class="row"><div class="f"><label>正常工時</label><input type="number" id="nh" onchange="save();drawRoster()"></div><div class="f"><label>工時上限</label><input type="number" id="xh" onchange="save();drawRoster()"></div></div>
-</section>
-<section><h2>哨點</h2><div class="hint">勾選＝本月啟用。代號就是班表格子顯示的字。最右邊數字＝該哨點需要幾人（例：北碼頭哨 2 人）。</div>
-<div id="posts"></div><button class="add" onclick="addPost()">＋ 新增哨點</button>
-<button class="add" style="background:#5b6b8a;margin-top:8px" onclick="applyDefPosts()">套用預設 13 個哨點</button></section>
-<section><h2>人員</h2><div class="hint">點哨點代號＝禁止此人排該哨點（變紅）。人員同時用於工時核對。</div>
-<div id="ppl"></div><button class="add" onclick="addPerson()">＋ 新增人員</button>
-<button class="add" style="background:#0d9488;margin-top:8px" onclick="hirePerson()">👤 新人到職（只重排之後的班表）</button>
-<button class="add" style="background:#5b6b8a;margin-top:8px" onclick="anon()">🔒 一鍵匿名（姓名改成人員1、2…，清除編號）</button>
-</section>
-<section><h2>預先指定休假／上班</h2><div class="hint">選人員後點日期切換：空白→休→班→空白。產生班表時會先鎖定，其他格子再自動排。</div>
-<div class="f"><label>人員</label><select id="lp" onchange="drawLock()"></select></div><div id="lk" class="chips"></div>
 <button class="go" onclick="gen()">產生班表</button>
-<div class="f" style="margin-top:10px"><label>局部重排</label><select id="rfd"></select><button onclick="regenFrom()">從此日起重排</button></div><div class="hint">新人到職、有人離職或請長假時用：只重排所選日期之後的班表，前面已排好（或手動改過）的日子不會動。新增人員後用這裡重排，新人在所選日期之前會顯示「－」。有人離職：刪除該人員後，再從離職隔天起重排。</div></section>
+<div class="f" style="margin:10px 0 0"><label>只重排後段</label><select id="rfd"></select><button onclick="regenFrom()">重排</button></div>
+</section>
 <div class="warn" id="warn"></div>
 <div class="warn" id="chk" style="color:#8a1c14"></div>
-<div class="hint" style="margin:0 12px">ℹ 檢核只計算：連勤 6／7 天、應休天數、月工時、兩班間隔 11 小時。不含加班費、國定假日與公司特別規定，實際請以勞基法與公司規定為準，發布前請再看一遍。</div>
-<div class="row" style="margin:0 10px 6px"><button onclick="undoCell()">↶ 復原上一步修改</button></div>
-<div class="hint" style="margin:0 12px">💡 點班表任一格可手動修改（也可與他人對調）；黃底＝連勤 6 天、紅底＝連勤 7 天，點擊可查看連勤區間。</div>
 <div class="wrap" id="out" style="display:none"></div>
 <div class="wrap" id="stat" style="display:none"></div>
-<div class="row noprint" style="margin:0 10px"><button onclick="window.print()">列印班表</button><button onclick="rosterCsv()">班表 CSV</button><button onclick="imgRoster()">🖼 存成圖片</button></div>
-<div class="row noprint" style="margin:8px 10px 0"><button onclick="shareLink()">🔗 分享班表連結</button><button onclick="shareFile()">📤 分享班表檔</button></div>
-<div class="hint" style="margin:4px 12px">分享的是「目前這一刻」的班表快照，對方匯入後會變成他自己的一份，之後兩邊不會自動同步。</div>
+<div class="row noprint" style="margin:6px 10px"><button onclick="imgRoster()">🖼 存成圖片</button><button onclick="undoCell()">↶ 復原修改</button></div>
+<div class="hint" style="margin:4px 14px">點班表任一格可修改或與人對調。黃底＝連勤 6 天、紅底＝連勤 7 天。檢核只含連勤、應休、月工時、兩班間隔 11 小時，不含加班費與公司特別規定，發布前請再看一遍。</div>
+<details class="sec noprint"><summary>更多：列印、CSV、分享</summary>
+<div class="row"><button onclick="window.print()">列印</button><button onclick="rosterCsv()">CSV</button></div>
+<div class="row" style="margin-top:8px"><button onclick="shareLink()">🔗 分享連結</button><button onclick="shareFile()">📤 分享檔</button></div>
+<div class="hint">分享的是目前這一刻的班表快照，對方匯入後是他自己的一份，不會自動同步。</div></details>
+<details class="sec"><summary>⚙ 基本設定</summary>
+<div class="f"><label>班表名稱</label><input type="text" id="site" onchange="save();drawProf();drawRoster()"></div>
+<div class="row"><div class="f"><label>上班</label><input type="time" id="st" onchange="save()"></div><div class="f"><label>時數</label><input type="number" id="ln" min="1" max="24" onchange="save()"></div></div>
+<div class="row"><div class="f"><label>每月應休</label><input type="number" id="rest" min="0" max="15" onchange="save();drawRoster()"></div><div class="f"><label>跟哨目標</label><input type="number" id="trq" min="0" max="15" onchange="save()"></div></div>
+<div class="row"><div class="f"><label>正常工時</label><input type="number" id="nh" onchange="save();drawRoster()"></div><div class="f"><label>工時上限</label><input type="number" id="xh" onchange="save();drawRoster()"></div></div>
+<div class="f"><label>人比哨位多</label><select id="sp" onchange="save()"><option value="standby">多出的人「備勤」（算上班）</option><option value="rest">多出的人多休息</option></select></div>
+<div class="hint">排班會自動多留休假天數，確保不超過工時上限。「跟哨目標」＝學習中的人每月目標跟哨次數。</div>
+<div class="row"><button onclick="newProf()">＋ 新增班別</button><button class="del" onclick="delProf()">刪除此班別</button></div>
+</details>
+<details class="sec"><summary>🛡 哨點</summary><div class="hint">勾選＝啟用；最右邊數字＝需要幾人。</div>
+<div id="posts"></div><button class="add" onclick="addPost()">＋ 新增哨點</button>
+<button class="add" style="background:#5b6b8a;margin-top:8px" onclick="applyDefPosts()">套用預設 13 個哨點</button></details>
+<details class="sec"><summary>👥 人員</summary><div class="hint">點 ⚙ 展開：目標時數、想少上班、禁止哨點。</div>
+<div id="ppl"></div><button class="add" onclick="addPerson()">＋ 新增人員</button>
+<div class="row" style="margin-top:8px"><button class="add" style="background:#0d9488" onclick="hirePerson()">👤 新人到職</button><button class="add" onclick="batchPpl()">📋 批次貼上名單</button></div>
+<details style="margin-top:8px"><summary class="hint">其他</summary><button class="add" style="background:#5b6b8a;margin-top:6px" onclick="anon()">🔒 一鍵匿名（姓名改成人員1、2…）</button></details></details>
+<details class="sec"><summary>📅 預先指定休假／上班</summary><div class="hint">選人員後點日期切換：空白→休→班→空白。產生班表時會先鎖定。</div>
+<div class="f"><label>人員</label><select id="lp" onchange="drawLock()"></select></div><div id="lk" class="chips"></div></details>
 </div>
 
 <!-- 今日核對 -->
@@ -134,6 +137,7 @@ header{padding-top:calc(12px + env(safe-area-inset-top,0px))}nav{padding-bottom:
 <nav><button id="n-rule" onclick="tab('rule')">懲處規則</button><button id="n-roster" class="on" onclick="tab('roster')">排班</button><button id="n-today" onclick="tab('today')">今日班表</button><button id="n-sum" onclick="tab('sum')">哨點學習</button></nav>
 
 <div class="mod" id="m4"><div class="mc"><div class="hint">可下載、分享，或長按圖片直接儲存</div><div style="overflow:auto;max-height:62vh;border:1px solid #ccc"><img id="im"></div><div class="row" style="margin-top:8px"><button class="go" style="margin:0" onclick="dlImg()">下載</button><button onclick="shareImg()">分享</button><button onclick="cm('m4')">關閉</button></div></div></div>
+<div class="mod" id="m6"><div class="mc"><div style="display:flex;justify-content:space-between;align-items:center"><h2>批次貼上人員名單</h2><button onclick="cm('m6')" style="background:#5b6b8a;padding:6px 12px">✕</button></div><div class="hint">一行一個姓名，可以從 LINE 或 Excel 直接貼上。名單只存在這支手機，不會上傳。</div><textarea id="bt" rows="11" style="width:100%;font:inherit;padding:8px;border:1px solid #9bb5e6;border-radius:6px"></textarea><label class="hint" style="display:block;margin:8px 0"><input type="checkbox" id="bd" style="width:auto;margin-right:6px">同時存成「預設名單」（之後新存檔、新班別會自動帶入）</label><div class="row"><button class="go" style="margin:0" onclick="applyBatch(1)">取代目前人員</button><button style="margin:0" onclick="applyBatch(0)">加入目前人員</button></div><button style="margin-top:8px;width:100%" onclick="loadDefNames()">帶入我的預設名單</button></div></div>
 <div class="mod" id="m5"><div class="mc"><div style="display:flex;justify-content:space-between;align-items:center"><h2 id="m5t"></h2><button onclick="cm('m5')" style="background:#5b6b8a;padding:6px 12px">✕</button></div><div id="m5i" style="color:#8a1c14;white-space:pre-line;font-size:14px;margin-bottom:8px"></div><div class="hint">點選要改成的內容：</div><div id="m5b" class="chips"></div><div class="f" style="margin-top:14px"><label>與他人對調</label><select id="m5s"></select><button onclick="swapCell()">對調</button></div></div></div>
 <div id="toast" style="position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#222c;color:#fff;padding:10px 16px;border-radius:10px;display:none;z-index:99"></div>
 
@@ -145,17 +149,17 @@ const ds=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const shiftDay=(s,n)=>{const p=s.split("-");return ds(new Date(+p[0],+p[1]-1,+p[2]+n))};
 function today(){const d=new Date();if(d.getHours()<12)d.setDate(d.getDate()-1);return ds(d)}
 const mk=(n,i)=>({uid:"u"+i,id:"",name:n,ban:[]});
-const newS=()=>({ym:today().slice(0,7),site:"夜班班表",rest:8,norm:240,maxh:288,
+const newS=()=>({ym:today().slice(0,7),site:"夜班班表",rest:6,norm:288,maxh:288,
 posts:[["安檢主哨",1],["安檢副哨",2],["大門主哨",1],["大門副哨",1],["機動主哨",1],["機動副哨",1],["3B哨",1],["南碼頭哨",1],["北碼頭哨",2],["東回收哨",1],["西回收哨",1],["收發室",1],["中控哨",2]].map((a,i)=>({code:String(i+1),name:a[0],need:a[1],on:true})),
-ppl:Array.from({length:24},(_,i)=>"人員"+(i+1)).map(mk),roster:{},rec:{}});let S=newS();
+ppl:(()=>{let a=[];try{a=JSON.parse(localStorage.getItem("guard_defnames"))||[]}catch(e){}a=Array.isArray(a)?a.filter(x=>typeof x=="string"&&x.trim()):[];return(a.length?a:Array.from({length:24},(_,i)=>"人員"+(i+1))).map(mk)})(),roster:{},rec:{}});let S=newS();
 let ROOT=null,IDX=[];
 const LS=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
 IDX=LS("guard_idx")||[];
 if(!IDX.length){const t=LS(KEY2)||(LS(KEY)?{cur:"p1",list:{p1:Object.assign(newS(),LS(KEY))}}:null);
 if(t&&t.list){const id="s"+Date.now();t.saveId=id;t.saveName="存檔1";IDX=[{id,name:"存檔1",savedAt:t.savedAt||Date.now()}];try{localStorage.setItem("guard_idx",JSON.stringify(IDX));localStorage.setItem("guard_slot_"+id,JSON.stringify(t))}catch(e){}}}
-function fix(){Object.values(ROOT.list).forEach(p=>{p.start=p.start||"19:00";p.norm=p.norm||240;p.maxh=p.maxh||288;p.len=p.len||12;p.roster=p.roster||{};p.rec=p.rec||{};p.lock=p.lock||{};p.emg=p.emg||{};Object.values(p.roster).forEach(R=>Object.keys(R.cells||{}).forEach(u=>{R.cells[u]=R.cells[u].map(c=>c=="備"?"休":c)}))});if(!ROOT.list[ROOT.cur])ROOT.cur=Object.keys(ROOT.list)[0];S=ROOT.list[ROOT.cur]}
+function fix(){Object.values(ROOT.list).forEach(p=>{p.start=p.start||"19:00";p.norm=p.norm||240;p.maxh=p.maxh||288;p.len=p.len||12;p.roster=p.roster||{};p.rec=p.rec||{};p.lock=p.lock||{};p.emg=p.emg||{};Object.values(p.roster).forEach(R=>{if(!R.v)Object.keys(R.cells||{}).forEach(u=>{R.cells[u]=R.cells[u].map(c=>c=="備"?"休":c)})});if(!p.mig5){if(p.norm==240&&p.rest==8){p.norm=288;p.rest=6}p.mig5=1}});if(!ROOT.list[ROOT.cur])ROOT.cur=Object.keys(ROOT.list)[0];S=ROOT.list[ROOT.cur]}
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
-function readF(){S.ym=$("ym").value||S.ym;S.site=$("site").value||S.site;S.rest=+$("rest").value;S.start=$("st").value||"19:00";S.norm=+$("nh").value||240;S.maxh=+$("xh").value||288;S.len=+$("ln").value||12;S.trq=$("trq").value===""?4:Math.max(0,+$("trq").value||0)}
+function readF(){S.ym=$("ym").value||S.ym;S.site=$("site").value||S.site;S.rest=+$("rest").value;S.start=$("st").value||"19:00";S.norm=+$("nh").value||240;S.maxh=+$("xh").value||288;S.len=+$("ln").value||12;S.trq=$("trq").value===""?4:Math.max(0,+$("trq").value||0);S.sp=$("sp").value||"standby"}
 function save(){readF();persist()}
 function saveIdx(){try{localStorage.setItem("guard_idx",JSON.stringify(IDX))}catch(e){}ready.then(()=>tx("s","readwrite",q=>q.put(IDX,"idx")))}
 let pt;function persist(){clearTimeout(pt);pt=setTimeout(persistNow,250)}
@@ -175,7 +179,14 @@ function setCut(i,v){const p=S.ppl[i];p.cm=p.cm||{};v=Math.max(0,Math.min(15,Mat
 const banned=(p,c)=>p.ban.includes(c)||(p.nl||[]).includes(c);
 const hrsOf=(p,ym)=>+((p.hm||{})[ym])||0;
 function setHrs(i,v){const p=S.ppl[i];p.hm=p.hm||{};v=+v||0;v>0?p.hm[S.ym]=v:delete p.hm[S.ym];save();drawPpl();drawRoster()}
-function drawPpl(){drawLock();$("ppl").innerHTML=S.ppl.map((p,i)=>`<div class="pc"><div class="item" style="margin:0"><input style="flex:0 0 92px" value="${esc(p.id)}" placeholder="編號(選填)" onchange="S.ppl[${i}].id=this.value;save()"><input value="${esc(p.name)}" placeholder="姓名" onchange="S.ppl[${i}].name=this.value;save()"><button class="del" onclick="delPerson(${i})">刪</button></div><div class="f" style="margin-top:6px"><label style="font-size:13px">本月目標時數</label><input type="number" min="0" max="400" placeholder="選填，例：240" value="${hrsOf(p,S.ym)||""}" onchange="setHrs(${i},this.value)"><span style="font-size:13px;white-space:nowrap">${hrsOf(p,S.ym)?"≈ "+Math.round(hrsOf(p,S.ym)/S.len)+" 天":""}</span></div><div class="f" style="margin-top:6px"><label style="font-size:13px">想少上班</label><input type="number" min="0" max="15" placeholder="本月少幾天，例：3" value="${cutOf(p,S.ym)||""}" onchange="setCut(${i},this.value)"><span style="font-size:13px;white-space:nowrap">${cutOf(p,S.ym)?"－"+cutOf(p,S.ym)*S.len+" h":""}</span></div><div class="chips">禁止：${S.posts.map((q,k)=>q.on?`<span class="chip ${p.ban.includes(q.code)?"x":""}" onclick="tg(${i},${k})">${esc(q.code)}</span>`:"").join("")}</div></div>`).join("")}
+const OPENADV=new Set();
+function tgAdv(i){const k=S.ppl[i].uid;OPENADV.has(k)?OPENADV.delete(k):OPENADV.add(k);const e=$("adv"+i);if(e)e.style.display=OPENADV.has(k)?"block":"none"}
+function drawPpl(){drawLock();$("ppl").innerHTML=S.ppl.map((p,i)=>{const dot=(hrsOf(p,S.ym)||cutOf(p,S.ym)||p.ban.length)?" •":"";
+return`<div class="pc"><div class="item" style="margin:0"><input value="${esc(p.name)}" placeholder="姓名" onchange="S.ppl[${i}].name=this.value;save()"><button class="gear" onclick="tgAdv(${i})">⚙${dot}</button><button class="del" onclick="delPerson(${i})">刪</button></div>
+<div id="adv${i}" style="display:${OPENADV.has(p.uid)?"block":"none"};margin-top:8px"><div class="f"><label style="font-size:13px">編號</label><input value="${esc(p.id)}" placeholder="選填" onchange="S.ppl[${i}].id=this.value;save()"></div>
+<div class="f"><label style="font-size:13px">本月目標時數</label><input type="number" min="0" max="400" placeholder="選填，例：240" value="${hrsOf(p,S.ym)||""}" onchange="setHrs(${i},this.value)"><span style="font-size:13px;white-space:nowrap">${hrsOf(p,S.ym)?"≈ "+Math.round(hrsOf(p,S.ym)/S.len)+" 天":""}</span></div>
+<div class="f"><label style="font-size:13px">想少上班</label><input type="number" min="0" max="15" placeholder="本月少幾天" value="${cutOf(p,S.ym)||""}" onchange="setCut(${i},this.value)"><span style="font-size:13px;white-space:nowrap">${cutOf(p,S.ym)?"－"+cutOf(p,S.ym)*S.len+" h":""}</span></div>
+<div class="chips">禁止：${S.posts.map((q,k)=>q.on?`<span class="chip ${p.ban.includes(q.code)?"x":""}" onclick="tg(${i},${k})">${esc(q.code)}</span>`:"").join("")}</div></div></div>`}).join("")}
 function tg(i,k0){const c=S.posts[k0].code,b=S.ppl[i].ban,k=b.indexOf(c);k<0?b.push(c):b.splice(k,1);save();drawPpl()}
 function applyDefPosts(){if(!confirm("把哨點換成預設的 13 個（安檢主哨…中控哨）？\n名稱相同的哨點，人員的「禁止／學習進度」會保留，其他會清掉。\n已排好的班表不會動，要重新按「產生班表」。"))return;
 const nw=newS().posts,mp={};S.posts.forEach(o=>{const n=nw.find(x=>x.name===o.name);if(n)mp[o.code]=n.code});const tr=a=>(a||[]).map(x=>mp[x]).filter(Boolean);
@@ -183,6 +194,15 @@ S.ppl.forEach(p=>{p.ban=tr(p.ban);p.nl=tr(p.nl);p.lr=tr(p.lr)});S.posts=nw;save(
 function addPost(){const n=S.posts.map(p=>parseInt(p.code)||0);S.posts.push({code:String(Math.max(0,...n)+1),name:"",on:true});save();drawPosts();drawPpl()}
 function delPost(i){if(!confirm("刪除哨點 "+S.posts[i].code+"？"))return;const c=S.posts[i].code;S.posts.splice(i,1);S.ppl.forEach(p=>{p.ban=p.ban.filter(x=>x!==c);p.nl=(p.nl||[]).filter(x=>x!==c);p.lr=(p.lr||[]).filter(x=>x!==c)});save();drawPosts();drawPpl()}
 function chCode(i,v){v=v.trim();const o=S.posts[i].code;if(!v||S.posts.some((p,k)=>k!=i&&p.code===v)){alert("代號空白或重複");drawPosts();return}S.posts[i].code=v;S.ppl.forEach(p=>{p.ban=p.ban.map(x=>x===o?v:x);p.nl=(p.nl||[]).map(x=>x===o?v:x);p.lr=(p.lr||[]).map(x=>x===o?v:x)});save();drawPpl()}
+function defNames(){try{const a=JSON.parse(localStorage.getItem("guard_defnames"));return Array.isArray(a)?a.filter(x=>typeof x=="string"&&x.trim()):[]}catch(e){return[]}}
+function batchPpl(){$("bt").value=S.ppl.map(p=>p.name).filter(Boolean).join("\n");$("bd").checked=false;om("m6")}
+function loadDefNames(){const a=defNames();if(!a.length)return toast("還沒有存過預設名單");$("bt").value=a.join("\n")}
+function applyBatch(rep){const names=[...new Set($("bt").value.split(/[\r\n,，、;；\t]+/).map(x=>x.trim()).filter(Boolean))];if(!names.length)return toast("沒有姓名");
+if(rep&&!confirm("要把人員換成這 "+names.length+" 人嗎？\n名單裡沒有的人會被移除（已排好的班表保留）；同名的人會保留他的學習進度與設定。"))return;
+const st=Date.now(),nw=(n,i)=>({uid:"u"+st+"_"+i,id:"",name:n,ban:[]});
+if(rep)S.ppl=names.map((n,i)=>S.ppl.find(p=>p.name===n)||nw(n,i));else names.forEach((n,i)=>{if(!S.ppl.some(p=>p.name===n))S.ppl.push(nw(n,i))});
+const sv=$("bd").checked;if(sv){try{localStorage.setItem("guard_defnames",JSON.stringify(names))}catch(e){}}
+save();drawPpl();drawLearn();cm("m6");toast("已更新人員："+S.ppl.length+" 人"+(sv?"，並存成預設名單":""))}
 function addPerson(){S.ppl.push({uid:"u"+Date.now(),id:"",name:"",ban:[]});save();drawPpl()}
 function delPerson(i){if(!confirm("刪除 "+(S.ppl[i].name||"此人")+"？（已有的紀錄仍會保留在資料裡）"))return;S.ppl.splice(i,1);save();drawPpl()}
 
@@ -214,7 +234,7 @@ function editCell(u,i){const R=S.roster[S.ym];if(!R)return;const k=stk(u),cur=R.
 const f=x=>x>=0?M+"/"+(x+1):pm+"/"+(pd+x+1);let info="";
 if(cur!="休"){let fw=0;while(i+fw+1<R.D&&R.cells[u][i+fw+1]!="休"&&R.cells[u][i+fw+1]!="—")fw++;const tot=k[i]+fw,a=i-(k[i]-1),b=i+fw;
 if(tot>=6)info=(tot>=7?"🔴":"🟡")+" 連續上班 "+tot+" 天：\n"+f(a)+(a<0?"（上月）":"")+" ～ "+f(b)+(b==R.D-1?"（月底，下月續算）":"")+"\n這是第 "+k[i]+" 天上班"}
-ec={u,i,opts:["休"].concat(R.codes)};$("m5t").textContent=(R.names[u]||u)+"　"+M+"/"+(i+1)+"　目前："+cur;$("m5i").textContent=info;
+ec={u,i,opts:["休","備"].concat(R.codes)};$("m5t").textContent=(R.names[u]||u)+"　"+M+"/"+(i+1)+"　目前："+cur;$("m5i").textContent=info;
 $("m5b").innerHTML=ec.opts.map((c,j)=>`<span class="chip ${c==cur?"x":""}" style="${c==cur?"background:#1d4ed8;border-color:#1d4ed8;":""}padding:10px 18px;font-size:17px" onclick="setCell(${j})">${esc(c)}</span>`).join("");$("m5s").innerHTML=Object.keys(R.cells).filter(v=>v!=u).map(v=>`<option value="${v}">${esc(R.names[v]||v)}（${esc(R.cells[v][i])}）</option>`).join("");om("m5")}
 let UN=[];
 function snap(){const R=S.roster[S.ym];UN.push({k:ROOT.cur+"|"+S.ym,c:JSON.stringify(R.cells),t:JSON.stringify(R.tr||{})});if(UN.length>20)UN.shift()}
@@ -233,7 +253,7 @@ do{const j1=w[j0];p[j0]=p[j1];j0=j1}while(j0)}
 const r=[];for(let j=1;j<=n;j++)r[p[j]-1]=j-1;return r}
 const isLrn=(p,c)=>(p.lr||[]).includes(c)&&(p.nl||[]).includes(c)&&!p.ban.includes(c);
 const trf=(R,u,i)=>!!(R&&R.tr&&R.tr[u]&&R.tr[u][i]);
-function genCore(f0){const old=S.roster[S.ym],[Y,M]=S.ym.split("-").map(Number),D=new Date(Y,M,0).getDate(),Q=S.rest,TRQ=S.trq==null?4:+S.trq;
+function genCore(f0){const old=S.roster[S.ym],[Y,M]=S.ym.split("-").map(Number),D=new Date(Y,M,0).getDate(),Q=Math.max(S.rest,D-Math.floor(S.maxh/S.len)),TRQ=S.trq==null?4:+S.trq,SB=S.sp!="rest";
 const E0=S.posts.filter(p=>p.on&&p.code),E=[];E0.forEach(p=>{for(let k=0;k<(p.need||1);k++)E.push(p)});const pe=S.ppl,N=pe.length,warn=[];
 if(!E.length||!N)return null;
 const na=pe.map(()=>Array(D).fill(false));
@@ -253,29 +273,29 @@ pe.forEach((p,i)=>{const a=old&&old.cells[p.uid];for(let d=0;d<f0;d++)off[i][d]=
 const LK=(S.lock||{})[S.ym]||{};pe.forEach((p,i)=>{const l=LK[p.uid]||{};let n=0;for(let d=f0;d<D;d++)if(l[d+1]=="休"&&!na[i][d]){off[i][d]=true;n++}left[i]=Math.max(0,left[i]-n)});
 const T=pe.map((p,i)=>Dm[i]-Qs[i]),wd=pe.map(()=>0),el=pe.map(()=>0),protect=pe.map(p=>hrsOf(p,S.ym)>0?4:0),trOK=w=>hrsOf(pe[w],S.ym)==0&&cutOf(pe[w],S.ym)==0;
 const PV=S.roster[prevYM()],trail=u=>{let c=0;const a=PV&&PV.cells[u];if(a)for(let i=a.length-1;i>=0&&a[i]&&a[i]!="休"&&a[i]!="—";i--)c++;return c},sk=pe.map(p=>trail(p.uid)),pr=pe.map(p=>{const a=PV&&PV.cells[p.uid];return!!a&&a[a.length-1]=="休"});
-const cnt=pe.map(()=>({})),trn=pe.map(()=>({})),trP={},lp=pe.map(()=>""),cells={},trm={},ww=pe.map(()=>0),tw=pe.map(()=>0),isWk=d=>{const w=new Date(Y,M-1,d+1).getDay();return w==0||w==6};
+const cnt=pe.map(()=>({})),trn=pe.map(()=>({})),trP={},lp=pe.map(()=>""),cells={},trm={},ww=pe.map(()=>0),tw=pe.map(()=>0),sb=pe.map(()=>0),isWk=d=>{const w=new Date(Y,M-1,d+1).getDay();return w==0||w==6};
 pe.forEach((p,i)=>{cells[p.uid]=Array(D).fill("");trm[p.uid]=Array(D).fill(0);const a=old&&old.cells[p.uid],t=old&&old.tr&&old.tr[p.uid];
 for(let d=0;d<f0;d++){const c=a?a[d]:"—";cells[p.uid][d]=c;if(!na[i][d])el[i]++;
-if(c&&c!="休"&&c!="—"){wd[i]++;lp[i]=c;sk[i]++;if(isWk(d))ww[i]++;if(t&&t[d]){trm[p.uid][d]=1;tw[i]++;trn[i][c]=(trn[i][c]||0)+1;trP[c]=(trP[c]||0)+1}else cnt[i][c]=(cnt[i][c]||0)+1}else{lp[i]="";sk[i]=0}}});
+if(c&&c!="休"&&c!="—"){wd[i]++;lp[i]=c;sk[i]++;if(isWk(d))ww[i]++;if(t&&t[d]){trm[p.uid][d]=1;tw[i]++;trn[i][c]=(trn[i][c]||0)+1;trP[c]=(trP[c]||0)+1}else if(c=="備")sb[i]++;else cnt[i][c]=(cnt[i][c]||0)+1}else{lp[i]="";sk[i]=0}}});
 const mxm=d=>{const W=pe.map((_,i)=>i).filter(i=>!off[i][d]&&!na[i][d]),mt=Array(W.length).fill(-1);let r=0;const tr=(j,sn)=>{for(let a=0;a<W.length;a++){if(sn[a]||banned(pe[W[a]],E[j].code))continue;sn[a]=1;if(mt[a]<0||tr(mt[a],sn)){mt[a]=j;return true}}return false};for(let j=0;j<E.length;j++)if(tr(j,[]))r++;return r};
 for(let d=f0;d<D;d++){let s=base+((d-f0)*7%Rd<ex?1:0);s=Math.min(s,Math.max(0,empN[d]-E.length));s=Math.max(0,s-off.filter((o,i)=>o[d]&&!na[i][d]).length);
 pe.map((_,i)=>i).filter(i=>!na[i][d]&&!off[i][d]&&!(d&&na[i][d-1])&&(LK[pe[i].uid]||{})[d+1]!="班"&&(left[i]>0||sk[i]>=6)&&!(d?off[i][d-1]:pr[i])).sort((a,b)=>((sk[b]>=6)-(sk[a]>=6))*100+(left[b]-left[a])/(D-d)*8+(sk[b]-sk[a])*.25+(isWk(d)?(ww[b]-ww[a])*1.5:0)+(Math.random()-.5)*1.5).reduce((pk,i)=>{if(pk.n>=s)return pk;const fz=sk[i]>=6;off[i][d]=true;const m=mxm(d);if(!fz&&m<pk.b){off[i][d]=false;return pk}left[i]--;pk.n++;pk.b=Math.min(pk.b,m);return pk},{n:0,b:mxm(d)});pe.forEach((_,i)=>{sk[i]=(off[i][d]||na[i][d])?0:sk[i]+1;if(isWk(d)&&!off[i][d]&&!na[i][d])ww[i]++})}
 left.forEach((l,i)=>{if(l>0)warn.push(`${pe[i].name} 休假少 ${l} 天（人數不足）`)});
-const doRest=(w,d)=>{off[w][d]=true;lp[w]="";cells[pe[w].uid][d]="休"};
+const doRest=(w,d)=>{off[w][d]=true;lp[w]="";cells[pe[w].uid][d]="休"},spare=(w,d)=>{if(SB){cells[pe[w].uid][d]="備";sb[w]++;wd[w]++;lp[w]=""}else doRest(w,d)};
 for(let d=f0;d<D;d++){pe.forEach((p,i)=>{if(na[i][d])cells[p.uid][d]="—";else el[i]++});
 const W=[],TR=[];pe.forEach((_,i)=>{if(off[i][d]||na[i][d])return;(tro[i]?TR:W).push(i)});
 const sur=Math.max(0,W.length-E.length),tp=[];
 if(sur>0)E0.forEach(p=>{if(W.some(w=>trOK(w)&&isLrn(pe[w],p.code)))tp.push(p.code)});
 tp.sort((a,b)=>(trP[a]||0)-(trP[b]||0));const tc=tp.slice(0,sur),n=Math.max(W.length,E.length);
-const cost=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>{if(i>=W.length)return 0;const w=W[i],rc=(T[w]*(el[w]/Math.max(1,Dm[w]))-wd[w])*3+protect[w];
+const cost=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>{if(i>=W.length)return 0;const w=W[i],rc=SB?sb[w]*4:(T[w]*(el[w]/Math.max(1,Dm[w]))-wd[w])*3+protect[w];
 if(j>=E.length){const t=tc[j-E.length];return t&&trOK(w)&&isLrn(pe[w],t)?rc-6-(tw[w]<TRQ*el[w]/Math.max(1,Dm[w])?4:0)+(trn[w][t]||0)*2:rc}
 const c=E[j].code;if(banned(pe[w],c))return 1e6;return(cnt[w][c]||0)*10+(lp[w]===c?4:0)+Math.random()}));
 const r=hung(cost),tdn=[];
 W.forEach((w,i)=>{const j=r[i];if(j<E.length){const c=E[j].code;if(cost[i][j]>=1e6)warn.push(`${M}/${d+1} ${pe[w].name} 被迫排到禁止／未學會的哨點 ${c}`);
-cells[pe[w].uid][d]=c;cnt[w][c]=(cnt[w][c]||0)+1;lp[w]=c;wd[w]++}else{const t=tc[j-E.length];if(t&&trOK(w)&&isLrn(pe[w],t))tdn.push([w,t]);else doRest(w,d)}});
+cells[pe[w].uid][d]=c;cnt[w][c]=(cnt[w][c]||0)+1;lp[w]=c;wd[w]++}else{const t=tc[j-E.length];if(t&&trOK(w)&&isLrn(pe[w],t))tdn.push([w,t]);else spare(w,d)}});
 const has=t=>pe.some(q=>cells[q.uid][d]===t&&!trm[q.uid][d]);
 const putTr=(w,t)=>{cells[pe[w].uid][d]=t;trm[pe[w].uid][d]=1;trn[w][t]=(trn[w][t]||0)+1;trP[t]=(trP[t]||0)+1;wd[w]++;tw[w]++;lp[w]=""};
-tdn.forEach(([w,t])=>has(t)?putTr(w,t):doRest(w,d));
+tdn.forEach(([w,t])=>has(t)?putTr(w,t):spare(w,d));
 const tdy={};TR.forEach(w=>{const o=E0.filter(q=>isLrn(pe[w],q.code)&&has(q.code)).map(q=>q.code).sort((a,b)=>((tdy[a]||0)-(tdy[b]||0))||((trn[w][a]||0)-(trn[w][b]||0)));
 if(o.length){tdy[o[0]]=(tdy[o[0]]||0)+1;putTr(w,o[0])}else doRest(w,d)});
 off.forEach((o,k)=>{if(o[d]&&!na[k][d])cells[pe[k].uid][d]="休"});
@@ -283,12 +303,13 @@ if(W.length<E.length)warn.push(`${M}/${d+1} 上班 ${W.length} 人，有哨點�
 const names=Object.fromEntries(pe.map(p=>[p.uid,p.name]));
 if(f0>0)Object.keys(old.cells).forEach(u=>{if(!cells[u]){cells[u]=old.cells[u].map((c,d)=>d<f0?c:"—");trm[u]=(old.tr&&old.tr[u])||Array(D).fill(0);names[u]=(old.names||{})[u]||u}});
 const trShort=[];let trN=0;if(TRQ>0)pe.forEach((p,i)=>{if(E0.some(e=>isLrn(p,e.code))&&trOK(i)){const nd=Math.ceil(TRQ*Dm[i]/D);if(tw[i]<nd){trN+=nd-tw[i];trShort.push(`${p.name||"某人"} 本月只跟哨 ${tw[i]} 次（目標 ${nd} 次；人手有餘的日子不夠）`)}}});
-return{R:{D,cells,tr:trm,names,site:S.site,codes:E0.map(e=>e.code),need:Object.fromEntries(E0.map(e=>[e.code,e.need||1])),slots:E.length},warn,trShort,trN}}
+return{R:{v:5,D,cells,tr:trm,names,site:S.site,codes:E0.map(e=>e.code),need:Object.fromEntries(E0.map(e=>[e.code,e.need||1])),slots:E.length},warn,trShort,trN}}
 function scoreR(r){const R=r.R,ids=Object.keys(R.cells),Y=+S.ym.slice(0,4),M=+S.ym.slice(5),bak=S.roster[S.ym];S.roster[S.ym]=R;let ck=[];try{ck=chkList()}finally{S.roster[S.ym]=bak}
 const reds=ck.filter(x=>x[0]=="🔴").length,yel=ck.length-reds;let sp=0;
 R.codes.forEach(c=>{const a=ids.map(u=>{const p=S.ppl.find(x=>x.uid==u);return p&&!banned(p,c)?R.cells[u].filter((x,d)=>x===c&&!trf(R,u,d)).length:null}).filter(x=>x!==null);if(a.length)sp+=Math.max(...a)-Math.min(...a)});
 const wk=ids.map(u=>R.cells[u].filter((x,d)=>x!="休"&&x!="—"&&[0,6].includes(new Date(Y,M-1,d+1).getDay())).length);
-return reds*1000+r.warn.length*500+r.trN*30+yel*20+sp*10+(Math.max(...wk)-Math.min(...wk))*15}
+const sbc=ids.map(u=>R.cells[u].filter(x=>x==="備").length);
+return reds*1000+r.warn.length*500+r.trN*30+yel*20+sp*10+(Math.max(...wk)-Math.min(...wk))*15+(Math.max(...sbc)-Math.min(...sbc))*10}
 function gen(f0){UN=[];save();f0=+f0||0;const old=S.roster[S.ym];if(f0>0&&!old)f0=0;
 const [Y,M]=S.ym.split("-").map(Number),D=new Date(Y,M,0).getDate();
 if(f0>=D)return toast("這個日期已超過月底");
@@ -311,12 +332,12 @@ function drawRoster(){drawRFD();const R=S.roster[S.ym];if(!R){$("out").style.dis
 const [Y,M]=S.ym.split("-").map(Number),D=R.D,ids=Object.keys(R.cells);
 let h=`<table><tr><th class="t" colspan="${D+1}">${M}月班表　駐點:${esc(S.site)}</th></tr><tr><th class="s1">姓名</th>`;
 for(let i=1;i<=D;i++){const w=new Date(Y,M-1,i).getDay();h+=`<th class="${w%6==0?"r":""}">${i}<br>${WK[w]}</th>`}h+="</tr>";
-ids.forEach(u=>{h+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+(()=>{const k=stk(u);return R.cells[u].map((c,i)=>c=="休"?`<td class="r" onclick="editCell('${u}',${i})">休</td>`:c=="—"?`<td style="color:#bbb">－</td>`:`<td class="${k[i]>=7?"w2":k[i]>=6?"w1":""}" onclick="editCell('${u}',${i})">${c}${trf(R,u,i)?'<small style="color:#d97706">學</small>':""}</td>`).join("")})()+"</tr>"});
+ids.forEach(u=>{h+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+(()=>{const k=stk(u);return R.cells[u].map((c,i)=>c=="休"?`<td class="r" onclick="editCell('${u}',${i})">休</td>`:c=="—"?`<td style="color:#bbb">－</td>`:`<td class="${k[i]>=7?"w2":k[i]>=6?"w1":""}" style="${c=="備"?"color:#4338ca;":""}" onclick="editCell('${u}',${i})">${c}${trf(R,u,i)?'<small style="color:#d97706">學</small>':""}</td>`).join("")})()+"</tr>"});
 h+=`<tr><td class="s1">缺額</td>`+Array.from({length:D},(_,d)=>{const v=(R.slots||R.codes.length)-ids.filter(u=>R.codes.includes(R.cells[u][d])&&!trf(R,u,d)).length;return v>0?`<td class="c3">${v}</td>`:"<td></td>"}).join("")+"</tr>";
 $("out").innerHTML=h+"</table>";$("out").style.display="block";
-let s=`<table><tr><th class="s1">次數</th>`+R.codes.map(c=>`<th>${esc(c)}</th>`).join("")+"<th>上班</th><th>連勤</th><th>休</th><th>預排h</th><th>目標h</th><th>加班h</th><th>假日班</th></tr>";
+let s=`<table><tr><th class="s1">次數</th>`+R.codes.map(c=>`<th>${esc(c)}</th>`).join("")+"<th>備</th><th>上班</th><th>連勤</th><th>休</th><th>預排h</th><th>目標h</th><th>加班h</th><th>假日班</th></tr>";
 ids.forEach(u=>{const c=R.cells[u],mx=Math.max(0,...stk(u)),r=c.filter(x=>x=="休").length,dm=c.filter(x=>x!="—").length,rq=Math.round(S.rest*dm/R.D),h=(dm-r)*S.len,t=hrsOf(S.ppl.find(x=>x.uid==u)||{},S.ym);
-s+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+R.codes.map(k=>`<td>${c.filter((x,i)=>x===k&&!trf(R,u,i)).length}</td>`).join("")+`<td>${dm-r}</td><td class="${mx>=7?"c3":mx>=6?"c2":""}">${mx}</td><td class="${r<rq?"c3":""}">${r}</td><td class="${h>S.maxh?"c3":h>S.norm?"c2":""}">${h}</td><td class="${t&&h>t?"c3":t&&h<t?"c2":""}">${t||""}</td><td>${Math.max(0,h-S.norm)}</td><td>${c.filter((x,i)=>x!="休"&&x!="—"&&[0,6].includes(new Date(Y,M-1,i+1).getDay())).length}</td></tr>`});
+s+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+R.codes.map(k=>`<td>${c.filter((x,i)=>x===k&&!trf(R,u,i)).length}</td>`).join("")+`<td>${c.filter(x=>x==="備").length||""}</td><td>${dm-r}</td><td class="${mx>=7?"c3":mx>=6?"c2":""}">${mx}</td><td class="${r<rq?"c3":""}">${r}</td><td class="${h>S.maxh?"c3":h>S.norm?"c2":""}">${h}</td><td class="${t&&h>t?"c3":t&&h<t?"c2":""}">${t||""}</td><td>${Math.max(0,h-S.norm)}</td><td>${c.filter((x,i)=>x!="休"&&x!="—"&&[0,6].includes(new Date(Y,M-1,i+1).getDay())).length}</td></tr>`});
 $("stat").innerHTML=s+"</table>";$("stat").style.display="block";$("chk").textContent=chkList().slice(0,25).join("\n")}
 function dl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type||"text/csv"}));a.download=name;a.click()}
 function rosterCsv(){const R=S.roster[S.ym];if(!R)return toast("尚未產生班表");
@@ -380,9 +401,9 @@ rows.forEach((r,j)=>{x=0;r.forEach((o,i)=>{cell(x,th+hh+j*rh,cw[i],rh,o,i==0?"#e
 if(FL.length){g.textAlign="left";g.fillStyle="#111";g.font="14px "+FNT;FL.forEach((l,k)=>g.fillText(l,10,th+hh+rows.length*rh+24+k*22))}
 cv.toBlob(b=>{if(IB)URL.revokeObjectURL($("im").src);IB=b;IF=fn+".png";$("im").src=URL.createObjectURL(b);$("im").style.width=fit?"100%":W+"px";om("m4")},"image/png")}
 const dayHead=(Y,M,D)=>Array.from({length:D},(_,i)=>{const w=new Date(Y,M-1,i+1).getDay();return{t:String(i+1),t2:WK[w],c:w%6==0?"#c00000":"#111"}});
-function legendText(){const R=S.roster[S.ym],e=R.codes.map(c=>{const p=S.posts.find(x=>x.code===c);return c+"＝"+(p&&p.name?p.name:"（未命名）")}),L=[];for(let i=0;i<e.length;i+=4)L.push(e.slice(i,i+4).join("　"));return"【哨點代號】\n"+L.join("\n")+"\n休＝休假"+(R.tr&&Object.values(R.tr).some(a=>a.some(x=>x))?"　學＝跟哨學習":"")}
+function legendText(){const R=S.roster[S.ym],e=R.codes.map(c=>{const p=S.posts.find(x=>x.code===c);return c+"＝"+(p&&p.name?p.name:"（未命名）")}),L=[];for(let i=0;i<e.length;i+=4)L.push(e.slice(i,i+4).join("　"));return"【哨點代號】\n"+L.join("\n")+"\n休＝休假"+(Object.values(R.cells).some(a=>a.includes("備"))?"　備＝備勤":"")+(R.tr&&Object.values(R.tr).some(a=>a.some(x=>x))?"　學＝跟哨學習":"")}
 function imgRoster(){const R=S.roster[S.ym];if(!R)return toast("尚未產生班表");const[Y,M]=S.ym.split("-").map(Number),ids=Object.keys(R.cells),D=R.D;
-mkImg(M+"月班表　駐點:"+S.site,[{t:"姓名"}].concat(dayHead(Y,M,D)),ids.map(u=>[{t:R.names[u]||u}].concat(R.cells[u].map((c,i)=>c=="休"?{t:"休",c:"#c00000"}:c=="—"?{t:"－",c:"#bbbbbb"}:trf(R,u,i)?{t:c+"學",c:"#d97706"}:{t:c}))),[78].concat(Array(D).fill(32)),0,S.site+"_班表_"+S.ym,legendText())}
+mkImg(M+"月班表　駐點:"+S.site,[{t:"姓名"}].concat(dayHead(Y,M,D)),ids.map(u=>[{t:R.names[u]||u}].concat(R.cells[u].map((c,i)=>c=="休"?{t:"休",c:"#c00000"}:c=="—"?{t:"－",c:"#bbbbbb"}:c=="備"?{t:"備",c:"#4338ca"}:trf(R,u,i)?{t:c+"學",c:"#d97706"}:{t:c}))),[78].concat(Array(D).fill(32)),0,S.site+"_班表_"+S.ym,legendText())}
 function dlImg(){const a=document.createElement("a");a.href=URL.createObjectURL(IB);a.download=IF;a.click()}
 async function shareImg(){try{const f=new File([IB],IF,{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});else toast("此瀏覽器不支援分享，請用下載或長按圖片")}catch(e){}}
 
@@ -511,7 +532,7 @@ function todayData(){const P=tpP(),d=$("dt").value||defDate(),i=+d.slice(8)-1,R=
 if(!R||!R.cells)return{P,d,R:null};
 const nm=u=>(P.ppl.find(x=>x.uid==u)||{}).name||R.names[u]||u,ids=Object.keys(R.cells);
 const rows=R.codes.map(c=>{const p=P.posts.find(x=>x.code===c),us=ids.filter(u=>R.cells[u][i]===c&&!trf(R,u,i)),ts=ids.filter(u=>R.cells[u][i]===c&&trf(R,u,i));return{c,label:(p&&p.name)||c,need:(R.need||{})[c]||1,uids:us,names:us.map(nm),trs:ts.map(nm)}});
-return{P,d,R,nm,rows,off:ids.filter(u=>R.cells[u][i]=="休").map(nm)}}
+return{P,d,R,nm,rows,sb:ids.filter(u=>R.cells[u][i]=="備").map(nm),off:ids.filter(u=>R.cells[u][i]=="休").map(nm)}}
 function drawToday(){const T=todayData();$("hd").textContent=T.d;
 if(!T.R){$("tx").value="";$("tinfo").innerHTML=`<span class="c3">「${esc(T.P.site)}」在 ${T.d.slice(0,7)} 還沒有班表，請先到「排班」頁產生。</span>`;$("te").innerHTML='<option value="">（不指定）</option>';return}
 const on=[].concat(...T.rows.map(r=>r.uids)),P=T.P;P.emg=P.emg||{};let e=P.emg[T.d];
@@ -520,7 +541,7 @@ $("te").innerHTML='<option value="">（不指定）</option>'+on.map(u=>`<option
 buildTx()}
 function buildTx(){const T=todayData();if(!T.R)return;const M=+T.d.slice(5,7),D=+T.d.slice(8),e=$("te").value;
 let t=M+"/"+D+" "+($("tt").value||T.P.start)+"  上哨人員\n"+T.rows.map(r=>r.label+"："+(r.names.length?r.names.join("、"):"（空缺）")+(r.trs.length?"（跟哨學習："+r.trs.join("、")+"）":"")).join("\n");
-if(e)t+="\n緊急應變負責人："+T.nm(e);$("tx").value=t;
+if(T.sb.length)t+="\n備勤："+T.sb.join("、");if(e)t+="\n緊急應變負責人："+T.nm(e);$("tx").value=t;
 const lack=T.rows.filter(r=>r.names.length<r.need).map(r=>`<div class="c3">⚠ 「${esc(r.label)}」缺 ${r.need-r.names.length} 人</div>`).join("");
 $("tinfo").innerHTML=lack+`<div>休假（${T.off.length}）：${T.off.length?esc(T.off.join("、")):"無"}</div>`}
 function saveEmg(){const T=todayData();if(!T.R)return;T.P.emg=T.P.emg||{};T.P.emg[T.d]=$("te").value;persist();buildTx()}
@@ -529,7 +550,7 @@ if(ok)toast("已複製，可貼到 LINE");else if(navigator.clipboard)navigator.
 function shareTx(){const v=$("tx").value;if(!v)return toast("沒有內容");if(navigator.share)navigator.share({text:v}).catch(()=>{});else copyTx()}
 function imgTx(){const T=todayData();if(!T.R)return toast("此日期沒有班表");const e=$("te").value,M=+T.d.slice(5,7),D=+T.d.slice(8),tm=$("tt").value||T.P.start;
 const rows=T.rows.map(r=>[{t:r.label,b:1},{t:(r.names.length?r.names.join("、"):"（空缺）")+(r.trs.length?"（學："+r.trs.join("、")+"）":""),c:r.names.length<r.need?"#dc2626":""}]);
-if(e)rows.push([{t:"緊急應變負責人",b:1},{t:T.nm(e)}]);
+if(T.sb.length)rows.push([{t:"備勤",b:1},{t:T.sb.join("、")}]);if(e)rows.push([{t:"緊急應變負責人",b:1},{t:T.nm(e)}]);
 mkImg(M+"/"+D+" "+tm+"　上哨人員",[{t:"哨點"},{t:"人員"}],rows,[150,300],1,"上哨名單_"+T.d,"休假："+(T.off.length?T.off.join("、"):"無"))}
 
 /* ---------- 哨點學習進度 ---------- */
@@ -554,7 +575,7 @@ mkImg(S.site+" 哨點學習進度",[{t:"姓名"}].concat(E.map(x=>({t:x.name||x.
 function learnCsv(){const E=learnPosts();let t="﻿"+S.site+" 哨點學習進度\n姓名,"+E.map(x=>x.name||x.code).join(",")+",已學會數,進度%\n";
 S.ppl.forEach(p=>{const n=E.filter(x=>lst(p,x.code)==0).length;t+=[p.name||p.id||"?"].concat(E.map(x=>LS3[lst(p,x.code)].x),[n,E.length?Math.round(n/E.length*100):0]).join(",")+"\n"});dl(S.site+"_哨點學習進度.csv",t)}
 
-function init(){$("ym").value=S.ym;$("site").value=S.site;$("rest").value=S.rest;$("st").value=S.start;$("nh").value=S.norm;$("xh").value=S.maxh;$("ln").value=S.len;$("trq").value=S.trq==null?4:S.trq;drawProf();drawPosts();drawPpl();drawRoster();$("warn").textContent="";$("out").style.display=S.roster[S.ym]?"block":"none";$("dt").value=defDate();$("tt").value=S.start;drawTp();$("hd").textContent=$("dt").value}
+function init(){$("ym").value=S.ym;$("site").value=S.site;$("rest").value=S.rest;$("st").value=S.start;$("nh").value=S.norm;$("xh").value=S.maxh;$("ln").value=S.len;$("trq").value=S.trq==null?4:S.trq;$("sp").value=S.sp||"standby";drawProf();drawPosts();drawPpl();drawRoster();$("warn").textContent="";$("out").style.display=S.roster[S.ym]?"block":"none";$("dt").value=defDate();$("tt").value=S.start;drawTp();$("hd").textContent=$("dt").value}
 document.querySelectorAll(".mod").forEach(m=>m.addEventListener("click",e=>{if(e.target!==m)return;cm(m.id)}));
 let DIP=null;
 const isStd=()=>(typeof matchMedia!="undefined"&&matchMedia("(display-mode: standalone)").matches)||(typeof navigator!="undefined"&&navigator.standalone);
