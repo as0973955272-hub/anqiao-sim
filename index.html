@@ -66,7 +66,7 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <button class="wbtn" onclick="$('imf').click()">📥 匯入別人分享的班表檔</button><input type="file" id="imf" accept=".json" style="display:none" onchange="importFile(this)">
 <button class="wbtn" id="inst" style="display:none;background:#fde68a;color:#7c4a00" onclick="installApp()">📲 安裝到手機主畫面（像 App 一樣）</button>
 <div id="slots" style="width:100%;max-width:360px;margin-top:10px"></div>
-<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.6</div>
+<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.7</div>
 <button class="wbtn" id="wback" style="display:none;background:#ffffff33;color:#fff;font-size:16px" onclick="$('wel').style.display='none'">返回目前存檔</button>
 </div>
 <header><span>🛡 安橋人生模擬器 <button onclick="showWel()" style="padding:3px 8px;font-size:12px;margin-left:6px;background:#ffffff40">存檔</button></span><span style="font-size:12px;text-align:right"><span id="hd"></span><br><span id="sv"></span></span></header>
@@ -86,24 +86,24 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <div class="wrap" id="out" style="display:none"></div>
 <div class="wrap" id="stat" style="display:none"></div>
 <div class="row noprint" style="margin:6px 10px"><button onclick="imgRoster()">🖼 存成圖片</button><button onclick="undoCell()">↶ 復原修改</button></div>
-<div class="hint" style="margin:4px 14px">點班表任一格可修改或與人對調。黃底＝連勤 6 天、紅底＝連勤 7 天。檢核只含連勤、應休、月工時、兩班間隔 11 小時，不含加班費與公司特別規定，發布前請再看一遍。</div>
+<div class="hint" style="margin:4px 14px">檢核只含連勤、應休、月工時、兩班間隔，不含加班費與公司規定，發布前請再確認。</div>
 <details class="sec noprint"><summary>更多：列印、CSV、分享</summary>
 <div class="row"><button onclick="window.print()">列印</button><button onclick="rosterCsv()">CSV</button></div>
 <div class="row" style="margin-top:8px"><button onclick="shareLink()">🔗 分享連結</button><button onclick="shareFile()">📤 分享檔</button></div>
-<div class="hint">分享的是目前這一刻的班表快照，對方匯入後是他自己的一份，不會自動同步。</div></details>
+</details>
 <details class="sec"><summary>⚙ 基本設定</summary>
 <div class="f"><label>班表名稱</label><input type="text" id="site" onchange="save();drawProf();drawRoster()"></div>
 <div class="row"><div class="f"><label>上班</label><input type="time" id="st" onchange="save()"></div><div class="f"><label>時數</label><input type="number" id="ln" min="1" max="24" onchange="save()"></div></div>
 <div class="row"><div class="f"><label>每月應休</label><input type="number" id="rest" min="0" max="15" onchange="save();drawRoster()"></div><div class="f"><label>跟哨目標</label><input type="number" id="trq" min="0" max="15" onchange="save()"></div></div>
 <div class="row"><div class="f"><label>正常工時</label><input type="number" id="nh" onchange="save();drawRoster()"></div><div class="f"><label>工時上限</label><input type="number" id="xh" onchange="save();drawRoster()"></div></div>
 <div class="f"><label>人比哨位多</label><select id="sp" onchange="save()"><option value="standby">多出的人「備勤」（算上班）</option><option value="rest">多出的人多休息</option></select></div>
-<div class="hint">排班會自動多留休假天數，確保不超過工時上限。「跟哨目標」＝學習中的人每月目標跟哨次數。</div>
+<div class="hint">「跟哨目標」＝學習中的人每月目標跟哨次數。</div>
 <div class="row"><button onclick="newProf()">＋ 新增班別</button><button class="del" onclick="delProf()">刪除此班別</button></div>
 </details>
-<details class="sec"><summary>🛡 哨點</summary><div class="hint">勾選＝啟用；最右邊數字＝需要幾人。</div>
+<details class="sec"><summary>🛡 哨點</summary>
 <div id="posts"></div><button class="add" onclick="addPost()">＋ 新增哨點</button>
 <button class="add" style="background:#5b6b8a;margin-top:8px" onclick="applyDefPosts()">套用預設 13 個哨點</button></details>
-<details class="sec"><summary>👥 人員</summary><div class="hint">點 ⚙ 展開：目標時數、想少上班、禁止哨點。</div>
+<details class="sec"><summary>👥 人員</summary>
 <div id="ppl"></div><button class="add" onclick="addPerson()">＋ 新增人員</button>
 <div class="row" style="margin-top:8px"><button class="add" style="background:#0d9488" onclick="hirePerson()">👤 新人到職</button><button class="add" onclick="batchPpl()">📋 批次貼上名單</button></div>
 <details style="margin-top:8px"><summary class="hint">其他</summary><button class="add" style="background:#5b6b8a;margin-top:6px" onclick="anon()">🔒 一鍵匿名（姓名改成人員1、2…）</button></details></details>
@@ -115,7 +115,7 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <div id="p-today" style="display:none">
 <div class="card"><div class="f"><label>套用班表</label><select id="tp" onchange="tpChange()"></select></div>
 <div class="f" style="margin-bottom:0"><button onclick="dayGo(-1)" style="padding:9px 16px">◀</button><input type="date" id="dt" onchange="drawToday()" style="text-align:center"><button onclick="dayGo(1)" style="padding:9px 16px">▶</button><button onclick="$('dt').value=defDate();drawToday()" style="padding:9px 10px;white-space:nowrap;flex:none">今天</button></div></div>
-<div class="card"><label class="hint">今日上哨名單（依所選班表自動產生，可直接修改文字後再複製）</label><textarea id="tx" rows="11" style="width:100%;font:inherit;padding:8px;border:1px solid #9bb5e6;border-radius:6px;margin-top:4px"></textarea>
+<div class="card"><label class="hint">今日上哨名單</label><textarea id="tx" rows="11" style="width:100%;font:inherit;padding:8px;border:1px solid #9bb5e6;border-radius:6px;margin-top:4px"></textarea>
 <div id="tinfo" style="font-size:14px;margin-top:6px;line-height:1.7"></div></div>
 <div class="row" style="margin:0 10px 10px"><button class="go" style="margin:0" onclick="copyTx()">📋 複製</button><button style="margin:0" onclick="shareTx()">分享</button><button style="margin:0" onclick="imgTx()">🖼 圖片</button></div>
 <div class="card"><div class="f"><label>發布時間</label><input type="time" id="tt" onchange="buildTx()"></div>
@@ -194,14 +194,13 @@ let h=`<div class="hint" style="font-size:14px;line-height:1.7">本月 ${D} 天�
 <tr><td>${mn}～${rec-1}</td><td>🟠 勉強</td><td>剛好填滿，沒有備勤，一人請假就缺</td></tr>
 <tr><td>${rec}～${hi}</td><td>🟢 健康</td><td>每天約 ${Math.max(0,Math.floor(rec*W/D-slots))}～${Math.max(1,Math.floor(hi*W/D-slots))} 人備勤，可應付請假</td></tr>
 <tr><td>多於 ${hi}</td><td>🔵 偏多</td><td>備勤偏多，人力成本偏高，可考慮把人調去支援別班</td></tr></table>`;
-h+=`<div class="hint" style="font-size:14px">你現在 ${N} 人：${N<mn?`比最低需求少 ${mn-N} 人`:N<rec?`離建議人數還差 ${rec-N} 人`:`已達建議人數`}（建議 ${rec} 人，約為最低需求 ${mn} 人再加 10% 備用）。</div>`;
 h+='<div style="font-weight:700;margin:10px 0 4px">各哨點會的人數</div><table style="width:100%;font-size:13px;table-layout:fixed;word-break:break-all"><tr><th style="width:30%">哨點</th><th>需</th><th>會</th><th>建議</th><th></th></tr>';
 let need2=0;
 E0.forEach(e=>{const n=e.need||1,k=ok.filter(p=>lst(p,e.code)==0&&!p.ban.includes(e.code)).length,mnk=Math.ceil(n*D/W),rk=mnk+1;
 let b;if(k<n)b="🔴 排不滿";else if(k<mnk)b="🟠 無法輪休";else if(k<rk)b="🟡 偏少";else b="🟢 足夠";
 if(k<rk)need2+=rk-k;
 h+=`<tr><td>${esc(e.name)}</td><td>${n}</td><td>${k}</td><td>${rk}</td><td>${b}</td></tr>`});
-h+='</table><div class="hint">「建議」＝輪休所需＋1 人備用。點「哨點學習」把新人訓練成會，比單純補人更省。</div>';
+h+='</table>';
 q.innerHTML=h}
 
 function drawPosts(){setTimeout(drawAdv,0);$("posts").innerHTML=S.posts.map((p,i)=>`<div class="item"><input type="checkbox" ${p.on?"checked":""} onchange="S.posts[${i}].on=this.checked;save();drawPpl()"><input class="c" value="${esc(p.code)}" placeholder="代號" onchange="chCode(${i},this.value)"><input value="${esc(p.name)}" placeholder="名稱" onchange="S.posts[${i}].name=this.value;save()"><input class="c" style="flex:0 0 52px" type="number" min="1" max="9" value="${p.need||1}" title="需要幾人" onchange="S.posts[${i}].need=Math.max(1,+this.value||1);save()"><button class="del" onclick="delPost(${i})">刪</button></div>`).join("")}
@@ -246,13 +245,13 @@ Object.keys(R.cells).forEach(u=>R.cells[u].forEach((c,i)=>{if(c&&c!="休"&&c!="�
 Object.values(per).forEach(L=>{L.sort((a,b)=>a[0]-b[0]);for(let i=1;i<L.length;i++){const g=(L[i][0]-L[i-1][1])/60;if(g<11&&L[i][3].indexOf(S.ym)==0)out.push(`🔴 ${L[i][2]} ${L[i][3].slice(5)} 與前一班間隔僅 ${g.toFixed(1)} 小時（需≥11）`)}});return out}
 function chkList(){const R=S.roster[S.ym];if(!R)return[];const w=[],ids=Object.keys(R.cells),M=+S.ym.slice(5);
 ids.forEach(u=>{const n=R.names[u]||u,mx=Math.max(0,...stk(u)),r=R.cells[u].filter(c=>c=="休").length,dm=R.cells[u].filter(c=>c!="—").length,rq=Math.round(S.rest*dm/R.D),h=(dm-r)*S.len;
-if(mx>=7)w.push(`🔴 ${n} 連續上班 ${mx} 天`);else if(mx>=6)w.push(`🟡 ${n} 連續上班 ${mx} 天`);
+if(mx>=7)w.push(`🔴 ${n} 連續上班 ${mx} 天`);
 if(r<rq)w.push(`🔴 ${n} 休假 ${r} 天，未達應休 ${rq} 天`);
-if(h>S.maxh)w.push(`🔴 ${n} 預排 ${h} 小時，超過上限 ${S.maxh}`);else if(h>S.norm)w.push(`🟡 ${n} 預排 ${h} 小時（加班 ${h-S.norm}）`);const t=hrsOf(S.ppl.find(x=>x.uid==u)||{},S.ym);if(t&&h>t)w.push(`🔴 ${n} 預排 ${h} 小時，超過本人目標 ${t} 小時`);else if(t&&h<=t-S.len)w.push(`🟡 ${n} 預排 ${h} 小時，低於本人目標 ${t} 小時`)});
+if(h>S.maxh)w.push(`🔴 ${n} 預排 ${h} 小時，超過上限 ${S.maxh}`);const t=hrsOf(S.ppl.find(x=>x.uid==u)||{},S.ym);if(t&&h>t)w.push(`🔴 ${n} 預排 ${h} 小時，超過本人目標 ${t} 小時`);else if(t&&h<=t-S.len)w.push(`🟡 ${n} 預排 ${h} 小時，低於本人目標 ${t} 小時`)});
 for(let d=0;d<R.D;d++){const v=(R.slots||R.codes.length)-ids.filter(u=>R.codes.includes(R.cells[u][d])&&!trf(R,u,d)).length;if(v>0)w.push(`🔴 ${M}/${d+1} 缺 ${v} 個哨點無人值勤`)}
 for(let d=0;d<R.D;d++){const c={};ids.forEach(u=>{const v=R.cells[u][d];if(R.codes.includes(v)&&!trf(R,u,d))c[v]=(c[v]||0)+1});Object.keys(c).forEach(k=>{if(c[k]>((R.need||{})[k]||1))w.push(`🔴 ${M}/${d+1} 哨點 ${k} 排了 ${c[k]} 人，超過需求 ${(R.need||{})[k]||1} 人`)})}
 ids.forEach(u=>{const m=S.ppl.find(x=>x.uid==u);if(m)R.cells[u].forEach((c,d)=>{if(banned(m,c)&&!trf(R,u,d))w.push(`🔴 ${R.names[u]||u} ${M}/${d+1} 排到禁止／未學會的哨點 ${c}`)})});
-ids.forEach(u=>{const p=S.ppl.find(x=>x.uid==u);if(p&&cutOf(p,S.ym)>0){const wk=v=>R.cells[v].filter(c=>c!="休"&&c!="—").length,h=wk(u),avg=ids.reduce((a,v)=>a+wk(v),0)/ids.length;if(h>=avg)w.push(`🟡 ${R.names[u]||u} 想少上班，但上班天數 ${h} 天不低於平均 ${avg.toFixed(1)} 天（人手不足，無法減少）`)}});
+ids.forEach(u=>{const p=S.ppl.find(x=>x.uid==u);if(p&&cutOf(p,S.ym)>0){const wk=v=>R.cells[v].filter(c=>c!="休"&&c!="—").length,h=wk(u),avg=ids.reduce((a,v)=>a+wk(v),0)/ids.length;}});
 return w.concat(gapList())}
 
 /* ---------- 預先指定／格子編輯 ---------- */
@@ -264,7 +263,7 @@ let ec=null;
 function editCell(u,i){const R=S.roster[S.ym];if(!R)return;const k=stk(u),cur=R.cells[u][i],M=+S.ym.slice(5),y=+S.ym.slice(0,4),pm=M==1?12:M-1,pd=new Date(y,M-1,0).getDate();
 const f=x=>x>=0?M+"/"+(x+1):pm+"/"+(pd+x+1);let info="";
 if(cur!="休"){let fw=0;while(i+fw+1<R.D&&R.cells[u][i+fw+1]!="休"&&R.cells[u][i+fw+1]!="—")fw++;const tot=k[i]+fw,a=i-(k[i]-1),b=i+fw;
-if(tot>=6)info=(tot>=7?"🔴":"🟡")+" 連續上班 "+tot+" 天：\n"+f(a)+(a<0?"（上月）":"")+" ～ "+f(b)+(b==R.D-1?"（月底，下月續算）":"")+"\n這是第 "+k[i]+" 天上班"}
+if(tot>=7)info="🔴 連續上班 "+tot+" 天：\n"+f(a)+(a<0?"（上月）":"")+" ～ "+f(b)+(b==R.D-1?"（月底，下月續算）":"")+"\n這是第 "+k[i]+" 天上班"}
 ec={u,i,opts:["休","備"].concat(R.codes)};$("m5t").textContent=(R.names[u]||u)+"　"+M+"/"+(i+1)+"　目前："+cur;$("m5i").textContent=info;
 $("m5b").innerHTML=ec.opts.map((c,j)=>`<span class="chip ${c==cur?"x":""}" style="${c==cur?"background:#1d4ed8;border-color:#1d4ed8;":""}padding:10px 18px;font-size:17px" onclick="setCell(${j})">${esc(c)}</span>`).join("");$("m5s").innerHTML=Object.keys(R.cells).filter(v=>v!=u).map(v=>`<option value="${v}">${esc(R.names[v]||v)}（${esc(R.cells[v][i])}）</option>`).join("");$("m5l").style.display=R.codes.includes(cur)&&!trf(R,u,i)?"block":"none";om("m5")}
 function leaveCell(){const R=S.roster[S.ym];if(!R)return;const u=ec.u,i=ec.i,c=R.cells[u][i];if(!R.codes.includes(c))return;
@@ -360,7 +359,7 @@ if(f0==0&&old&&!confirm(S.ym+" 已有班表，要重新產生並覆蓋嗎？"))r
 autoBackup();const TRIES=30;let best=null;
 for(let k=0;k<TRIES;k++){const r=genCore(f0);if(!r)return;r.sc=scoreR(r);if(!best||r.sc<best.sc)best=r}
 S.roster[S.ym]=best.R;save();
-$("warn").textContent=(f0>0?"（已從 "+M+"/"+(f0+1)+" 起重排，之前的班表沒有動）\n":"")+"（已試排 "+TRIES+" 種組合，挑出最好的一種）\n"+best.warn.concat(best.trShort).slice(0,12).join("\n");drawRoster()}
+$("warn").textContent=(f0>0?"（已從 "+M+"/"+(f0+1)+" 起重排，之前的班表沒有動）\n":"")+""+best.warn.concat(best.trShort).slice(0,12).join("\n");drawRoster()}
 function regenFrom(){const R=S.roster[S.ym];if(!R)return toast("本月還沒有班表，請先按「產生班表」");const f=+$("rfd").value-1;if(f<=0)return gen();const M=+S.ym.slice(5);if(!confirm("從 "+M+"/"+(f+1)+" 起重新排後面的班表？\n（"+M+"/"+f+" 以前的班表不會動）"))return;gen(f)}
 function drawRFD(){const q=$("rfd");if(!q)return;const v=q.value,D=new Date(+S.ym.slice(0,4),+S.ym.slice(5),0).getDate(),M=+S.ym.slice(5);q.innerHTML=Array.from({length:D},(_,i)=>`<option value="${i+1}">${M}/${i+1}</option>`).join("");const t=today();q.value=v&&+v<=D?v:(t.slice(0,7)==S.ym?+t.slice(8):1)}
 function hirePerson(){const n=prompt("新人姓名");if(n===null||!n.trim())return;
@@ -374,12 +373,12 @@ function drawRoster(){drawRFD();drawAdv();const R=S.roster[S.ym];if(!R){$("out")
 const [Y,M]=S.ym.split("-").map(Number),D=R.D,ids=Object.keys(R.cells);
 let h=`<table><tr><th class="t" colspan="${D+1}">${M}月班表　駐點:${esc(S.site)}</th></tr><tr><th class="s1">姓名</th>`;
 for(let i=1;i<=D;i++){const w=new Date(Y,M-1,i).getDay();h+=`<th class="${w%6==0?"r":""}">${i}<br>${WK[w]}</th>`}h+="</tr>";
-ids.forEach(u=>{h+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+(()=>{const k=stk(u);return R.cells[u].map((c,i)=>c=="休"?`<td class="r" onclick="editCell('${u}',${i})">休</td>`:c=="—"?`<td style="color:#bbb">－</td>`:`<td class="${k[i]>=7?"w2":k[i]>=6?"w1":""}" style="${c=="備"?"color:#4338ca;":""}" onclick="editCell('${u}',${i})">${c}${trf(R,u,i)?'<small style="color:#d97706">學</small>':""}</td>`).join("")})()+"</tr>"});
+ids.forEach(u=>{h+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+(()=>{const k=stk(u);return R.cells[u].map((c,i)=>c=="休"?`<td class="r" onclick="editCell('${u}',${i})">休</td>`:c=="—"?`<td style="color:#bbb">－</td>`:`<td class="${k[i]>=7?"w2":""}" style="${c=="備"?"color:#4338ca;":""}" onclick="editCell('${u}',${i})">${c}${trf(R,u,i)?'<small style="color:#d97706">學</small>':""}</td>`).join("")})()+"</tr>"});
 h+=`<tr><td class="s1">缺額</td>`+Array.from({length:D},(_,d)=>{const v=(R.slots||R.codes.length)-ids.filter(u=>R.codes.includes(R.cells[u][d])&&!trf(R,u,d)).length;return v>0?`<td class="c3">${v}</td>`:"<td></td>"}).join("")+"</tr>";
 $("out").innerHTML=h+"</table>";$("out").style.display="block";
 let s=`<table><tr><th class="s1">次數</th>`+R.codes.map(c=>`<th>${esc(c)}</th>`).join("")+"<th>備</th><th>上班</th><th>連勤</th><th>休</th><th>預排h</th><th>目標h</th><th>加班h</th><th>假日班</th></tr>";
 ids.forEach(u=>{const c=R.cells[u],mx=Math.max(0,...stk(u)),r=c.filter(x=>x=="休").length,dm=c.filter(x=>x!="—").length,rq=Math.round(S.rest*dm/R.D),h=(dm-r)*S.len,t=hrsOf(S.ppl.find(x=>x.uid==u)||{},S.ym);
-s+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+R.codes.map(k=>`<td>${c.filter((x,i)=>x===k&&!trf(R,u,i)).length}</td>`).join("")+`<td>${c.filter(x=>x==="備").length||""}</td><td>${dm-r}</td><td class="${mx>=7?"c3":mx>=6?"c2":""}">${mx}</td><td class="${r<rq?"c3":""}">${r}</td><td class="${h>S.maxh?"c3":h>S.norm?"c2":""}">${h}</td><td class="${t&&h>t?"c3":t&&h<t?"c2":""}">${t||""}</td><td>${Math.max(0,h-S.norm)}</td><td>${c.filter((x,i)=>x!="休"&&x!="—"&&[0,6].includes(new Date(Y,M-1,i+1).getDay())).length}</td></tr>`});
+s+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+R.codes.map(k=>`<td>${c.filter((x,i)=>x===k&&!trf(R,u,i)).length}</td>`).join("")+`<td>${c.filter(x=>x==="備").length||""}</td><td>${dm-r}</td><td class="${mx>=7?"c3":""}">${mx}</td><td class="${r<rq?"c3":""}">${r}</td><td class="${h>S.maxh?"c3":h>S.norm?"c2":""}">${h}</td><td class="${t&&h>t?"c3":t&&h<t?"c2":""}">${t||""}</td><td>${Math.max(0,h-S.norm)}</td><td>${c.filter((x,i)=>x!="休"&&x!="—"&&[0,6].includes(new Date(Y,M-1,i+1).getDay())).length}</td></tr>`});
 $("stat").innerHTML=s+"</table>";$("stat").style.display="block";$("chk").textContent=chkList().slice(0,25).join("\n")}
 function dl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type||"text/csv"}));a.download=name;a.click()}
 function rosterCsv(){const R=S.roster[S.ym];if(!R)return toast("尚未產生班表");
@@ -553,9 +552,9 @@ function showWel(){if(ROOT){readF();flush()}wOpen=false;drawWel(true)}
 function toggleLoad(){wOpen=!wOpen;drawWel(true)}
 function enter(){$("wel").style.display="none";try{localStorage.setItem("guard_last",ROOT.saveId)}catch(e){}init();const t=window.__t||"roster";window.__t=null;tab(t)}
 function newSave(){const n=prompt("新存檔名稱","存檔"+(IDX.length+1));if(n===null)return;if(ROOT){readF();flush()}
-ROOT={cur:"p1",list:{p1:newS()},saveId:"s"+Date.now(),saveName:n.trim()||"存檔"+(IDX.length+1)};fix();flush();enter();toast("已建立新存檔")}
+ROOT={cur:"p1",list:{p1:newS()},saveId:"s"+Date.now(),saveName:n.trim()||"存檔"+(IDX.length+1)};fix();flush();enter()}
 async function loadSave(id){const a=LS("guard_slot_"+id);await ready;const b=await tx("s","readonly",q=>q.get(id));let d=a;if(b&&(!a||(b.savedAt||0)>(a.savedAt||0)))d=b;
-if(!d||!d.list)return alert("存檔讀取失敗");if(ROOT&&ROOT.saveId!=id){readF();flush()}ROOT=d;ROOT.saveId=id;ROOT.saveName=(IDX.find(e=>e.id==id)||{}).name||d.saveName||"存檔";fix();enter();toast("已載入："+ROOT.saveName)}
+if(!d||!d.list)return alert("存檔讀取失敗");if(ROOT&&ROOT.saveId!=id){readF();flush()}ROOT=d;ROOT.saveId=id;ROOT.saveName=(IDX.find(e=>e.id==id)||{}).name||d.saveName||"存檔";fix();enter()}
 async function delSave(id){const e=IDX.find(x=>x.id==id);if(!e||!confirm("刪除存檔「"+e.name+"」？班表、打卡紀錄與圖片都會一併刪除，無法復原。"))return;
 const d=LS("guard_slot_"+id);if(d&&d.list)Object.values(d.list).forEach(p=>Object.values(p.rec||{}).forEach(r=>Object.values(r).forEach(x=>(x.imgs||[]).forEach(delImg))));
 try{localStorage.removeItem("guard_slot_"+id)}catch(x){}ready.then(()=>tx("s","readwrite",q=>q.delete(id)));IDX=IDX.filter(x=>x.id!=id);saveIdx();if(ROOT&&ROOT.saveId==id)ROOT=null;drawWel(false)}
