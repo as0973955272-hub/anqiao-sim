@@ -7,7 +7,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="安橋排班"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>安橋人生模擬器</title>
+<title>安橋排班助手</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;margin:0;padding:0 0 70px;background:#eef4ff;color:#10213f;font-size:16px}
@@ -58,7 +58,7 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 </style></head><body>
 <div id="wel" style="position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#0b2f78,#1d4ed8 55%,#3b82f6);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto">
 <div style="font-size:56px">🛡️</div>
-<h1 style="font-size:26px;margin:10px 0 8px;line-height:1.35">歡迎來到<br>安橋人生模擬器</h1>
+<h1 style="font-size:26px;margin:10px 0 8px;line-height:1.35">歡迎來到<br>安橋排班助手</h1>
 <div style="font-size:15px;margin:-2px 0 10px;opacity:.95">安橋物業勤務排班與工時管理系統</div>
 <div style="font-size:14px;opacity:.92;margin-bottom:26px">作者：安橋　陳正和</div>
 <button class="wbtn" onclick="newSave()">＋ 新增存檔</button>
@@ -66,10 +66,10 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <button class="wbtn" onclick="$('imf').click()">📥 匯入別人分享的班表檔</button><input type="file" id="imf" accept=".json" style="display:none" onchange="importFile(this)">
 <button class="wbtn" id="inst" style="display:none;background:#fde68a;color:#7c4a00" onclick="installApp()">📲 安裝到手機主畫面（像 App 一樣）</button>
 <div id="slots" style="width:100%;max-width:360px;margin-top:10px"></div>
-<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.8</div>
+<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.9</div>
 <button class="wbtn" id="wback" style="display:none;background:#ffffff33;color:#fff;font-size:16px" onclick="$('wel').style.display='none'">返回目前存檔</button>
 </div>
-<header><span>🛡 安橋人生模擬器 <button onclick="showWel()" style="padding:3px 8px;font-size:12px;margin-left:6px;background:#ffffff40">存檔</button></span><span style="font-size:12px;text-align:right"><span id="hd"></span><br><span id="sv"></span></span></header>
+<header><span>🛡 安橋排班助手 <button onclick="showWel()" style="padding:3px 8px;font-size:12px;margin-left:6px;background:#ffffff40">存檔</button></span><span style="font-size:12px;text-align:right"><span id="hd"></span><br><span id="sv"></span></span></header>
 
 <!-- 排班 -->
 <div id="bk" class="noprint" style="display:none;background:#fff4e5;color:#8a4b00;padding:8px 12px;align-items:center;gap:8px;font-size:14px"><span style="flex:1">⚠ 已 <b id="bkd">0</b> 天沒備份。換手機或清除瀏覽器資料，存檔會全部消失。</span><button style="padding:6px 10px;white-space:nowrap" onclick="shareBackup()">立即備份</button></div>
