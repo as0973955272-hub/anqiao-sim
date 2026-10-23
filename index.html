@@ -66,7 +66,7 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <button class="wbtn" onclick="$('imf').click()">📥 匯入別人分享的班表檔</button><input type="file" id="imf" accept=".json" style="display:none" onchange="importFile(this)">
 <button class="wbtn" id="inst" style="display:none;background:#fde68a;color:#7c4a00" onclick="installApp()">📲 安裝到手機主畫面（像 App 一樣）</button>
 <div id="slots" style="width:100%;max-width:360px;margin-top:10px"></div>
-<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.7</div>
+<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.8</div>
 <button class="wbtn" id="wback" style="display:none;background:#ffffff33;color:#fff;font-size:16px" onclick="$('wel').style.display='none'">返回目前存檔</button>
 </div>
 <header><span>🛡 安橋人生模擬器 <button onclick="showWel()" style="padding:3px 8px;font-size:12px;margin-left:6px;background:#ffffff40">存檔</button></span><span style="font-size:12px;text-align:right"><span id="hd"></span><br><span id="sv"></span></span></header>
@@ -75,7 +75,7 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <div id="bk" class="noprint" style="display:none;background:#fff4e5;color:#8a4b00;padding:8px 12px;align-items:center;gap:8px;font-size:14px"><span style="flex:1">⚠ 已 <b id="bkd">0</b> 天沒備份。換手機或清除瀏覽器資料，存檔會全部消失。</span><button style="padding:6px 10px;white-space:nowrap" onclick="shareBackup()">立即備份</button></div>
 <div id="p-roster">
 <section>
-<div class="f"><label>班別</label><select id="prof" onchange="switchProf(this.value)"></select></div>
+<div class="f"><label>班表</label><select id="prof" onchange="switchProf(this.value)"></select></div>
 <div class="f"><label>月份</label><input type="month" id="ym" onchange="save();drawRoster();drawPpl()"></div>
 <button class="go" onclick="gen()">產生班表</button>
 <div class="f" style="margin:10px 0 0"><label>只重排後段</label><select id="rfd"></select><button onclick="regenFrom()">重排</button></div>
@@ -92,7 +92,8 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <div class="row" style="margin-top:8px"><button onclick="shareLink()">🔗 分享連結</button><button onclick="shareFile()">📤 分享檔</button></div>
 </details>
 <details class="sec"><summary>⚙ 基本設定</summary>
-<div class="f"><label>班表名稱</label><input type="text" id="site" onchange="save();drawProf();drawRoster()"></div>
+<div class="f"><label>駐點</label><input type="text" id="site" placeholder="例：路竹廠" onchange="save();drawProf();drawTp();drawRoster()"></div>
+<div class="f"><label>班別</label><select id="shf" onchange="setShift(this.value)"><option value="早班">早班</option><option value="晚班">晚班</option></select></div>
 <div class="row"><div class="f"><label>上班</label><input type="time" id="st" onchange="save()"></div><div class="f"><label>時數</label><input type="number" id="ln" min="1" max="24" onchange="save()"></div></div>
 <div class="row"><div class="f"><label>每月應休</label><input type="number" id="rest" min="0" max="15" onchange="save();drawRoster()"></div><div class="f"><label>跟哨目標</label><input type="number" id="trq" min="0" max="15" onchange="save()"></div></div>
 <div class="row"><div class="f"><label>正常工時</label><input type="number" id="nh" onchange="save();drawRoster()"></div><div class="f"><label>工時上限</label><input type="number" id="xh" onchange="save();drawRoster()"></div></div>
@@ -159,9 +160,9 @@ const LS=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null
 IDX=LS("guard_idx")||[];
 if(!IDX.length){const t=LS(KEY2)||(LS(KEY)?{cur:"p1",list:{p1:Object.assign(newS(),LS(KEY))}}:null);
 if(t&&t.list){const id="s"+Date.now();t.saveId=id;t.saveName="存檔1";IDX=[{id,name:"存檔1",savedAt:t.savedAt||Date.now()}];try{localStorage.setItem("guard_idx",JSON.stringify(IDX));localStorage.setItem("guard_slot_"+id,JSON.stringify(t))}catch(e){}}}
-function fix(){Object.values(ROOT.list).forEach(p=>{p.start=p.start||"19:00";p.norm=p.norm||240;p.maxh=p.maxh||288;p.len=p.len||12;p.roster=p.roster||{};p.rec=p.rec||{};p.lock=p.lock||{};p.emg=p.emg||{};Object.values(p.roster).forEach(R=>{if(!R.v)Object.keys(R.cells||{}).forEach(u=>{R.cells[u]=R.cells[u].map(c=>c=="備"?"休":c)})});if(!p.mig5){if(p.norm==240&&p.rest==8){p.norm=288;p.rest=6}p.mig5=1}});if(!ROOT.list[ROOT.cur])ROOT.cur=Object.keys(ROOT.list)[0];S=ROOT.list[ROOT.cur]}
+function fix(){Object.values(ROOT.list).forEach(p=>{p.start=p.start||"19:00";p.shift=p.shift||shiftOf(p);p.norm=p.norm||240;p.maxh=p.maxh||288;p.len=p.len||12;p.roster=p.roster||{};p.rec=p.rec||{};p.lock=p.lock||{};p.emg=p.emg||{};Object.values(p.roster).forEach(R=>{if(!R.v)Object.keys(R.cells||{}).forEach(u=>{R.cells[u]=R.cells[u].map(c=>c=="備"?"休":c)})});if(!p.mig5){if(p.norm==240&&p.rest==8){p.norm=288;p.rest=6}p.mig5=1}});if(!ROOT.list[ROOT.cur])ROOT.cur=Object.keys(ROOT.list)[0];S=ROOT.list[ROOT.cur]}
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
-function readF(){S.ym=$("ym").value||S.ym;S.site=$("site").value||S.site;S.rest=+$("rest").value;S.start=$("st").value||"19:00";S.norm=+$("nh").value||240;S.maxh=+$("xh").value||288;S.len=+$("ln").value||12;S.trq=$("trq").value===""?4:Math.max(0,+$("trq").value||0);S.sp=$("sp").value||"standby"}
+function readF(){S.ym=$("ym").value||S.ym;S.site=$("site").value||S.site;S.shift=($("shf")&&$("shf").value)||S.shift;S.rest=+$("rest").value;S.start=$("st").value||"19:00";S.norm=+$("nh").value||240;S.maxh=+$("xh").value||288;S.len=+$("ln").value||12;S.trq=$("trq").value===""?4:Math.max(0,+$("trq").value||0);S.sp=$("sp").value||"standby"}
 function save(){readF();persist()}
 function saveIdx(){try{localStorage.setItem("guard_idx",JSON.stringify(IDX))}catch(e){}ready.then(()=>tx("s","readwrite",q=>q.put(IDX,"idx")))}
 let pt;function persist(){clearTimeout(pt);pt=setTimeout(persistNow,250)}
@@ -392,10 +393,14 @@ let db;const ready=new Promise(r=>{try{const q=indexedDB.open("guard_img",2);q.o
 const tx=(n,m,f)=>new Promise(r=>{if(!db)return r(null);try{const t=db.transaction(n,m),q=f(t.objectStore(n));t.oncomplete=()=>r(q&&q.result);t.onerror=()=>r(null)}catch(e){r(null)}});
 const putImg=(id,b)=>tx("i","readwrite",s=>s.put(b,id)),getImg=id=>tx("i","readonly",s=>s.get(id)),delImg=id=>tx("i","readwrite",s=>s.delete(id));
 /* ---------- 班別 ---------- */
-function drawProf(){$("prof").innerHTML=Object.keys(ROOT.list).map(k=>`<option value="${k}" ${k==ROOT.cur?"selected":""}>${esc(ROOT.list[k].site)}</option>`).join("")}
+function shiftOf(p){if(p.shift)return p.shift;return(+String(p.start||"19:00").split(":")[0]||0)>=12?"晚班":"早班"}
+function pn(p){return/[早晚夜日]/.test(p.site||"")?p.site:(p.site||"")+"・"+shiftOf(p)}
+function drawProf(){$("prof").innerHTML=Object.keys(ROOT.list).map(k=>`<option value="${k}" ${k==ROOT.cur?"selected":""}>${esc(pn(ROOT.list[k]))}</option>`).join("")}
+function setShift(v){$("shf").value=v;S.shift=v;if(v=="早班"&&S.start=="19:00")S.start="07:00";if(v=="晚班"&&S.start=="07:00")S.start="19:00";$("st").value=S.start;save();drawProf();drawTp();drawRoster()}
 function switchProf(id){save();ROOT.cur=id;S=ROOT.list[id];flush();init()}
-function newProf(){const n=prompt("新班別名稱（例：早班）");if(!n||!n.trim())return;save();const id="p"+Date.now(),o=JSON.parse(JSON.stringify(S));
-o.site=n.trim();o.roster={};o.rec={};o.start=/早|日/.test(n)?"07:00":"19:00";ROOT.list[id]=o;ROOT.cur=id;S=o;flush();init();toast("已新增班別，請確認上班時間")}
+function newProf(){const n=prompt("駐點名稱（例：路竹廠）",S.site);if(!n||!n.trim())return;const night=confirm("這個班是「晚班」嗎？\n按「確定」＝晚班\n按「取消」＝早班"),sh=night?"晚班":"早班";
+if(Object.values(ROOT.list).some(q=>q.site==n.trim()&&shiftOf(q)==sh))return alert("已經有「"+n.trim()+"・"+sh+"」了");
+save();const id="p"+Date.now(),o=JSON.parse(JSON.stringify(S));o.site=n.trim();o.shift=sh;o.roster={};o.rec={};o.start=night?"19:00":"07:00";ROOT.list[id]=o;ROOT.cur=id;S=o;flush();init();toast("已新增："+pn(o))}
 function delProf(){if(Object.keys(ROOT.list).length<2)return alert("至少要保留一個班別");if(!confirm("刪除「"+S.site+"」及其所有班表、打卡紀錄與圖片？"))return;autoBackup(true);
 Object.values(S.rec).forEach(d=>Object.values(d).forEach(r=>(r.imgs||[]).forEach(delImg)));delete ROOT.list[ROOT.cur];ROOT.cur=Object.keys(ROOT.list)[0];S=ROOT.list[ROOT.cur];flush();init()}
 function autoBackup(force){if(!ROOT)return;if(force||!ROOT.lastAuto||Date.now()-ROOT.lastAuto>6e5){ROOT.lastAuto=Date.now();backup(true);toast("已自動下載備份檔")}}
@@ -565,7 +570,7 @@ readF();flush();init();toast("已全部匿名（備註與班表名稱不受影�
 addEventListener("pagehide",()=>{if(ROOT){readF();flush()}});document.addEventListener("visibilitychange",()=>{if(document.hidden&&ROOT){readF();flush()}});
 /* ---------- 今日班表 ---------- */
 function defDate(){const d=new Date();if(toMin(S.start)>=720&&d.getHours()<12)d.setDate(d.getDate()-1);return ds(d)}
-function drawTp(){const v=$("tp").value;$("tp").innerHTML=Object.keys(ROOT.list).map(k=>`<option value="${k}">${esc(ROOT.list[k].site)}</option>`).join("");$("tp").value=ROOT.list[v]?v:ROOT.cur}
+function drawTp(){const v=$("tp").value;$("tp").innerHTML=Object.keys(ROOT.list).map(k=>`<option value="${k}">${esc(pn(ROOT.list[k]))}</option>`).join("");$("tp").value=ROOT.list[v]?v:ROOT.cur}
 function tpP(){return ROOT.list[$("tp").value]||S}
 function tpChange(){$("tt").value=tpP().start||"19:00";drawToday()}
 function dayGo(n){$("dt").value=shiftDay($("dt").value||defDate(),n);drawToday()}
@@ -616,7 +621,7 @@ mkImg(S.site+" 哨點學習進度",[{t:"姓名"}].concat(E.map(x=>({t:x.name||x.
 function learnCsv(){const E=learnPosts();let t="﻿"+S.site+" 哨點學習進度\n姓名,"+E.map(x=>x.name||x.code).join(",")+",已學會數,進度%\n";
 S.ppl.forEach(p=>{const n=E.filter(x=>lst(p,x.code)==0).length;t+=[p.name||p.id||"?"].concat(E.map(x=>LS3[lst(p,x.code)].x),[n,E.length?Math.round(n/E.length*100):0]).join(",")+"\n"});dl(S.site+"_哨點學習進度.csv",t)}
 
-function init(){$("ym").value=S.ym;$("site").value=S.site;$("rest").value=S.rest;$("st").value=S.start;$("nh").value=S.norm;$("xh").value=S.maxh;$("ln").value=S.len;$("trq").value=S.trq==null?4:S.trq;$("sp").value=S.sp||"standby";drawProf();drawPosts();drawPpl();drawRoster();$("warn").textContent="";$("out").style.display=S.roster[S.ym]?"block":"none";$("dt").value=defDate();$("tt").value=S.start;drawTp();$("hd").textContent=$("dt").value;if(!window.__b){window.__b=1;const k=defDate().slice(0,7);if(S.roster[k]&&S.roster[k].cells)window.__t="today"}}
+function init(){$("ym").value=S.ym;$("site").value=S.site;if($("shf"))$("shf").value=shiftOf(S);$("rest").value=S.rest;$("st").value=S.start;$("nh").value=S.norm;$("xh").value=S.maxh;$("ln").value=S.len;$("trq").value=S.trq==null?4:S.trq;$("sp").value=S.sp||"standby";drawProf();drawPosts();drawPpl();drawRoster();$("warn").textContent="";$("out").style.display=S.roster[S.ym]?"block":"none";$("dt").value=defDate();$("tt").value=S.start;drawTp();$("hd").textContent=$("dt").value;if(!window.__b){window.__b=1;const k=defDate().slice(0,7);if(S.roster[k]&&S.roster[k].cells)window.__t="today"}}
 document.querySelectorAll(".mod").forEach(m=>m.addEventListener("click",e=>{if(e.target!==m)return;cm(m.id)}));
 let DIP=null;
 const isStd=()=>(typeof matchMedia!="undefined"&&matchMedia("(display-mode: standalone)").matches)||(typeof navigator!="undefined"&&navigator.standalone);
@@ -628,6 +633,5 @@ if(typeof navigator!="undefined"&&"serviceWorker" in navigator&&typeof location!
 showInst();
 drawWel(true);
 if(typeof location!="undefined"&&/^#d=/.test(location.hash||""))(async()=>{try{const o=JSON.parse(await unzipStr(location.hash.slice(3)));history.replaceState(null,"",location.pathname);if(confirm("收到分享的班表「"+(o.site||"")+"」。\n要匯入成新存檔嗎？"))adopt(o)}catch(e){alert("分享連結無法讀取")}})();
-ready.then(async()=>{const x=await tx("s","readonly",q=>q.get("idx"));if(Array.isArray(x))x.forEach(e=>{const l=IDX.find(k=>k.id==e.id);if(!l)IDX.push(e);else if((e.savedAt||0)>(l.savedAt||0))Object.assign(l,e)});drawWel(false);
-if(!ROOT&&IDX.length&&!(typeof location!="undefined"&&/^#d=/.test(location.hash||""))){let last=null;try{last=localStorage.getItem("guard_last")}catch(e){}const e=IDX.find(k=>k.id==last)||IDX.slice().sort((a,b)=>(b.savedAt||0)-(a.savedAt||0))[0];if(e)loadSave(e.id)}});
+ready.then(async()=>{const x=await tx("s","readonly",q=>q.get("idx"));if(Array.isArray(x))x.forEach(e=>{const l=IDX.find(k=>k.id==e.id);if(!l)IDX.push(e);else if((e.savedAt||0)>(l.savedAt||0))Object.assign(l,e)});drawWel(false);});
 </script></body></html>
