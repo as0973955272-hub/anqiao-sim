@@ -400,46 +400,60 @@ return new Blob([...out,...cen,new Uint8Array([0x50,0x4b,5,6,0,0,0,0,...u16(file
 function xlsxBuild(blocks,Y,M,site){
 const colL=n=>{let s="";while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-m-1)/26|0}return s};
 const X=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-const rows={},merges=["A1:AI1"];
+const rows={},merges=[],hts={};
 const put=(r,c,o)=>{(rows[r]=rows[r]||{})[c]=o};
-const str=(r,c,t,s)=>put(r,c,{t:"s",v:t,s}),num=(r,c,v,s)=>put(r,c,{t:"n",v,s}),fml=(r,c,f,v,s)=>put(r,c,{t:"f",f,v,s}),emp=(r,c,s)=>put(r,c,{t:"e",s});
-str(1,1,`${M}月班表  駐點:${site}`,2);for(let c=2;c<=35;c++)emp(1,c,2);
-let r0=2;const WKS="日一二三四五六";
+const str=(r,c,t,s)=>put(r,c,{t:"s",v:t,s}),num=(r,c,v,s)=>put(r,c,{t:"n",v,s}),fml=(r,c,f,v,s,isS)=>put(r,c,{t:isS?"fs":"f",f,v,s}),emp=(r,c,s)=>put(r,c,{t:"e",s});
+const mg=(r1,c1,r2,c2,s)=>{for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)if(!(rows[r]&&rows[r][c]))emp(r,c,s);merges.push(`${colL(c1)}${r1}:${colL(c2)}${r2}`)};
+/* 上方：哨位對照表（早班在左、晚班在右，每班最多 18 個哨，每 6 個一欄） */
+const early=blocks.find(b=>b.label=="早"),night=blocks.find(b=>b.label=="晚");
+hts[1]=23.25;
+[[early,1,"早      班",11],[night,16,"晚      班",12]].forEach(([b,c0,t,s])=>{if(!b)return;
+ str(1,c0,t,s);mg(1,c0,1,c0==1?15:33,s);
+ for(let g=0;g<3;g++){const g0=c0+(g==0?0:g==1?3:9),g1=g==0?c0+2:g==1?c0+8:c0+14;
+  for(let k=0;k<6;k++){const i=g*6+k,r=2+k,e=b.legend[i];
+   str(r,g0,e?`${e[0]}  ${e[1]}`:"",13);mg(r,g0,r,g1,13);hts[r]=22.5}}});
+mg(8,1,8,35,0);mg(9,1,9,35,2);str(9,1,`${M}月班表  駐點:${site}`,2);hts[8]=10;hts[9]=20.25;
+let r0=10;const WKS="日一二三四五六";
 blocks.forEach(b=>{const R=b.R,D=R.D,ids=Object.keys(R.cells),n=ids.length,rs=r0+2,re=rs+n-1;
-str(r0,1,`星期(${b.label})`,3);emp(r0,2,3);emp(r0+1,1,3);emp(r0+1,2,3);merges.push(`A${r0}:B${r0+1}`);
-for(let d=1;d<=31;d++){const w=new Date(Y,M-1,d).getDay(),ok=d<=D,s=ok&&w%6==0?5:4;
- if(ok){num(r0,2+d,d,4);str(r0+1,2+d,WKS[w],s)}else{emp(r0,2+d,4);emp(r0+1,2+d,4)}}
-str(r0,34,"工時",4);emp(r0+1,34,4);merges.push(`AH${r0}:AH${r0+1}`);str(r0,35,"本月休假天數",4);emp(r0+1,35,4);merges.push(`AI${r0}:AI${r0+1}`);
-str(r0,36,"姓名",6);emp(r0+1,36,6);
-b.codes.forEach((k,j)=>{str(r0,37+j,b.pname[k]||k,8);str(r0+1,37+j,k,8)});
-ids.forEach((u,i)=>{const r=rs+i,cells=R.cells[u];str(r,1,b.idOf[u]||"",0);str(r,2,R.names[u]||u,0);
+str(r0,1,`星期(${b.label})`,3);mg(r0,1,r0+1,2,3);
+for(let d=1;d<=31;d++){const w=new Date(Y,M-1,d).getDay(),ok=d<=D;
+ if(ok){num(r0,2+d,d,4);str(r0+1,2+d,WKS[w],w%6==0?5:4)}else{emp(r0,2+d,4);emp(r0+1,2+d,4)}}
+str(r0,34,"工時",4);mg(r0,34,r0+1,34,4);str(r0,35,"本月休假天數",14);mg(r0,35,r0+1,35,14);
+str(r0,36,"",0);emp(r0+1,36,0);
+b.codes.forEach((k,j)=>{str(r0,37+j,b.pname[k]||k,8);mg(r0,37+j,r0+1,37+j,8)});
+hts[r0]=17.25;hts[r0+1]=28;
+ids.forEach((u,i)=>{const r=rs+i,cells=R.cells[u];hts[r]=17.25;str(r,1,b.idOf[u]||"",18);str(r,2,R.names[u]||u,0);
  let work=0,rest=0;
  for(let d=1;d<=31;d++){const c=d<=D?cells[d-1]:"—";
   if(c=="休"){str(r,2+d,"休",b.lk&&b.lk[u]&&b.lk[u][d]=="休"?10:1);rest++}else if(c=="—"||c==null||c==="")emp(r,2+d,0);
   else if(/^\d+$/.test(c)){num(r,2+d,+c,0);work++}else{str(r,2+d,c,0);if(c=="備")work++}}
- fml(r,34,`(COUNT(C${r}:AG${r})+COUNTIF(C${r}:AG${r},"備"))*${b.len}`,work*b.len,9);
- fml(r,35,`COUNTIF(C${r}:AG${r},"休")`,rest,0);
- str(r,36,R.names[u]||u,6);
- b.codes.forEach((k,j)=>num(r,37+j,cells.filter((x,d)=>x===k&&!trf(R,u,d)).length,0))});
-const ra=re+1,rb=re+2;str(ra,1,"每日應到人數",6);emp(ra,2,6);str(rb,1,"每日實到人數",6);emp(rb,2,6);merges.push(`A${ra}:B${ra}`,`A${rb}:B${rb}`);
-for(let d=1;d<=31;d++){const L=colL(2+d);
- if(d<=D){const act=ids.filter(u=>{const c=R.cells[u][d-1];return c&&c!="休"&&c!="—"}).length;
-  num(ra,2+d,R.slots||R.codes.length,7);fml(rb,2+d,`COUNT(${L}${rs}:${L}${re})+COUNTIF(${L}${rs}:${L}${re},"備")`,act,7)}
+ fml(r,34,`(SUMPRODUCT(--ISNUMBER(C${r}:AG${r}))+COUNTIF(C${r}:AG${r},"備"))*${b.len}&" H"`,`${work*b.len} H`,9,true);
+ fml(r,35,["休","特","病","曠","理","事","公","喪","產","陪","颱","選","婚","育","家"].map(k=>`COUNTIF(C${r}:AG${r},"*${k}*")`).join("+")+`+COUNTIF(C${r}:AG${r},"*半*")*0.5`,rest,15);
+ str(r,36,R.names[u]||u,17);
+ b.codes.forEach((k,j)=>{const cnt=cells.filter((x,d)=>x===k&&!trf(R,u,d)).length;
+  fml(r,37+j,/^\d+$/.test(k)?`COUNTIF(C${r}:AG${r},${k})`:`COUNTIF(C${r}:AG${r},"${k}")`,cnt,16)})});
+const ra=re+1,rb=re+2;str(ra,1,"每日應到人數",6);mg(ra,1,ra,2,6);str(rb,1,"每日實到人數",6);mg(rb,1,rb,2,6);hts[ra]=22.5;hts[rb]=21.75;
+const NOT=["休","特","病","曠","生","事","公","喪","產","陪","颱","選","婚","育","家"];
+for(let d=1;d<=31;d++){const L=colL(2+d),rg=`${L}${rs}:${L}${re}`;
+ if(d<=D){const on=ids.filter(u=>{const c=R.cells[u][d-1];return c&&c!="—"}).length,act=ids.filter(u=>{const c=R.cells[u][d-1];return c&&c!="—"&&c!="休"}).length;
+  fml(ra,2+d,`COUNTA(${rg})`,on,7);fml(rb,2+d,`SUMPRODUCT((${rg}<>"")*`+NOT.map(k=>`(${rg}<>"${k}")`).join("*")+`)`,act,7)}
  else{emp(ra,2+d,7);emp(rb,2+d,7)}}
 r0=rb+3});
-const maxR=r0;let sd="";
-for(let r=1;r<=maxR;r++){const cs=rows[r];if(!cs)continue;sd+=`<row r="${r}" ht="${r==1?20.25:18}" customHeight="1">`;
+let sd="";
+Object.keys(rows).map(Number).sort((a,b)=>a-b).forEach(r=>{const cs=rows[r];sd+=`<row r="${r}" ht="${hts[r]||18}" customHeight="1">`;
  Object.keys(cs).map(Number).sort((a,b)=>a-b).forEach(c=>{const o=cs[c],ref=colL(c)+r;
   if(o.t=="e")sd+=`<c r="${ref}" s="${o.s}"/>`;
   else if(o.t=="n")sd+=`<c r="${ref}" s="${o.s}"><v>${o.v}</v></c>`;
   else if(o.t=="f")sd+=`<c r="${ref}" s="${o.s}"><f>${X(o.f)}</f><v>${o.v}</v></c>`;
-  else sd+=`<c r="${ref}" s="${o.s}" t="inlineStr"><is><t xml:space="preserve">${X(o.v)}</t></is></c>`});sd+="</row>"}
+  else if(o.t=="fs")sd+=`<c r="${ref}" s="${o.s}" t="str"><f>${X(o.f)}</f><v>${X(o.v)}</v></c>`;
+  else sd+=`<c r="${ref}" s="${o.s}" t="inlineStr"><is><t xml:space="preserve">${X(o.v)}</t></is></c>`});sd+="</row>"});
 const W='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
-const sheet=`${W}<worksheet ${NS}><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0"><pane xSplit="2" ySplit="3" topLeftCell="C4" activePane="bottomRight" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols><col min="1" max="1" width="9" customWidth="1"/><col min="2" max="2" width="9" customWidth="1"/><col min="3" max="35" width="7.63" customWidth="1"/><col min="36" max="36" width="9" customWidth="1"/><col min="37" max="50" width="7.63" customWidth="1"/></cols><sheetData>${sd}</sheetData><mergeCells count="${merges.length}">${merges.map(m=>`<mergeCell ref="${m}"/>`).join("")}</mergeCells><pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
-const F=(sz,col)=>`<font><b/><sz val="${sz}"/><color rgb="${col||"FF000000"}"/><name val="DFKai-SB"/><family val="3"/><charset val="136"/></font>`;
+const sheet=`${W}<worksheet ${NS}><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="17.25"/><cols><col min="1" max="1" width="9.8" customWidth="1"/><col min="2" max="2" width="8" customWidth="1"/><col min="3" max="33" width="4" customWidth="1"/><col min="34" max="34" width="14.5" customWidth="1"/><col min="35" max="35" width="18.6" customWidth="1"/><col min="36" max="36" width="11.9" customWidth="1"/><col min="37" max="60" width="9" customWidth="1"/></cols><sheetData>${sd}</sheetData><mergeCells count="${merges.length}">${merges.map(m=>`<mergeCell ref="${m}"/>`).join("")}</mergeCells><pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+const F=(nm,sz,col)=>`<font><b/><sz val="${sz}"/><color rgb="${col||"FF000000"}"/><name val="${nm}"/><family val="3"/><charset val="136"/></font>`;
 const FL=c=>`<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`;
-const xf=(f,fi,b,nf)=>`<xf numFmtId="${nf||0}" fontId="${f}" fillId="${fi}" borderId="${b}" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"${nf?' applyNumberFormat="1"':""}><alignment horizontal="center" vertical="center"/></xf>`;
-const styles=`${W}<styleSheet ${NS}><numFmts count="1"><numFmt numFmtId="164" formatCode="0&quot; H&quot;"/></numFmts><fonts count="7">${F(12)}${F(12,"FFFF0000")}${F(16)}${F(20)}${F(8)}${F(11)}${F(12,"FF0000FF")}</fonts><fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>${FL("FFC5E0B3")}${FL("FFFFFF00")}${FL("FF00B0F0")}</fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color auto="1"/></left><right style="thin"><color auto="1"/></right><top style="thin"><color auto="1"/></top><bottom style="thin"><color auto="1"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="11">${xf(0,0,1)}${xf(1,0,1)}${xf(2,0,0)}${xf(3,2,1)}${xf(0,2,1)}${xf(1,2,1)}${xf(0,3,1)}${xf(1,3,1)}${xf(4,4,1)}${xf(5,0,1,164)}${xf(6,0,1)}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+const xf=(f,fi,b,o)=>{o=o||{};return`<xf numFmtId="${o.nf||0}" fontId="${f}" fillId="${fi}" borderId="${b}" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"${o.nf?' applyNumberFormat="1"':""}><alignment horizontal="${o.h||"center"}" vertical="${o.v||"center"}"${o.w?' wrapText="1"':""}/></xf>`};
+const DK="DFKai-SB",PM="PMingLiu",JH="Microsoft JhengHei",RED="FFFF0000";
+const styles=`${W}<styleSheet ${NS}><fonts count="9">${F(DK,12)}${F(DK,12,RED)}${F(DK,16,"FFC00000")}${F(DK,20)}${F(DK,8)}${F(PM,12)}${F(DK,12,"FF0000FF")}${F(JH,14,RED)}${F(PM,11,RED)}</fonts><fills count="7"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>${FL("FFC5E0B3")}${FL("FFFFFF00")}${FL("FF00B0F0")}${FL("FFFFE598")}${FL("FFA8D08D")}</fills><borders count="4"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color auto="1"/></left><right style="thin"><color auto="1"/></right><top style="thin"><color auto="1"/></top><bottom style="thin"><color auto="1"/></bottom><diagonal/></border><border><left style="thick"><color auto="1"/></left><right style="thick"><color auto="1"/></right><top style="thick"><color auto="1"/></top><bottom style="thick"><color auto="1"/></bottom><diagonal/></border><border><left style="medium"><color auto="1"/></left><right style="medium"><color auto="1"/></right><top style="medium"><color auto="1"/></top><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="19">${xf(0,0,1)}${xf(1,0,1)}${xf(2,0,3)}${xf(3,2,1,{v:"bottom",w:1})}${xf(0,2,1)}${xf(1,2,1)}${xf(0,3,1)}${xf(1,3,1)}${xf(4,4,1,{w:1})}${xf(5,0,1,{w:1})}${xf(6,0,1)}${xf(7,5,2,{v:"top"})}${xf(7,6,2,{v:"top"})}${xf(7,0,2,{h:"left"})}${xf(4,2,1,{w:1})}${xf(5,0,1)}${xf(8,0,1)}${xf(0,0,1)}${xf(0,0,1,{nf:49})}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
 const nm=`${Y}年${M}月`;
 return xlsxZip([["[Content_Types].xml",`${W}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`],
 ["_rels/.rels",`${W}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
@@ -450,7 +464,7 @@ function rosterXlsx(){readF();const R0=S.roster[S.ym];if(!R0)return toast("尚�
 const [Y,M]=S.ym.split("-").map(Number),bl=[];
 Object.values(ROOT.list).forEach(p=>{if(p!==S&&(p.site||"")!==(S.site||""))return;const R=p.roster&&p.roster[S.ym];if(!R)return;
  const sh=shiftOf(p),idOf={},pname={};(p.ppl||[]).forEach(q=>idOf[q.uid]=q.id||"");(p.posts||[]).forEach(q=>pname[q.code]=q.name);
- bl.push({R,lk:(p.lock&&p.lock[S.ym])||{},label:sh=="晚班"?"晚":"早",len:p.len||12,idOf,pname,codes:R.codes||[]})});
+ bl.push({R,lk:(p.lock&&p.lock[S.ym])||{},label:sh=="晚班"?"晚":"早",len:p.len||12,idOf,pname,codes:R.codes||[],legend:(R.codes||[]).map(k=>[k,pname[k]||""])})});
 bl.sort((a,b)=>(a.label=="早"?0:1)-(b.label=="早"?0:1));
 dlBlob(`${S.site||"班表"}_${Y}年${M}月班表.xlsx`,xlsxBuild(bl,Y,M,S.site||""));toast("已匯出 Excel")}
 function dlBlob(name,blob){const a=document.createElement("a"),u=URL.createObjectURL(blob);a.href=u;a.download=name;a.style.display="none";document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},4000)}
