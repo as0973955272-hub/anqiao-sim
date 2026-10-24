@@ -374,7 +374,7 @@ function drawRoster(){drawRFD();drawAdv();const R=S.roster[S.ym];if(!R){$("out")
 const [Y,M]=S.ym.split("-").map(Number),D=R.D,ids=Object.keys(R.cells);
 let h=`<table><tr><th class="t" colspan="${D+1}">${M}月班表　駐點:${esc(S.site)}</th></tr><tr><th class="s1">姓名</th>`;
 for(let i=1;i<=D;i++){const w=new Date(Y,M-1,i).getDay();h+=`<th class="${w%6==0?"r":""}">${i}<br>${WK[w]}</th>`}h+="</tr>";
-ids.forEach(u=>{h+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+(()=>{const k=stk(u);return R.cells[u].map((c,i)=>c=="休"?`<td class="r" onclick="editCell('${u}',${i})">休</td>`:c=="—"?`<td style="color:#bbb">－</td>`:`<td class="${k[i]>=7?"w2":""}" style="${c=="備"?"color:#4338ca;":""}" onclick="editCell('${u}',${i})">${c}${trf(R,u,i)?'<small style="color:#d97706">學</small>':""}</td>`).join("")})()+"</tr>"});
+ids.forEach(u=>{h+=`<tr><td class="s1">${esc(R.names[u]||u)}</td>`+(()=>{const k=stk(u);return R.cells[u].map((c,i)=>c=="休"?`<td class="r" ${(((S.lock||{})[S.ym]||{})[u]||{})[i+1]=="休"?'style="color:#1d4ed8" ':''}onclick="editCell('${u}',${i})">休</td>`:c=="—"?`<td style="color:#bbb">－</td>`:`<td class="${k[i]>=7?"w2":""}" style="${c=="備"?"color:#4338ca;":""}" onclick="editCell('${u}',${i})">${c}${trf(R,u,i)?'<small style="color:#d97706">學</small>':""}</td>`).join("")})()+"</tr>"});
 h+=`<tr><td class="s1">缺額</td>`+Array.from({length:D},(_,d)=>{const v=(R.slots||R.codes.length)-ids.filter(u=>R.codes.includes(R.cells[u][d])&&!trf(R,u,d)).length;return v>0?`<td class="c3">${v}</td>`:"<td></td>"}).join("")+"</tr>";
 $("out").innerHTML=h+"</table>";$("out").style.display="block";
 let s=`<table><tr><th class="s1">次數</th>`+R.codes.map(c=>`<th>${esc(c)}</th>`).join("")+"<th>備</th><th>上班</th><th>連勤</th><th>休</th><th>預排h</th><th>目標h</th><th>加班h</th><th>假日班</th></tr>";
@@ -453,7 +453,7 @@ Object.values(ROOT.list).forEach(p=>{if(p!==S&&(p.site||"")!==(S.site||""))retur
  bl.push({R,lk:(p.lock&&p.lock[S.ym])||{},label:sh=="晚班"?"晚":"早",len:p.len||12,idOf,pname,codes:R.codes||[]})});
 bl.sort((a,b)=>(a.label=="早"?0:1)-(b.label=="早"?0:1));
 dlBlob(`${S.site||"班表"}_${Y}年${M}月班表.xlsx`,xlsxBuild(bl,Y,M,S.site||""));toast("已匯出 Excel")}
-function dlBlob(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click()}
+function dlBlob(name,blob){const a=document.createElement("a"),u=URL.createObjectURL(blob);a.href=u;a.download=name;a.style.display="none";document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},4000)}
 
 const toMin=t=>{if(!t)return 0;const p=t.split(":");return(+p[0]||0)*60+(+p[1]||0)};
 function cellOf(u,date){const p=date.split("-"),R=S.roster[p[0]+"-"+p[1]];return R&&R.cells[u]?R.cells[u][+p[2]-1]:null}
