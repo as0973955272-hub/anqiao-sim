@@ -66,7 +66,7 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <button class="wbtn" onclick="$('imf').click()">📥 匯入別人分享的班表檔</button><input type="file" id="imf" accept=".json" style="display:none" onchange="importFile(this)">
 <button class="wbtn" id="inst" style="display:none;background:#fde68a;color:#7c4a00" onclick="installApp()">📲 安裝到手機主畫面（像 App 一樣）</button>
 <div id="slots" style="width:100%;max-width:360px;margin-top:10px"></div>
-<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.9</div>
+<div style="font-size:12px;opacity:.7;margin-top:14px">版本 v4.14</div>
 <button class="wbtn" id="wback" style="display:none;background:#ffffff33;color:#fff;font-size:16px" onclick="$('wel').style.display='none'">返回目前存檔</button>
 </div>
 <header><span>🛡 安橋排班助手 <button onclick="showWel()" style="padding:3px 8px;font-size:12px;margin-left:6px;background:#ffffff40">存檔</button></span><span style="font-size:12px;text-align:right"><span id="hd"></span><br><span id="sv"></span></span></header>
@@ -107,6 +107,7 @@ details.sec{background:#fff;margin:10px;padding:10px 12px;border:1px solid #c3d3
 <details class="sec"><summary>👥 人員</summary>
 <div id="ppl"></div><button class="add" onclick="addPerson()">＋ 新增人員</button>
 <div class="row" style="margin-top:8px"><button class="add" style="background:#0d9488" onclick="hirePerson()">👤 新人到職</button><button class="add" onclick="batchPpl()">📋 批次貼上名單</button></div>
+<div class="row" style="margin-top:8px"><button class="add" style="background:#0f766e" onclick="$('xif').click()">📥 從 Excel 班表匯入</button><input type="file" id="xif" accept=".xlsx" style="display:none" onchange="impXlsx(this)"><button class="add" onclick="carryMonth()">↩ 沿用上個月設定</button></div>
 <details style="margin-top:8px"><summary class="hint">其他</summary><button class="add" style="background:#5b6b8a;margin-top:6px" onclick="anon()">🔒 一鍵匿名（姓名改成人員1、2…）</button></details></details>
 <details class="sec"><summary>📅 預先指定休假／上班</summary><div class="hint">選人員後點日期切換：空白→休→班→空白。產生班表時會先鎖定。</div>
 <div class="f"><label>人員</label><select id="lp" onchange="drawLock()"></select></div><div id="lk" class="chips"></div></details>
@@ -468,6 +469,67 @@ Object.values(ROOT.list).forEach(p=>{if(p!==S&&(p.site||"")!==(S.site||""))retur
 bl.sort((a,b)=>(a.label=="早"?0:1)-(b.label=="早"?0:1));
 dlBlob(`${S.site||"班表"}_${Y}年${M}月班表.xlsx`,xlsxBuild(bl,Y,M,S.site||""));toast("已匯出 Excel")}
 function dlBlob(name,blob){const a=document.createElement("a"),u=URL.createObjectURL(blob);a.href=u;a.download=name;a.style.display="none";document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},4000)}
+
+/* ---------- 從 Excel 班表匯入人員與技能 ---------- */
+async function xlsxRead(buf){const u=new Uint8Array(buf),dv=new DataView(buf),td=new TextDecoder();
+let e=u.length-22;while(e>=0&&dv.getUint32(e,true)!=0x06054b50)e--;if(e<0)throw new Error("不是 xlsx 檔");
+const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const ents={};
+for(let i=0;i<n;i++){const m=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+ ents[td.decode(u.slice(p+46,p+46+nl))]={m,cs,lo};p+=46+nl+xl+cl}
+const get=async nm=>{const t=ents[nm];if(!t)return null;const nl=dv.getUint16(t.lo+26,true),xl=dv.getUint16(t.lo+28,true),d=u.slice(t.lo+30+nl+xl,t.lo+30+nl+xl+t.cs);
+ if(t.m==0)return td.decode(d);return await new Response(new Blob([d]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text()};
+const dom=s=>new DOMParser().parseFromString(s,"application/xml");
+const wb=dom(await get("xl/workbook.xml")),rel=dom(await get("xl/_rels/workbook.xml.rels")),tg={};
+[...rel.getElementsByTagName("Relationship")].forEach(r=>{let t=r.getAttribute("Target");tg[r.getAttribute("Id")]=t[0]=="/"?t.slice(1):"xl/"+t});
+let ss=[];const sx=await get("xl/sharedStrings.xml");
+if(sx)ss=[...dom(sx).getElementsByTagName("si")].map(si=>[...si.children].map(c=>c.tagName=="t"?c.textContent:c.tagName=="r"?[...c.children].filter(x=>x.tagName=="t").map(x=>x.textContent).join(""):"").join(""));
+const colN=s=>{let n=0;for(const ch of s)n=n*26+ch.charCodeAt(0)-64;return n},out=[];
+for(const sh of [...wb.getElementsByTagName("sheet")]){const path=tg[sh.getAttribute("r:id")];const x=await get(path);if(!x)continue;
+ const rows={};[...dom(x).getElementsByTagName("c")].forEach(c=>{const m=/^([A-Z]+)(\d+)$/.exec(c.getAttribute("r")||"");if(!m)return;
+  const t=c.getAttribute("t"),v=c.getElementsByTagName("v")[0],is=c.getElementsByTagName("is")[0];let val="";
+  if(t=="s"&&v)val=ss[+v.textContent]||"";else if(t=="inlineStr"&&is)val=is.textContent;else if(v)val=v.textContent;
+  val=String(val).trim();if(val==="")return;(rows[+m[2]]=rows[+m[2]]||{})[colN(m[1])]=val});
+ out.push({name:sh.getAttribute("name").trim(),rows})}
+return out}
+const XLV=/[休特病曠生事公喪產陪颱選婚育家半轉備]/;
+function xlCode(v){if(v==null)return null;v=String(v).trim();if(/^\d+(\.0+)?$/.test(v))return String(parseInt(v));if(/^[A-Za-z]$/.test(v))return v.toUpperCase();return null}
+function xlBlocks(sh){const R=sh.rows,rn=Object.keys(R).map(Number).sort((a,b)=>a-b),res={site:"",blocks:[],legend:{"早":{},"晚":{}}};
+for(const r of rn){const a=(R[r][1]||"");if(/駐點[:：]\s*(.+)$/.test(a))res.site=RegExp.$1.trim()}
+const LG=[[ "早",[1,4,10]],["晚",[16,22,28]]],nz=s=>s.replace(/[\s()（）]/g,"");
+for(let r=1;r<=8;r++)LG.forEach(([lb,cs])=>cs.forEach(c=>{const t=(R[r]||{})[c];const m=t&&/^\s*([0-9]+|[A-Za-z])\s+(\S.*)$/.exec(t);if(m)res.legend[lb][xlCode(m[1])]=m[2].trim()}));
+for(const r of rn){const a=R[r][1]||"";const m=/星期\s*[\(（]\s*([早晚夜日])/.exec(a);if(!m)continue;const lb=m[1]=="早"||m[1]=="日"?"早":"晚";
+ const ppl=[];for(let q=r+2;q<=r+80;q++){const row=R[q]||{},a2=row[1]||"";if(/每日應到/.test(a2))break;if(/星期/.test(a2))break;
+  const nm=(row[2]||"").trim();if(!nm)continue;const cells=[];for(let d=3;d<=33;d++)cells.push(row[d]==null?"":row[d]);ppl.push({id:(a2||"").replace(/\.0+$/,""),name:nm,cells})}
+ if(ppl.length)res.blocks.push({label:lb,ppl})}
+return res}
+async function impXlsx(inp){const f=inp.files&&inp.files[0];inp.value="";if(!f)return;
+try{const sheets=await xlsxRead(await f.arrayBuffer()),lb=shiftOf(S)=="晚班"?"晚":"早",nz=s=>s.replace(/[\s()（）]/g,"");
+ const A=sheets.map(sh=>({name:sh.name,...xlBlocks(sh)})).filter(a=>a.blocks.length);if(!A.length)return alert("找不到班表。\n這個檔案的格式要跟現場班表一樣（有「星期(早)」那一列）。");
+ const hasLb=A.filter(a=>a.blocks.some(b=>b.label==lb)),use=hasLb.length?hasLb:A,lab=hasLb.length?lb:A[0].blocks[0].label;
+ const ym=a=>{const m=/(\d{4})\s*年\s*(\d+)\s*月/.exec(a.name);return m?+m[1]*100+ +m[2]:0};
+ const latest=use.map((a,i)=>[a,i]).sort((x,y)=>ym(x[0])-ym(y[0])||x[1]-y[1]).pop()[0];
+ const lg=latest.legend[lab],codes=Object.keys(lg);if(!codes.length)return alert("這份班表上方沒有找到哨位對照表（例如「1  安檢哨(主哨)」）。");
+ const byName={};codes.forEach(c=>byName[nz(lg[c])]=c);
+ const lbk=latest.blocks.find(b=>b.label==lab);
+ const need={};codes.forEach(c=>{const per=[];for(let d=0;d<31;d++){let n=0;lbk.ppl.forEach(p=>{if(xlCode(p.cells[d])==c)n++});if(n)per.push(n)}per.sort((a,b)=>a-b);need[c]=per.length?per[per.length>>1]:1});
+ const sk={};
+ use.forEach(a=>{const bk=a.blocks.find(b=>b.label==lab);if(!bk)return;const lgx=a.legend[lab];
+  bk.ppl.forEach(p=>{const key=p.id||p.name,o=sk[key]=sk[key]||{days:0,set:new Set()};p.cells.forEach(v=>{const c=xlCode(v);if(c==null)return;o.days++;const nm=lgx[c]?nz(lgx[c]):null;if(nm&&byName[nm])o.set.add(byName[nm])})})});
+ const cur=lbk.ppl.map(p=>({id:p.id,name:p.name,key:p.id||p.name}));
+ const few=cur.filter(p=>(sk[p.key]||{days:0}).days<5).length;
+ const msg=`找到「${lab}班」${cur.length} 人、${codes.length} 個哨位（${use.length} 個月份的紀錄）。\n\n要套用到目前的班表「${pn(S)}」嗎？\n會取代目前的哨位和人員名單；每個人「會的哨」是從過去班表推出來的。${few?`\n（${few} 人上班天數太少，不設禁止哨位）`:""}\n已排好的班表不會動。`;
+ if(!confirm(msg))return;
+ const st=Date.now();
+ S.posts=codes.sort((a,b)=>(+a||999)-(+b||999)||a.localeCompare(b)).map(c=>({code:c,name:lg[c],on:true,need:Math.max(1,need[c]||1)}));
+ const old=S.ppl.slice();
+ S.ppl=cur.map((p,i)=>{const o=old.find(x=>(p.id&&x.id==p.id)||x.name==p.name),s=sk[p.key]||{days:0,set:new Set()},ban=s.days<5?[]:codes.filter(c=>!s.set.has(c));
+  return Object.assign(o||{uid:"u"+st+"_"+i},{id:p.id,name:p.name,ban,nl:[],lr:[]})});
+ if(latest.site&&(!S.site||/班表$/.test(S.site)))S.site=latest.site;
+ save();init();drawPosts();drawPpl();drawLearn();toast(`已匯入 ${S.ppl.length} 人、${S.posts.length} 個哨位`)}
+catch(e){alert("讀不到這個檔案："+(e&&e.message||e))}}
+function carryMonth(){const [y,m]=S.ym.split("-").map(Number),pv=m==1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,"0")}`;let n=0;
+S.ppl.forEach(p=>{["hm","cm"].forEach(k=>{const o=p[k]||{};if(o[pv]&&!o[S.ym]){p[k]=o;o[S.ym]=o[pv];n++}})});
+if(!n)return toast("上個月沒有可沿用的設定");save();drawPpl();drawRoster();toast(`已沿用上個月 ${n} 項設定（目標時數、想少上班）`)}
 
 const toMin=t=>{if(!t)return 0;const p=t.split(":");return(+p[0]||0)*60+(+p[1]||0)};
 function cellOf(u,date){const p=date.split("-"),R=S.roster[p[0]+"-"+p[1]];return R&&R.cells[u]?R.cells[u][+p[2]-1]:null}
