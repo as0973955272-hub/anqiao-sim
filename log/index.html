@@ -202,7 +202,7 @@ details.card summary{cursor:pointer;font-weight:700}
 <div class="lock" id="lock" hidden>
   <form class="card" id="lock-form">
     <h2>安橋勤務紀錄</h2>
-    <p class="note">資料已加密鎖定，請輸入密碼。</p>
+    <p class="note">這些資料之前設定過密碼。輸入密碼解鎖後，密碼鎖會自動取消。</p>
     <input id="lock-pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="密碼" aria-label="密碼">
     <p class="err" id="lock-err" hidden></p>
     <button class="btn" type="submit">解鎖</button>
@@ -214,7 +214,6 @@ details.card summary{cursor:pointer;font-weight:700}
   <header class="top">
     <div><h1>安橋勤務紀錄</h1><p>每日評分・事件紀錄・人際關係</p></div>
     <div class="acts">
-      <button class="tbtn" data-act="lock" id="lock-btn" hidden>鎖定</button>
       <button class="tbtn" data-tab="settings" aria-selected="false">設定</button>
     </div>
   </header>
@@ -392,17 +391,6 @@ details.card summary{cursor:pointer;font-weight:700}
       <p class="note">CSV 檔可以直接用 Excel 或 Google 試算表開啟。</p>
       <div class="btns"><button class="btn ghost" data-act="csv-daily">全部評分紀錄</button><button class="btn ghost" data-act="csv-events">全部事件紀錄</button></div>
     </div>
-    <div class="card" id="pin-box">
-      <h3>密碼鎖</h3>
-      <p class="note" id="pin-state"></p>
-      <div class="grid2">
-        <label class="f">新密碼（4–8 位數字）<input id="pin1" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password"></label>
-        <label class="f">再輸入一次<input id="pin2" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password"></label>
-      </div>
-      <p class="hintw">密碼忘記就無法找回資料，請記在安全的地方。</p>
-      <div class="btns"><button class="btn" data-act="pin-set" id="pin-set">設定密碼</button><button class="btn ghost" data-act="pin-off" id="pin-off" hidden>取消密碼</button></div>
-      <label class="f">離開幾分鐘後自動鎖定<select id="set-autolock"><option value="1">1 分鐘</option><option value="3">3 分鐘</option><option value="10">10 分鐘</option><option value="30">30 分鐘</option></select></label>
-    </div>
     <div class="card">
       <h3>基本設定</h3>
       <label class="f">記錄人（你的名字，會寫進報告）<input id="set-me" maxlength="12"></label>
@@ -420,7 +408,6 @@ details.card summary{cursor:pointer;font-weight:700}
     <div class="card">
       <h3>使用聲明</h3>
       <p class="note">本系統紀錄僅供內部管理參考，正式獎懲仍須依公司工作規則程序與證據辦理。紀錄只寫客觀事實，涉及同仁個人資料，請依個人資料保護法妥善保管，勿外流。</p>
-      <p class="note">排班助手連動：本頁和安橋排班助手放在同一個網站時，「評分」頁可以直接帶入當天在崗人員和哨點。</p>
     </div>
   </section>
 </div>
@@ -606,7 +593,7 @@ window.addEventListener('pagehide',()=>{if(D)persist()});
 $('lock-form').addEventListener('submit',async e=>{e.preventDefault();
   const pin=$('lock-pin').value.trim(); if(!pin)return;
   try{const key=await deriveKey(pin,ub64(STORED.salt));const obj=await decryptObj(key,STORED);
-    D=migrate(obj);KEYOBJ=key;SALT=STORED.salt;CURPIN=pin;STORED=null;start()}
+    D=migrate(obj);CURPIN=pin;KEYOBJ=null;SALT='';STORED=null;await persist();start();toast('已解鎖，密碼鎖已取消')}
   catch(err){$('lock-err').textContent='密碼錯誤，請再試一次';$('lock-err').hidden=false;$('lock-pin').select()}
 });
 
@@ -619,7 +606,6 @@ function setTab(t){
 function render(){
   if(!D)return;
   $('banner').hidden=!D.sample;
-  $('lock-btn').hidden=!KEYOBJ;
   const need=!D.sample&&D.people.length>0&&(!D.lastBackup||dateDiff(D.lastBackup,today())>=7);
   $('bk-banner').hidden=!need||tab==='settings';
   if(need)$('bk-text').textContent=D.lastBackup?`已經 ${dateDiff(D.lastBackup,today())} 天沒備份資料`:'還沒備份過資料，換手機就會遺失';
@@ -631,25 +617,6 @@ function thumbs(list,kind,id){return list.map((src,i)=>`<button type="button" cl
 function photoList(kind,id){if(kind==='daily'){const r=recById(id);return r?r.photos:[]}if(kind==='event'){const e=D.events.find(x=>x.id===id);return e?e.photos:[]}return ePhotos}
 function openViewer(kind,id,i){VIEW={kind,id,i};$('v-img').src=photoList(kind,id)[i]||'';$('viewer').hidden=false}
 function closeViewer(){VIEW=null;$('viewer').hidden=true;$('v-img').removeAttribute('src')}
-
-/* ===== 排班助手連動 ===== */
-function readRoster(date){
-  try{
-    const keys=[];const last=localStorage.getItem('guard_last');if(last)keys.push('guard_slot_'+last);
-    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('guard_slot_')&&!keys.includes(k))keys.push(k)}
-    const ym=date.slice(0,7), day=+date.slice(8)-1;
-    for(const k of keys){
-      const root=JSON.parse(localStorage.getItem(k)||'null'); if(!root||!root.list)continue;
-      const out=[];
-      Object.values(root.list).forEach(S=>{const Rr=S&&S.roster&&S.roster[ym]; if(!Rr||!Rr.cells)return;
-        (S.ppl||[]).forEach(p=>{const c=(Rr.cells[p.uid]||[])[day];
-          if(c&&c!=='休'&&c!=='—'&&String(p.name||'').trim()){const post=(S.posts||[]).find(x=>String(x.code)===String(c));
-            out.push({name:String(p.name).trim(),post:post?post.name:String(c)})}})});
-      if(out.length)return {list:out,src:root.saveName||'排班助手'};
-    }
-  }catch(e){}
-  return null;
-}
 
 /* ===== 每日評分 ===== */
 function attention(date){
@@ -677,7 +644,7 @@ function rDaily(){
       <button class="del" data-act="duty-edit">編輯</button><button class="del" data-act="duty-all">${showAll?'只顯示在崗':'顯示全部人員'}</button><button class="del" data-act="duty-clear">清除</button></span></div>`;
   }else{
     dh=`<h3>今日在崗名單</h3><p class="note">還沒設定，目前列出全部人員。</p>
-      <div class="btns"><button class="btn ghost sm" data-act="duty-roster">從排班助手帶入</button><button class="btn ghost sm" data-act="duty-prev">沿用前一天</button><button class="btn ghost sm" data-act="duty-edit">手動選擇</button></div>`;
+      <div class="btns"><button class="btn ghost sm" data-act="duty-prev">沿用前一天</button><button class="btn ghost sm" data-act="duty-edit">手動選擇</button></div>`;
   }
   $('d-duty').innerHTML=dh;
   const ppl=duty&&!showAll&&!dutyEdit?D.people.filter(p=>p.id in duty):D.people;
@@ -1003,10 +970,7 @@ function rSettings(){
   $('b-last').textContent=D.lastBackup?`上次備份：${ymd(D.lastBackup)}（${dateDiff(D.lastBackup,today())} 天前）`:'還沒有備份過。';
   $('bk-share').hidden=!(navigator.canShare&&(()=>{try{return navigator.canShare({files:[new File(['x'],'x.json',{type:'application/json'})]})}catch(e){return false}})());
   $('set-me').value=D.settings.me||''; $('set-bad').value=D.settings.bad.join('、'); $('set-good').value=D.settings.good.join('、');
-  $('set-keep').value=String(D.settings.keepMonths||0); $('set-autolock').value=String(D.settings.autoLock||3);
-  $('pin-box').hidden=!CAN_CRYPTO;
-  $('pin-state').textContent=KEYOBJ?'已設定密碼，資料已加密保存。開啟程式和離開一段時間後都要輸入密碼。':'目前沒有密碼，拿到這支手機的人都能看到紀錄。';
-  $('pin-set').textContent=KEYOBJ?'更換密碼':'設定密碼'; $('pin-off').hidden=!KEYOBJ;
+  $('set-keep').value=String(D.settings.keepMonths||0);
 }
 async function backupPayload(){
   D.lastBackup=today(); await persist();
@@ -1050,11 +1014,6 @@ document.addEventListener('click',async ev=>{
     case 'all-ok': {const duty=D.duty[curDate()];const ppl=duty&&!showAll?D.people.filter(p=>p.id in duty):D.people;let n=0;
       ppl.forEach(p=>{if(!rec(p.id)){D.daily.push({id:uid(),date:curDate(),pid:p.id,r:'ok',why:'',good:'',photos:[],fu:null});n++}});save();rDaily();toast(`已將 ${n} 人評為合格`)} break;
     case 'fu-ok': case 'fu-no': {const r=recById(id);if(r&&r.fu){r.fu.done=a==='fu-ok'?'ok':'no';r.fu.doneDate=curDate();save();rDaily();toast(a==='fu-ok'?'已記錄：已改善':'已記錄：未改善，可再評一次待加強或不合格')}} break;
-    case 'duty-roster': {const res=readRoster(curDate());
-      if(!res){toast('找不到排班助手這天的班表。兩個程式要放在同一個網站，且排班助手已排好這個月');return}
-      const m={};let added=0;
-      res.list.forEach(x=>{let p=D.people.find(pp=>pp.name===x.name);if(!p){p={id:uid(),name:x.name,hired:'',cert:'',contact:'',training:'',note:''};D.people.push(p);added++}m[p.id]=x.post});
-      D.duty[curDate()]=m;save();rDaily();toast(`已帶入 ${res.list.length} 人${added?`，新增 ${added} 位人員`:''}`)} break;
     case 'duty-prev': {let d=curDate(),found=null;for(let i=1;i<=14;i++){d=addDays(d,-1);if(D.duty[d]){found=d;break}}
       if(!found){toast('前 14 天都沒有在崗名單');return}D.duty[curDate()]=Object.assign({},D.duty[found]);save();rDaily();toast(`已沿用 ${md(found)} 的在崗名單`)} break;
     case 'duty-edit': dutyEdit=true; if(!D.duty[curDate()])D.duty[curDate()]={}; rDaily(); break;
@@ -1116,12 +1075,6 @@ document.addEventListener('click',async ev=>{
       if(confirmTap(b)){D=o;D.sample=false;pendingImport=null;$('b-text').value='';$('b-pin').value='';await persist();setTab('daily');toast('已還原')}} break;
     case 'csv-daily': download(`安橋評分紀錄_${today()}.csv`,csv(dailyRows(D.daily.slice())),'text/csv;charset=utf-8');toast('已下載'); break;
     case 'csv-events': download(`安橋事件紀錄_${today()}.csv`,csv(eventRows(D.events.slice())),'text/csv;charset=utf-8');toast('已下載'); break;
-    case 'pin-set': {const p1=$('pin1').value.trim(),p2=$('pin2').value.trim();
-      if(!/^\d{4,8}$/.test(p1)){toast('密碼要 4 到 8 位數字');return} if(p1!==p2){toast('兩次輸入的密碼不一樣');return}
-      const salt=crypto.getRandomValues(new Uint8Array(16));KEYOBJ=await deriveKey(p1,salt);SALT=b64(salt);CURPIN=p1;
-      $('pin1').value='';$('pin2').value='';await persist();render();toast('密碼已設定，資料已加密')} break;
-    case 'pin-off': if(confirmTap(b)){KEYOBJ=null;SALT='';CURPIN='';await persist();render();toast('已取消密碼')} break;
-    case 'lock': lockNow(); break;
     case 'set-save': {const bad=splitTags($('set-bad').value),good=splitTags($('set-good').value);
       D.settings.bad=bad.length?bad:BAD0.slice();D.settings.good=good.length?good:GOOD0.slice();save();rSettings();toast('標籤已儲存')} break;
     case 'purge': {const d=$('purge-date').value;if(!d){toast('請先選日期');return}
@@ -1143,7 +1096,6 @@ document.addEventListener('change',async ev=>{const t=ev.target;if(!D)return;
   else if(t.id==='set-me'){D.settings.me=t.value.trim();save()}
   else if(t.id==='set-theme'){try{t.value?localStorage.setItem(THEMEK,t.value):localStorage.removeItem(THEMEK)}catch(e){}applyTheme()}
   else if(t.id==='set-keep'){D.settings.keepMonths=+t.value;const n=purgeOld();save();toast(n?`已刪除 ${n} 筆超過期限的紀錄`:'已設定保留期限')}
-  else if(t.id==='set-autolock'){D.settings.autoLock=+t.value;save()}
 });
 $('b-text').addEventListener('input',()=>{pendingImport=null});
 $('d-date').addEventListener('change',()=>{dutyEdit=false;rDaily()});
