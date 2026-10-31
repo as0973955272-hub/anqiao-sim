@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>安橋勤務紀錄</title>
+<meta name="theme-color" content="#1e4f7a">
+<link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column, segmented tabs, cards per person/event; state shown by colored buttons, pills and day strips */
+:root{
+  --bg:#edf0f2; --card:#ffffff; --fg:#16202a; --muted:#5b6876; --line:#d3dae0;
+  --accent:#1e4f7a; --on:#ffffff;
+  --ok:#2b7a4b; --ok-soft:#dff0e5; --warn:#9a6100; --warn-soft:#fbeed6; --bad:#b3271f; --bad-soft:#f8dfdc;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151b; --card:#18212a; --fg:#e5eaef; --muted:#97a4b1; --line:#2c3844;
+  --accent:#82b2de; --on:#0f151b;
+  --ok:#6ccb94; --ok-soft:#173326; --warn:#efb24a; --warn-soft:#3a2c12; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151b; --card:#18212a; --fg:#e5eaef; --muted:#97a4b1; --line:#2c3844;
+  --accent:#82b2de; --on:#0f151b;
+  --ok:#6ccb94; --ok-soft:#173326; --warn:#efb24a; --warn-soft:#3a2c12; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
+.app{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.top h1{margin:0;font-size:22px;font-weight:900;letter-spacing:.04em}
+.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.banner{background:var(--warn-soft);color:var(--warn);padding:10px 12px;border-radius:8px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px;font-weight:500}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px}
+.tabs button{border:0;background:transparent;color:var(--muted);padding:9px 2px;border-radius:7px;font:700 14px var(--sans);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--on)}
+.view{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card.alert{background:var(--warn-soft);border-color:var(--warn)}
+.card.alert h3{color:var(--warn)}
+h3{margin:0;font-size:16px}
+.daybar{display:flex;align-items:center;gap:8px}
+.daybar input{flex:1;font-family:var(--mono)}
+.sq{width:42px;height:42px;flex:none;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;font:700 18px var(--sans);cursor:pointer}
+.sum{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.none{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.pill.sm{font-size:12px;padding:1px 8px}
+.pc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.pc.improve{border-color:var(--warn)} .pc.fail{border-color:var(--bad)}
+.pc-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.pc-h b{font-size:16px}
+.seg{display:flex;gap:4px}
+.seg button{padding:7px 11px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;font:700 14px var(--sans);cursor:pointer}
+.seg .s-ok[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:var(--on)}
+.seg .s-improve[aria-pressed="true"]{background:var(--warn);border-color:var(--warn);color:var(--on)}
+.seg .s-fail[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:var(--on)}
+.why{display:flex;flex-direction:column;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--fg);font:500 13px var(--sans);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on)}
+input,select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+textarea{resize:vertical}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.err{margin:0;color:var(--bad);font-size:13px;font-weight:500}
+.empty{color:var(--muted);text-align:center;padding:24px 8px;margin:0}
+.btn{padding:10px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--on);font:700 15px var(--sans);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.armed,.del.armed{border-color:var(--bad);background:var(--bad);color:var(--on)}
+.del{border:1px solid transparent;background:transparent;color:var(--muted);font:500 13px var(--sans);cursor:pointer;padding:4px 8px;border-radius:6px;flex:none}
+.del:hover{border-color:var(--line)}
+.acts{display:flex;gap:2px;flex:none}
+.row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.row>*{flex:1;min-width:120px}
+.row>.btn{flex:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.grid2{grid-template-columns:1fr}}
+label.f,.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.head>span,.head>h3{min-width:0}
+.when{font-family:var(--mono);font-size:14px;font-weight:500;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+dl.ev{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}
+dl.ev dt{font-weight:700;color:var(--muted);font-size:13px;padding-top:1px}
+dl.ev dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.graph{width:100%;max-width:400px;margin:0 auto;display:block}
+.graph line{stroke-linecap:round;transition:opacity .2s}
+.graph .e-conflict{stroke:var(--bad);stroke-width:3.5}
+.graph .e-tension{stroke:var(--warn);stroke-width:3;stroke-dasharray:7 6}
+.graph .e-good{stroke:var(--ok);stroke-width:3}
+.graph .node{cursor:pointer;transition:opacity .2s}
+.graph .node circle{fill:var(--card);stroke:var(--accent);stroke-width:2}
+.graph .node.hot circle{fill:var(--bad-soft);stroke:var(--bad)}
+.graph .node.focus circle{stroke-width:4.5}
+.graph .dim{opacity:.15}
+.graph text{fill:var(--fg);font:700 12px var(--sans);pointer-events:none}
+.graph .hint{fill:var(--muted);font-weight:500;font-size:14px}
+.legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:24px;border-top:3px solid}
+.legend .l-conflict{border-color:var(--bad)} .legend .l-tension{border-color:var(--warn);border-top-style:dashed} .legend .l-good{border-color:var(--ok)}
+.center{text-align:center}
+.pair{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:700}
+.meta{margin:0;color:var(--muted);font-size:14px}
+.meta b{color:var(--fg)}
+.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.hist li{display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:baseline}
+.hist li span:last-child{min-width:0;overflow-wrap:anywhere}
+.hist .d{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.strip{display:grid;grid-template-columns:repeat(30,minmax(0,1fr));gap:2px}
+.strip i{aspect-ratio:1;border-radius:2px;background:var(--line)}
+.strip i.ok{background:var(--ok)} .strip i.improve{background:var(--warn)} .strip i.fail{background:var(--bad)}
+.strip-l{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:-4px}
+.link{border:0;background:none;color:var(--accent);font:700 14px var(--sans);padding:2px 0;cursor:pointer;text-align:left}
+.more{border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:8px}
+.more h4{margin:0;font-size:13px;color:var(--muted)}
+details.card summary{cursor:pointer;font-weight:700}
+.note{margin:0;font-size:13px;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:14px;z-index:9;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>安橋勤務紀錄</h1>
+    <p>每日評分・事件紀錄・人際關係</p>
+  </header>
+
+  <div class="banner" id="banner" hidden>
+    <span>目前顯示的是範例資料</span>
+    <button class="btn" data-act="clear-sample">清除範例，開始使用</button>
+  </div>
+  <div class="banner" id="bk-banner" hidden>
+    <span id="bk-text"></span>
+    <button class="btn" data-act="go-backup">去備份</button>
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="daily" aria-selected="true">每日評分</button>
+    <button role="tab" data-tab="events" aria-selected="false">事件紀錄</button>
+    <button role="tab" data-tab="rel" aria-selected="false">人際關係</button>
+    <button role="tab" data-tab="people" aria-selected="false">人員</button>
+  </nav>
+
+  <!-- 每日評分 -->
+  <section class="view" id="tab-daily">
+    <div class="daybar">
+      <button class="sq" id="d-prev" aria-label="前一天">‹</button>
+      <input type="date" id="d-date" aria-label="評分日期">
+      <button class="sq" id="d-next" aria-label="後一天">›</button>
+    </div>
+    <div class="sum" id="d-sum"></div>
+    <div class="card alert" id="d-att" hidden></div>
+    <button class="btn ghost" id="d-allok" data-act="all-ok" hidden></button>
+    <div class="view" id="d-list"></div>
+  </section>
+
+  <!-- 事件紀錄 -->
+  <section class="view" id="tab-events" hidden>
+    <button class="btn" id="e-new">＋ 新增事件</button>
+    <form class="card" id="e-form" hidden>
+      <h3 id="e-title">新增事件</h3>
+      <div class="grid2">
+        <label class="f">日期（時）<input type="date" id="e-date"></label>
+        <label class="f">時間<input type="time" id="e-time"></label>
+      </div>
+      <div class="grid2">
+        <label class="f">地點（地）<input id="e-place" placeholder="例：大門哨交接處"></label>
+        <label class="f">嚴重程度<select id="e-sev">
+          <option value="low">輕微</option>
+          <option value="mid" selected>一般</option>
+          <option value="high">嚴重</option>
+        </select></label>
+      </div>
+      <div class="f">相關人員（人）<div class="chips" id="e-people"></div></div>
+      <label class="f">事件經過（事）<textarea id="e-what" rows="3" placeholder="只寫看到、聽到的事實：誰、做了什麼、說了什麼"></textarea></label>
+      <label class="f">相關物品（物）<input id="e-items" placeholder="例：鑰匙箱、交接簿、監視器畫面"></label>
+      <label class="f">處理方式<textarea id="e-handle" rows="2" placeholder="例：當場分開兩人，已口頭告誡"></textarea></label>
+      <div class="row">
+        <button class="btn" type="submit" id="e-submit">儲存事件</button>
+        <button class="btn ghost" type="button" id="e-cancel">取消</button>
+      </div>
+    </form>
+    <div class="grid2">
+      <label class="f">篩選人員<select id="e-filter"></select></label>
+      <label class="f">搜尋<input id="e-q" type="search" placeholder="地點、物品、關鍵字"></label>
+    </div>
+    <div class="view" id="e-list"></div>
+  </section>
+
+  <!-- 人際關係 -->
+  <section class="view" id="tab-rel" hidden>
+    <div class="card">
+      <svg class="graph" id="r-svg" viewBox="0 0 360 340" role="img" aria-label="人際關係圖"></svg>
+      <div class="legend">
+        <span><i class="l-conflict"></i>不合</span>
+        <span><i class="l-tension"></i>關係緊張</span>
+        <span><i class="l-good"></i>要好</span>
+      </div>
+      <p class="note center" id="r-hint"></p>
+    </div>
+    <div class="card">
+      <h3>排班檢查</h3>
+      <p class="note">選出同一班的人，馬上看有沒有不合的組合。</p>
+      <div class="chips" id="s-people"></div>
+      <div id="s-result"></div>
+    </div>
+    <form class="card" id="r-form">
+      <h3>新增關係</h3>
+      <div class="grid2">
+        <label class="f">人員<select id="r-a"></select></label>
+        <label class="f">和誰<select id="r-b"></select></label>
+      </div>
+      <label class="f">關係<select id="r-t">
+        <option value="conflict">不合</option>
+        <option value="tension">關係緊張</option>
+        <option value="good">要好</option>
+      </select></label>
+      <label class="f">說明<input id="r-note" placeholder="例：交接常起爭執，排班避免同時段"></label>
+      <button class="btn" type="submit">儲存關係</button>
+    </form>
+    <div class="view" id="r-list"></div>
+  </section>
+
+  <!-- 人員 -->
+  <section class="view" id="tab-people" hidden>
+    <form class="card" id="p-form">
+      <div class="row">
+        <label class="f">新增人員<input id="p-name" placeholder="輸入姓名" maxlength="12"></label>
+        <button class="btn" type="submit">新增</button>
+      </div>
+    </form>
+    <div class="grid2">
+      <label class="f">排序<select id="p-sort">
+        <option value="order">依新增順序</option>
+        <option value="issue">問題多的排前面</option>
+      </select></label>
+      <div class="f">近 30 天月報<button class="btn ghost" data-act="month-report">複製全部月報</button></div>
+    </div>
+    <div class="view" id="p-list"></div>
+    <details class="card" id="b-box">
+      <summary>資料備份與還原</summary>
+      <p class="note">資料只存在這支手機的瀏覽器，換手機或清除瀏覽資料就會消失。建議每週按「複製備份」，貼到 LINE 記事本或備忘錄保存。</p>
+      <p class="note" id="b-last"></p>
+      <button class="btn ghost" data-act="export">複製備份</button>
+      <textarea id="b-text" rows="4" placeholder="要還原時，把備份內容貼在這裡"></textarea>
+      <button class="btn ghost" data-act="import">用上面的內容還原</button>
+    </details>
+    <p class="note">紀錄只寫客觀事實（時間、地點、經過），避免主觀評價；這些是同事的個人資料，請勿外流。</p>
+  </section>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const KEY='anqiao-log-v1';
+const R={ok:'合格',improve:'待加強',fail:'不合格'};
+const RT={conflict:'不合',tension:'關係緊張',good:'要好'};
+const RC={conflict:'bad',tension:'warn',good:'ok'};
+const SEV={low:'輕微',mid:'一般',high:'嚴重'}, SC={low:'none',mid:'warn',high:'bad'};
+const CHIPS=['遲到','服儀不整','執勤滑手機','交接不清','登記漏寫','態度不佳','擅離崗位','不聽指揮'];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=()=>fmt(new Date());
+const addDays=(s,n)=>{const d=new Date(s+'T00:00');d.setDate(d.getDate()+n);return fmt(d)};
+const daysAgo=n=>addDays(today(),-n);
+const dateDiff=(a,b)=>Math.round((new Date(b+'T00:00')-new Date(a+'T00:00'))/864e5);
+const md=s=>s.slice(5).replace('-','/');
+const empty=()=>({sample:false,people:[],daily:[],events:[],rels:[],lastBackup:''});
+
+function sample(){
+  const p=['組員A','組員B','組員C','組員D','組員E'].map(n=>({id:uid(),name:n}));
+  const [a,b,c,d,e]=p.map(x=>x.id), t=today(), y=daysAgo(1), y2=daysAgo(2);
+  const daily=[];
+  for(let i=29;i>=3;i--){const dd=daysAgo(i);p.forEach(x=>daily.push({id:uid(),date:dd,pid:x.id,r:'ok',why:''}))}
+  daily.push(
+    {id:uid(),date:y2,pid:a,r:'ok',why:''},{id:uid(),date:y2,pid:b,r:'ok',why:''},{id:uid(),date:y2,pid:c,r:'improve',why:'服儀不整，未戴識別證'},
+    {id:uid(),date:y,pid:a,r:'ok',why:''},{id:uid(),date:y,pid:b,r:'improve',why:'遲到 10 分鐘'},{id:uid(),date:y,pid:c,r:'ok',why:''},{id:uid(),date:y,pid:d,r:'ok',why:''},
+    {id:uid(),date:t,pid:a,r:'ok',why:''},
+    {id:uid(),date:t,pid:b,r:'improve',why:'交接不清、交接簿漏寫鑰匙借出數量'},
+    {id:uid(),date:t,pid:c,r:'fail',why:'執勤滑手機，提醒兩次仍未改善'});
+  return {sample:true,lastBackup:'',people:p,daily,
+    events:[{id:uid(),date:y,time:'07:10',place:'大門哨交接處',sev:'mid',pids:[b,c],
+      what:'交接時對鑰匙數量有爭執，雙方音量變大，當時有訪客在旁',items:'鑰匙箱、交接簿',
+      handle:'當場分開兩人，請雙方重新清點並簽名；已口頭告誡'}],
+    rels:[{id:uid(),a:b,b:c,t:'conflict',note:'交接常起爭執，排班避免同時段',date:y},
+          {id:uid(),a:c,b:e,t:'tension',note:'對巡邏分工有意見',date:y},
+          {id:uid(),a:a,b:d,t:'good',note:'常互相支援',date:y}]};
+}
+function load(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}}
+function valid(o){return o&&Array.isArray(o.people)&&Array.isArray(o.daily)&&Array.isArray(o.events)&&Array.isArray(o.rels)}
+function migrate(o){o.events.forEach(e=>{if(!e.sev)e.sev='mid';if(!Array.isArray(e.pids))e.pids=[]});if(o.lastBackup==null)o.lastBackup='';return o}
+
+let D=load(); D=valid(D)?migrate(D):sample();
+let tab='daily', eSel=new Set(), eEdit=null, focusId=null, shiftSel=new Set(), renaming=null, expanded=new Set(), armed=null;
+const name=id=>(D.people.find(p=>p.id===id)||{name:'（已刪除）'}).name;
+const curDate=()=>$('d-date').value||today();
+const rec=pid=>D.daily.find(x=>x.date===curDate()&&x.pid===pid);
+
+function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
+function confirmTap(b){
+  const k=b.dataset.act+(b.dataset.id||'');
+  if(armed===k){armed=null;return true}
+  armed=k; b.dataset.orig=b.dataset.orig||b.textContent; b.textContent='再按一次確定'; b.classList.add('armed');
+  setTimeout(()=>{if(armed===k)armed=null; if(b.isConnected){b.textContent=b.dataset.orig;b.classList.remove('armed')}},3000);
+  return false;
+}
+function copyText(t,msg){
+  const fb=()=>{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+    let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();toast(ok?msg:'複製失敗，請改用電腦或其他瀏覽器')};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast(msg),fb);else fb();
+}
+
+function setTab(t){
+  tab=t;
+  document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  ['daily','events','rel','people'].forEach(x=>$('tab-'+x).hidden=x!==t);
+  render(); window.scrollTo(0,0);
+}
+function render(){
+  $('banner').hidden=!D.sample;
+  const need=!D.sample&&D.people.length>0&&(!D.lastBackup||dateDiff(D.lastBackup,today())>=7);
+  $('bk-banner').hidden=!need;
+  if(need)$('bk-text').textContent=D.lastBackup?`已經 ${dateDiff(D.lastBackup,today())} 天沒備份資料`:'還沒備份過資料，換手機就會遺失';
+  ({daily:rDaily,events:rEvents,rel:rRel,people:rPeople})[tab]();
+}
+
+/* ===== 每日評分 ===== */
+function attention(date){
+  const from=addDays(date,-6);
+  return D.people.map(p=>{
+    const mine=D.daily.filter(x=>x.pid===p.id);
+    const wk=mine.filter(x=>x.date>=from&&x.date<=date&&x.r!=='ok').length;
+    const fails=mine.filter(x=>x.date>=from&&x.date<=date&&x.r==='fail').length;
+    let d=date; if(!mine.some(x=>x.date===d))d=addDays(d,-1);
+    let st=0; while(st<60){const r=mine.find(x=>x.date===d); if(r&&r.r!=='ok'){st++;d=addDays(d,-1)}else break}
+    return {p,wk,st,fails};
+  }).filter(a=>a.wk>=3||a.st>=2||a.fails>=2);
+}
+function rDaily(){
+  const recs=D.daily.filter(x=>x.date===curDate());
+  const c={ok:0,improve:0,fail:0}; recs.forEach(x=>c[x.r]++);
+  const left=D.people.filter(p=>!recs.some(r=>r.pid===p.id)).length;
+  $('d-sum').innerHTML=`<span class="pill ok">合格 ${c.ok}</span><span class="pill warn">待加強 ${c.improve}</span><span class="pill bad">不合格 ${c.fail}</span><span class="pill none">未評 ${left}</span>`;
+  const att=attention(curDate());
+  $('d-att').hidden=!att.length;
+  $('d-att').innerHTML=`<h3>注意名單・建議面談</h3>`+att.map(a=>{
+    const bits=[`近 7 天待加強／不合格 ${a.wk} 次`];
+    if(a.st>=2)bits.push(`連續 ${a.st} 天`);
+    if(a.fails>=2)bits.push(`不合格 ${a.fails} 次`);
+    return `<p class="meta"><b>${esc(a.p.name)}</b>：${bits.join('，')}</p>`}).join('');
+  $('d-allok').hidden=!left||!D.people.length;
+  $('d-allok').textContent=left===D.people.length?`全部 ${left} 人合格`:`其餘 ${left} 人全部合格`;
+  if(!D.people.length){$('d-list').innerHTML=`<p class="empty">還沒有人員。到「人員」頁新增同事後，就能在這裡每日評分。</p>`;return}
+  $('d-list').innerHTML=D.people.map(p=>{
+    const r=recs.find(x=>x.pid===p.id), v=r?r.r:'';
+    const why=v&&v!=='ok'?`<div class="why">
+      <div class="chips">${CHIPS.map(t=>`<button type="button" class="chip" data-act="chip" data-pid="${p.id}" data-c="${t}">${t}</button>`).join('')}</div>
+      <textarea id="why-${p.id}" data-why="${p.id}" rows="2" placeholder="原因（必填）：幾點、在哪裡、發生什麼事">${esc(r.why)}</textarea>
+      <p class="err" id="err-${p.id}" ${r.why.trim()?'hidden':''}>請填寫原因，之後才有依據可查</p></div>`:'';
+    return `<div class="pc ${v}"><div class="pc-h"><b>${esc(p.name)}</b><div class="seg">${
+      Object.keys(R).map(k=>`<button type="button" class="s-${k}" data-act="rate" data-pid="${p.id}" data-r="${k}" aria-pressed="${v===k}">${R[k]}</button>`).join('')
+    }</div></div>${why}</div>`;
+  }).join('');
+}
+function rate(pid,r){
+  const i=D.daily.findIndex(x=>x.date===curDate()&&x.pid===pid);
+  if(i>=0&&D.daily[i].r===r) D.daily.splice(i,1);
+  else if(i>=0){D.daily[i].r=r; if(r==='ok')D.daily[i].why=''}
+  else D.daily.push({id:uid(),date:curDate(),pid,r,why:''});
+  save(); rDaily();
+  if(r!=='ok'){const t=$('why-'+pid); if(t&&!t.value.trim())t.focus()}
+}
+function shiftDate(n){$('d-date').value=addDays(curDate(),n);rDaily()}
+
+/* ===== 事件紀錄 ===== */
+function rEvents(){
+  const f=$('e-filter'), cur=f.value, q=$('e-q').value.trim().toLowerCase();
+  f.innerHTML=`<option value="">全部人員</option>`+D.people.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  f.value=D.people.some(p=>p.id===cur)?cur:'';
+  $('e-people').innerHTML=D.people.map(p=>`<button type="button" class="chip" data-act="e-pick" data-id="${p.id}" aria-pressed="${eSel.has(p.id)}">${esc(p.name)}</button>`).join('')||'<span>先到「人員」頁新增同事</span>';
+  const list=D.events.filter(e=>{
+    if(f.value&&!e.pids.includes(f.value))return false;
+    if(!q)return true;
+    return [e.place,e.what,e.items,e.handle,e.pids.map(name).join(' ')].join(' ').toLowerCase().includes(q);
+  }).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  $('e-list').innerHTML=list.length?list.map(e=>`<article class="card">
+    <div class="head"><span class="when">${e.date.replace(/-/g,'/')} ${esc(e.time)} <span class="pill sm ${SC[e.sev]}">${SEV[e.sev]}</span></span>
+      <span class="acts"><button class="del" data-act="edit-event" data-id="${e.id}">編輯</button><button class="del" data-act="del-event" data-id="${e.id}">刪除</button></span></div>
+    <dl class="ev">
+      <dt>人</dt><dd>${e.pids.map(id=>esc(name(id))).join('、')||'—'}</dd>
+      <dt>地</dt><dd>${esc(e.place)||'—'}</dd>
+      <dt>事</dt><dd>${esc(e.what)}</dd>
+      <dt>物</dt><dd>${esc(e.items)||'—'}</dd>
+      <dt>處理</dt><dd>${esc(e.handle)||'—'}</dd>
+    </dl></article>`).join(''):`<p class="empty">${D.events.length?'沒有符合條件的事件。':'沒有事件紀錄。按「新增事件」記下人、事、時、地、物。'}</p>`;
+}
+function openEventForm(e){
+  eEdit=e?e.id:null;
+  $('e-title').textContent=e?'編輯事件':'新增事件';
+  $('e-submit').textContent=e?'儲存修改':'儲存事件';
+  $('e-date').value=e?e.date:today(); $('e-time').value=e?e.time:'';
+  $('e-place').value=e?e.place:''; $('e-sev').value=e?e.sev:'mid';
+  $('e-what').value=e?e.what:''; $('e-items').value=e?e.items:''; $('e-handle').value=e?e.handle:'';
+  eSel=new Set(e?e.pids:[]);
+  $('e-form').hidden=false; $('e-new').hidden=true; rEvents();
+  $('e-form').scrollIntoView({block:'start'});
+}
+function closeEventForm(){eEdit=null;eSel.clear();$('e-form').hidden=true;$('e-new').hidden=false}
+
+/* ===== 人際關係 ===== */
+function rRel(){
+  const opts=D.people.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  ['r-a','r-b'].forEach(id=>{const s=$(id),v=s.value;s.innerHTML=opts;if(D.people.some(p=>p.id===v))s.value=v});
+  if(D.people.length>1&&$('r-a').value===$('r-b').value)$('r-b').selectedIndex=1;
+  if(focusId&&!D.people.some(p=>p.id===focusId))focusId=null;
+  drawGraph();
+  $('r-hint').textContent=focusId?`只顯示 ${name(focusId)} 的關係，再點一次顯示全部`:(D.people.length?'點人名可以只看他的關係':'');
+  $('s-people').innerHTML=D.people.map(p=>`<button type="button" class="chip" data-act="s-pick" data-id="${p.id}" aria-pressed="${shiftSel.has(p.id)}">${esc(p.name)}</button>`).join('')||'<span class="note">先到「人員」頁新增同事</span>';
+  rShift();
+  const order=['conflict','tension','good'];
+  const list=D.rels.filter(r=>D.people.some(p=>p.id===r.a)&&D.people.some(p=>p.id===r.b))
+    .filter(r=>!focusId||r.a===focusId||r.b===focusId)
+    .sort((x,y)=>order.indexOf(x.t)-order.indexOf(y.t));
+  $('r-list').innerHTML=list.length?list.map(r=>`<article class="card">
+    <div class="head"><span class="pair">${esc(name(r.a))} ↔ ${esc(name(r.b))} <span class="pill ${RC[r.t]}">${RT[r.t]}</span></span>
+    <button class="del" data-act="del-rel" data-id="${r.id}">刪除</button></div>
+    ${r.note?`<p class="meta">${esc(r.note)}</p>`:''}</article>`).join(''):`<p class="empty">還沒有關係紀錄。用上面的表單記下誰和誰不合或要好。</p>`;
+}
+function rShift(){
+  for(const id of [...shiftSel]) if(!D.people.some(p=>p.id===id)) shiftSel.delete(id);
+  const box=$('s-result');
+  if(shiftSel.size<2){box.innerHTML=D.people.length>1?'<p class="note">至少選 2 個人。</p>':'';return}
+  const bad=D.rels.filter(r=>r.t!=='good'&&shiftSel.has(r.a)&&shiftSel.has(r.b));
+  const good=D.rels.filter(r=>r.t==='good'&&shiftSel.has(r.a)&&shiftSel.has(r.b));
+  box.innerHTML=(bad.length
+    ?`<p class="err">這組人有 ${bad.length} 組需要注意：</p>`+bad.map(r=>`<p class="meta"><span class="pill sm ${RC[r.t]}">${RT[r.t]}</span> <b>${esc(name(r.a))}</b> ↔ <b>${esc(name(r.b))}</b>${r.note?`：${esc(r.note)}`:''}</p>`).join('')
+    :`<p class="meta"><span class="pill ok">可以排</span> 這組人沒有已知的不合紀錄</p>`)
+    +(good.length?`<p class="meta">互相支援：${good.map(r=>`${esc(name(r.a))} ↔ ${esc(name(r.b))}`).join('、')}</p>`:'');
+}
+function drawGraph(){
+  const n=D.people.length, cx=180, cy=170, rad=n<=2?80:125;
+  if(!n){$('r-svg').innerHTML=`<text class="hint" x="180" y="170" text-anchor="middle">新增人員後會出現在這裡</text>`;return}
+  const pos={};
+  D.people.forEach((p,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;pos[p.id]=[cx+rad*Math.cos(a),cy+rad*Math.sin(a)]});
+  const linked=new Set([focusId]);
+  D.rels.forEach(r=>{if(r.a===focusId)linked.add(r.b);if(r.b===focusId)linked.add(r.a)});
+  const edges=D.rels.filter(r=>pos[r.a]&&pos[r.b]).map(r=>{const[a,b]=pos[r.a],[c,d]=pos[r.b];
+    const dim=focusId&&r.a!==focusId&&r.b!==focusId?' dim':'';
+    return `<line class="e-${r.t}${dim}" x1="${a.toFixed(1)}" y1="${b.toFixed(1)}" x2="${c.toFixed(1)}" y2="${d.toFixed(1)}"/>`}).join('');
+  const nodes=D.people.map(p=>{const[x,y]=pos[p.id];
+    const hot=D.rels.some(r=>r.t==='conflict'&&(r.a===p.id||r.b===p.id));
+    const cls=(hot?' hot':'')+(focusId&&!linked.has(p.id)?' dim':'')+(p.id===focusId?' focus':'');
+    return `<g class="node${cls}" data-act="node" data-id="${p.id}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="28"/><text x="${x.toFixed(1)}" y="${y.toFixed(1)}" dy="0.35em" text-anchor="middle">${esc(p.name.slice(0,4))}</text></g>`}).join('');
+  $('r-svg').innerHTML=edges+nodes;
+}
+
+/* ===== 人員 ===== */
+function stats(pid,from,to){const c={ok:0,improve:0,fail:0};D.daily.filter(x=>x.pid===pid&&x.date>=from&&x.date<=to).forEach(x=>c[x.r]++);return c}
+function strip(pid){
+  const end=today(); let h='';
+  for(let i=29;i>=0;i--){const d=addDays(end,-i);const r=D.daily.find(x=>x.pid===pid&&x.date===d);
+    h+=`<i class="${r?r.r:''}" title="${md(d)} ${r?R[r.r]:'未評'}"></i>`}
+  return `<div class="strip" aria-label="近 30 天每日結果">${h}</div><div class="strip-l"><span>30 天前</span><span>今天</span></div>`;
+}
+function rPeople(){
+  const from=daysAgo(29), to=today();
+  let ppl=[...D.people];
+  if($('p-sort').value==='issue'){const sc=p=>{const c=stats(p.id,from,to);return c.improve+c.fail*2};ppl.sort((a,b)=>sc(b)-sc(a))}
+  const last=D.lastBackup?`上次備份：${D.lastBackup.replace(/-/g,'/')}（${dateDiff(D.lastBackup,today())} 天前）`:'還沒有備份過。';
+  $('b-last').textContent=last;
+  $('p-list').innerHTML=ppl.length?ppl.map(p=>{
+    const c=stats(p.id,from,to);
+    const allBad=D.daily.filter(x=>x.pid===p.id&&x.r!=='ok').sort((a,b)=>b.date.localeCompare(a.date));
+    const watch=D.rels.filter(r=>r.t!=='good'&&(r.a===p.id||r.b===p.id)).map(r=>`${name(r.a===p.id?r.b:r.a)}（${RT[r.t]}）`);
+    const evs=D.events.filter(e=>e.pids.includes(p.id)).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+    const open=expanded.has(p.id);
+    const head=renaming===p.id
+      ?`<div class="row" style="flex:1"><input id="rn-input" value="${esc(p.name)}" maxlength="12" aria-label="新姓名"><button class="btn" data-act="rn-save" data-id="${p.id}">儲存</button><button class="btn ghost" data-act="rn-cancel">取消</button></div>`
+      :`<h3>${esc(p.name)}</h3><span class="acts"><button class="del" data-act="report" data-id="${p.id}">複製報告</button><button class="del" data-act="rename" data-id="${p.id}">改名</button><button class="del" data-act="del-person" data-id="${p.id}">刪除</button></span>`;
+    const histItem=x=>`<li><span class="d">${md(x.date)}</span><span class="pill sm ${x.r==='fail'?'bad':'warn'}">${R[x.r]}</span><span>${esc(x.why||'（未填原因）')}</span></li>`;
+    return `<article class="card">
+      <div class="head">${head}</div>
+      ${strip(p.id)}
+      <div class="sum"><span class="pill ok">合格 ${c.ok}</span><span class="pill warn">待加強 ${c.improve}</span><span class="pill bad">不合格 ${c.fail}</span><span class="note">近 30 天</span></div>
+      ${watch.length?`<p class="meta">關係需留意：${watch.map(esc).join('、')}</p>`:''}
+      ${allBad.length?`<ul class="hist">${allBad.slice(0,open?allBad.length:3).map(histItem).join('')}</ul>`:''}
+      ${open&&evs.length?`<div class="more"><h4>相關事件</h4><ul class="hist">${evs.map(e=>`<li><span class="d">${md(e.date)}</span><span class="pill sm ${SC[e.sev]}">${SEV[e.sev]}</span><span>${esc(e.place?e.place+'：':'')}${esc(e.what)}</span></li>`).join('')}</ul></div>`:''}
+      ${(allBad.length>3||evs.length)?`<button class="link" data-act="expand" data-id="${p.id}">${open?'收合':`查看全部紀錄（扣分 ${allBad.length} 筆・事件 ${evs.length} 件）`}</button>`:''}
+    </article>`}).join(''):`<p class="empty">還沒有人員，從上面輸入姓名新增。</p>`;
+  if(renaming){const i=$('rn-input');if(i){i.focus();i.select()}}
+}
+function personLines(p,from,to){
+  const c=stats(p.id,from,to);
+  const L=[`${p.name}：合格 ${c.ok}／待加強 ${c.improve}／不合格 ${c.fail}`];
+  D.daily.filter(x=>x.pid===p.id&&x.date>=from&&x.date<=to&&x.r!=='ok').sort((a,b)=>a.date.localeCompare(b.date))
+    .forEach(x=>L.push(`  ・${md(x.date)} ${R[x.r]}：${x.why||'未填原因'}`));
+  D.events.filter(e=>e.pids.includes(p.id)&&e.date>=from&&e.date<=to).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))
+    .forEach(e=>L.push(`  ・${md(e.date)} 事件（${SEV[e.sev]}）：${e.place?e.place+'，':''}${e.what}${e.handle?`；處理：${e.handle}`:''}`));
+  return L;
+}
+function monthReport(){
+  const to=today(), from=daysAgo(29);
+  const L=[`【安橋勤務月報】${md(from)}–${md(to)}`,''];
+  D.people.forEach(p=>{L.push(...personLines(p,from,to),'')});
+  const conf=D.rels.filter(r=>r.t!=='good');
+  if(conf.length){L.push('【關係需留意】');conf.forEach(r=>L.push(`  ・${name(r.a)} ↔ ${name(r.b)}（${RT[r.t]}）${r.note?'：'+r.note:''}`))}
+  return L.join('\n').trim();
+}
+function personReport(p){
+  const to=today(), from=daysAgo(29);
+  const L=[`【${p.name} 近 30 天紀錄】${md(from)}–${md(to)}`,...personLines(p,from,to)];
+  const w=D.rels.filter(r=>r.t!=='good'&&(r.a===p.id||r.b===p.id));
+  if(w.length)L.push('關係需留意：'+w.map(r=>`${name(r.a===p.id?r.b:r.a)}（${RT[r.t]}）`).join('、'));
+  return L.join('\n');
+}
+
+/* ===== 事件綁定 ===== */
+document.addEventListener('click',ev=>{
+  const tb=ev.target.closest('[data-tab]'); if(tb){setTab(tb.dataset.tab);return}
+  const b=ev.target.closest('[data-act]'); if(!b)return;
+  const a=b.dataset.act, id=b.dataset.id;
+  switch(a){
+    case 'rate': rate(b.dataset.pid,b.dataset.r); break;
+    case 'chip': {const r=rec(b.dataset.pid);if(r){r.why=r.why.trim()?r.why.trim()+'、'+b.dataset.c:b.dataset.c;save();rDaily()}} break;
+    case 'all-ok': {let n=0;D.people.forEach(p=>{if(!rec(p.id)){D.daily.push({id:uid(),date:curDate(),pid:p.id,r:'ok',why:''});n++}});save();rDaily();toast(`已將 ${n} 人評為合格`)} break;
+    case 'e-pick': eSel.has(id)?eSel.delete(id):eSel.add(id); b.setAttribute('aria-pressed',eSel.has(id)); break;
+    case 'edit-event': {const e=D.events.find(x=>x.id===id);if(e)openEventForm(e)} break;
+    case 'del-event': if(confirmTap(b)){D.events=D.events.filter(e=>e.id!==id);if(eEdit===id)closeEventForm();save();render();toast('已刪除事件')} break;
+    case 'node': focusId=focusId===id?null:id; rRel(); break;
+    case 's-pick': shiftSel.has(id)?shiftSel.delete(id):shiftSel.add(id); b.setAttribute('aria-pressed',shiftSel.has(id)); rShift(); break;
+    case 'del-rel': if(confirmTap(b)){D.rels=D.rels.filter(r=>r.id!==id);save();render();toast('已刪除關係')} break;
+    case 'rename': renaming=id; rPeople(); break;
+    case 'rn-cancel': renaming=null; rPeople(); break;
+    case 'rn-save': {const n=$('rn-input').value.trim();
+      if(!n){toast('姓名不能空白');return}
+      if(D.people.some(p=>p.name===n&&p.id!==id)){toast('已經有同名的人');return}
+      const p=D.people.find(x=>x.id===id);if(p)p.name=n;renaming=null;save();rPeople();toast('已改名')} break;
+    case 'expand': expanded.has(id)?expanded.delete(id):expanded.add(id); rPeople(); break;
+    case 'report': {const p=D.people.find(x=>x.id===id);if(p)copyText(personReport(p),`${p.name} 的報告已複製，可貼到 LINE`)} break;
+    case 'month-report': if(!D.people.length){toast('還沒有人員');return} copyText(monthReport(),'月報已複製，可貼到 LINE 給主管'); break;
+    case 'del-person': if(confirmTap(b)){D.people=D.people.filter(p=>p.id!==id);D.daily=D.daily.filter(x=>x.pid!==id);
+      D.rels=D.rels.filter(r=>r.a!==id&&r.b!==id);D.events.forEach(e=>e.pids=e.pids.filter(x=>x!==id));
+      shiftSel.delete(id);expanded.delete(id);if(focusId===id)focusId=null;save();render();toast('已刪除人員')} break;
+    case 'clear-sample': D=empty();eSel.clear();shiftSel.clear();expanded.clear();focusId=null;save();setTab('people');toast('範例已清除，先新增同事');$('p-name').focus(); break;
+    case 'go-backup': setTab('people'); $('b-box').open=true; $('b-box').scrollIntoView({block:'start'}); break;
+    case 'export': {const t=JSON.stringify(D);$('b-text').value=t;D.lastBackup=today();save();render();copyText(t,'備份已複製，貼到記事本保存')} break;
+    case 'import': {let o;try{o=JSON.parse($('b-text').value)}catch(e){toast('備份內容格式不對，請貼上完整的備份文字');return}
+      if(!valid(o)){toast('備份內容格式不對，請貼上完整的備份文字');return}
+      if(confirmTap(b)){D=migrate(o);D.sample=false;save();render();toast('已還原')}} break;
+  }
+});
+document.addEventListener('input',ev=>{const t=ev.target;
+  if(t.dataset.why){const r=rec(t.dataset.why);if(r){r.why=t.value;save();$('err-'+t.dataset.why).hidden=!!t.value.trim()}}});
+document.addEventListener('keydown',ev=>{if(ev.target.id==='rn-input'&&ev.key==='Enter'){ev.preventDefault();document.querySelector('[data-act="rn-save"]').click()}});
+$('d-date').addEventListener('change',rDaily);
+$('d-prev').onclick=()=>shiftDate(-1); $('d-next').onclick=()=>shiftDate(1);
+$('e-filter').addEventListener('change',rEvents);
+$('e-q').addEventListener('input',rEvents);
+$('p-sort').addEventListener('change',rPeople);
+$('e-new').onclick=()=>openEventForm(null);
+$('e-cancel').onclick=()=>{closeEventForm();rEvents()};
+$('e-form').addEventListener('submit',e=>{e.preventDefault();
+  const what=$('e-what').value.trim(); if(!what){toast('請填寫事件經過');$('e-what').focus();return}
+  const data={date:$('e-date').value||today(),time:$('e-time').value,place:$('e-place').value.trim(),sev:$('e-sev').value,
+    pids:[...eSel],what,items:$('e-items').value.trim(),handle:$('e-handle').value.trim()};
+  const ex=eEdit&&D.events.find(x=>x.id===eEdit);
+  if(ex)Object.assign(ex,data); else D.events.push({id:uid(),...data});
+  save();closeEventForm();rEvents();toast(ex?'事件已更新':'事件已儲存')});
+$('r-form').addEventListener('submit',e=>{e.preventDefault();
+  const a=$('r-a').value,b=$('r-b').value;
+  if(!a||!b){toast('請先到「人員」頁新增同事');return}
+  if(a===b){toast('請選兩個不同的人');return}
+  const ex=D.rels.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a));
+  if(ex){ex.t=$('r-t').value;ex.note=$('r-note').value.trim();ex.date=today()}
+  else D.rels.push({id:uid(),a,b,t:$('r-t').value,note:$('r-note').value.trim(),date:today()});
+  $('r-note').value='';save();rRel();toast(ex?'已更新關係':'已儲存關係')});
+$('p-form').addEventListener('submit',e=>{e.preventDefault();
+  const n=$('p-name').value.trim(); if(!n){toast('請輸入姓名');return}
+  if(D.people.some(p=>p.name===n)){toast('已經有這個人了');return}
+  D.people.push({id:uid(),name:n});$('p-name').value='';save();render();toast(`已新增 ${n}`)});
+
+$('d-date').value=today();
+setTab('daily');
+</script>
+</body>
+</html>
