@@ -14,6 +14,7 @@
   --bg:#edf0f2; --card:#ffffff; --fg:#16202a; --muted:#5b6876; --line:#d3dae0;
   --accent:#1e4f7a; --on:#ffffff;
   --ok:#2b7a4b; --ok-soft:#dff0e5; --warn:#9a6100; --warn-soft:#fbeed6; --bad:#b3271f; --bad-soft:#f8dfdc;
+  --star:#a8780a; --star-soft:#fbf1d2;
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   color-scheme:light;
@@ -21,28 +22,37 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f151b; --card:#18212a; --fg:#e5eaef; --muted:#97a4b1; --line:#2c3844;
   --accent:#82b2de; --on:#0f151b;
-  --ok:#6ccb94; --ok-soft:#173326; --warn:#efb24a; --warn-soft:#3a2c12; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}}
+  --ok:#6ccb94; --ok-soft:#173326; --warn:#efb24a; --warn-soft:#3a2c12; --bad:#f08a80; --bad-soft:#3d1c1a;
+  --star:#f2c94c; --star-soft:#3a3214; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f151b; --card:#18212a; --fg:#e5eaef; --muted:#97a4b1; --line:#2c3844;
   --accent:#82b2de; --on:#0f151b;
-  --ok:#6ccb94; --ok-soft:#173326; --warn:#efb24a; --warn-soft:#3a2c12; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}
+  --ok:#6ccb94; --ok-soft:#173326; --warn:#efb24a; --warn-soft:#3a2c12; --bad:#f08a80; --bad-soft:#3d1c1a;
+  --star:#f2c94c; --star-soft:#3a3214; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 var(--sans);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 .app{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .top h1{margin:0;font-size:22px;font-weight:900;letter-spacing:.04em}
 .top p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.top .acts{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:6px 10px;font:700 13px var(--sans);cursor:pointer}
+.tbtn[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--on)}
 .banner{background:var(--warn-soft);color:var(--warn);padding:10px 12px;border-radius:8px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px;font-weight:500}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px}
 .tabs button{border:0;background:transparent;color:var(--muted);padding:9px 2px;border-radius:7px;font:700 14px var(--sans);cursor:pointer}
 .tabs button[aria-selected="true"]{background:var(--accent);color:var(--on)}
 .view{display:flex;flex-direction:column;gap:12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .card.alert{background:var(--warn-soft);border-color:var(--warn)}
 .card.alert h3{color:var(--warn)}
+.card.danger{background:var(--bad-soft);border-color:var(--bad)}
+.card.danger h3{color:var(--bad)}
 h3{margin:0;font-size:16px}
+h4{margin:0;font-size:14px;color:var(--muted)}
 .daybar{display:flex;align-items:center;gap:8px}
 .daybar input{flex:1;font-family:var(--mono)}
 .sq{width:42px;height:42px;flex:none;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;font:700 18px var(--sans);cursor:pointer}
@@ -50,11 +60,13 @@ h3{margin:0;font-size:16px}
 .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)}
 .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.none{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.pill.star{background:var(--star-soft);color:var(--star)}
 .pill.sm{font-size:12px;padding:1px 8px}
 .pc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .pc.improve{border-color:var(--warn)} .pc.fail{border-color:var(--bad)}
 .pc-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .pc-h b{font-size:16px}
+.post{font-size:12px;color:var(--muted);font-weight:500;margin-left:6px}
 .seg{display:flex;gap:4px}
 .seg button{padding:7px 11px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;font:700 14px var(--sans);cursor:pointer}
 .seg .s-ok[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:var(--on)}
@@ -64,34 +76,46 @@ h3{margin:0;font-size:16px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--fg);font:500 13px var(--sans);cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.chip.g{border-color:var(--star);color:var(--star)}
+.starbtn{align-self:flex-start;border:1px dashed var(--star);background:transparent;color:var(--star);border-radius:999px;padding:3px 12px;font:700 13px var(--sans);cursor:pointer}
+.starbtn[aria-pressed="true"]{background:var(--star-soft);border-style:solid}
 input,select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
 textarea{resize:vertical}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .err{margin:0;color:var(--bad);font-size:13px;font-weight:500}
+.hintw{margin:0;color:var(--warn);font-size:13px;font-weight:500}
 .empty{color:var(--muted);text-align:center;padding:24px 8px;margin:0}
-.btn{padding:10px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--on);font:700 15px var(--sans);cursor:pointer}
+.btn{padding:10px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--on);font:700 15px var(--sans);cursor:pointer;text-align:center}
 .btn.ghost{background:transparent;color:var(--accent)}
+.btn.sm{padding:6px 12px;font-size:13px}
 .btn.armed,.del.armed{border-color:var(--bad);background:var(--bad);color:var(--on)}
 .del{border:1px solid transparent;background:transparent;color:var(--muted);font:500 13px var(--sans);cursor:pointer;padding:4px 8px;border-radius:6px;flex:none}
 .del:hover{border-color:var(--line)}
-.acts{display:flex;gap:2px;flex:none}
+.acts{display:flex;gap:2px;flex:none;flex-wrap:wrap;justify-content:flex-end}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
 .row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
 .row>*{flex:1;min-width:120px}
 .row>.btn{flex:none}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:480px){.grid2{grid-template-columns:1fr}}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:480px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
 label.f,.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
 .head{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .head>span,.head>h3{min-width:0}
-.when{font-family:var(--mono);font-size:14px;font-weight:500;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.when{font-family:var(--mono);font-size:14px;font-weight:500;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 dl.ev{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}
 dl.ev dt{font-weight:700;color:var(--muted);font-size:13px;padding-top:1px}
 dl.ev dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.photos{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.thumb{width:56px;height:56px;padding:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg);cursor:pointer}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.addphoto{display:inline-flex;align-items:center;justify-content:center;height:56px;padding:0 12px;border:1px dashed var(--line);border-radius:6px;color:var(--accent);font-weight:700;font-size:13px;cursor:pointer}
 .graph{width:100%;max-width:400px;margin:0 auto;display:block}
 .graph line{stroke-linecap:round;transition:opacity .2s}
 .graph .e-conflict{stroke:var(--bad);stroke-width:3.5}
 .graph .e-tension{stroke:var(--warn);stroke-width:3;stroke-dasharray:7 6}
 .graph .e-good{stroke:var(--ok);stroke-width:3}
+.graph .e-normal{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2 5}
 .graph .node{cursor:pointer;transition:opacity .2s}
 .graph .node circle{fill:var(--card);stroke:var(--accent);stroke-width:2}
 .graph .node.hot circle{fill:var(--bad-soft);stroke:var(--bad)}
@@ -99,17 +123,19 @@ dl.ev dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .graph .dim{opacity:.15}
 .graph text{fill:var(--fg);font:700 12px var(--sans);pointer-events:none}
 .graph .hint{fill:var(--muted);font-weight:500;font-size:14px}
-.legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 .legend span{display:flex;align-items:center;gap:6px}
 .legend i{display:inline-block;width:24px;border-top:3px solid}
-.legend .l-conflict{border-color:var(--bad)} .legend .l-tension{border-color:var(--warn);border-top-style:dashed} .legend .l-good{border-color:var(--ok)}
+.legend .l-conflict{border-color:var(--bad)} .legend .l-tension{border-color:var(--warn);border-top-style:dashed}
+.legend .l-good{border-color:var(--ok)} .legend .l-normal{border-color:var(--muted);border-top-style:dotted;border-top-width:2px}
 .center{text-align:center}
 .pair{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:700}
 .meta{margin:0;color:var(--muted);font-size:14px}
 .meta b{color:var(--fg)}
+.small{font-size:12px}
 .hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .hist li{display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:baseline}
-.hist li span:last-child{min-width:0;overflow-wrap:anywhere}
+.hist li>span:last-child{min-width:0;overflow-wrap:anywhere}
 .hist .d{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .strip{display:grid;grid-template-columns:repeat(30,minmax(0,1fr));gap:2px}
 .strip i{aspect-ratio:1;border-radius:2px;background:var(--line)}
@@ -117,34 +143,97 @@ dl.ev dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .strip-l{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:-4px}
 .link{border:0;background:none;color:var(--accent);font:700 14px var(--sans);padding:2px 0;cursor:pointer;text-align:left}
 .more{border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:8px}
-.more h4{margin:0;font-size:13px;color:var(--muted)}
+.fu{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-top:1px solid var(--warn);padding-top:8px}
+.fu:first-of-type{border-top:0;padding-top:0}
+@media(max-width:480px){.fu{grid-template-columns:1fr}}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:480px){.tiles{grid-template-columns:1fr 1fr}}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:12px;color:var(--muted);font-weight:500}
+.tile b{font:600 24px var(--mono);font-variant-numeric:tabular-nums;line-height:1.2}
+.tile em{font-style:normal;font-size:12px;font-weight:700}
+.up{color:var(--ok)} .down{color:var(--bad)}
+.chart{width:100%;display:block}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ax{fill:var(--muted);font:500 19px var(--mono)}
+.chart .b-ok{fill:var(--ok)} .chart .b-warn{fill:var(--warn)} .chart .b-bad{fill:var(--bad)}
+.barrow{display:grid;grid-template-columns:5.5em 1fr 3.2em;gap:8px;align-items:center;font-size:13px}
+.barrow .track{height:10px;background:var(--bg);border-radius:5px;overflow:hidden;border:1px solid var(--line)}
+.barrow .track i{display:block;height:100%;background:var(--accent)}
+.barrow .track i.w{background:var(--warn)}
+.barrow b{font-family:var(--mono);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.tblwrap{overflow-x:auto}
+table.tbl{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl th{color:var(--muted);font-weight:700}
+.tbl tr.team td{font-weight:700;background:var(--bg)}
+.tbl td.low{color:var(--bad);font-weight:700}
 details.card summary{cursor:pointer;font-weight:700}
 .note{margin:0;font-size:13px;color:var(--muted)}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:14px;z-index:9;max-width:calc(100% - 32px)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+.lock{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));z-index:20}
+.lock .card{width:100%;max-width:360px;gap:12px}
+.lock h2{margin:0;font-size:20px;font-weight:900}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.viewer img{max-width:100%;max-height:75vh;border-radius:6px}
+.viewer .btn.ghost{color:#fff;border-color:#fff}
+#print{display:none}
+@media print{
+  body{background:#fff;color:#000;padding:0;font-size:12pt}
+  #app,#lock,#viewer,.toast{display:none!important}
+  #print{display:block}
+  #print h1{font-size:18pt;margin:0 0 4pt}
+  #print h2{font-size:13pt;margin:14pt 0 4pt;border-bottom:1px solid #000}
+  #print table{border-collapse:collapse;width:100%;margin:4pt 0}
+  #print th,#print td{border:1px solid #555;padding:3pt 5pt;text-align:left;font-size:10.5pt;vertical-align:top}
+  #print .ph{display:flex;flex-wrap:wrap;gap:6pt}
+  #print .ph img{width:45%;max-height:240pt;object-fit:contain;border:1px solid #999}
+  #print .sig{display:flex;gap:40pt;margin-top:24pt}
+  #print .disc{font-size:9.5pt;margin-top:12pt}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="app">
+
+<div class="lock" id="lock" hidden>
+  <form class="card" id="lock-form">
+    <h2>安橋勤務紀錄</h2>
+    <p class="note">資料已加密鎖定，請輸入密碼。</p>
+    <input id="lock-pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="密碼" aria-label="密碼">
+    <p class="err" id="lock-err" hidden></p>
+    <button class="btn" type="submit">解鎖</button>
+    <button class="del" type="button" data-act="wipe">忘記密碼：清除全部資料重新開始</button>
+  </form>
+</div>
+
+<div class="app" id="app" hidden>
   <header class="top">
-    <h1>安橋勤務紀錄</h1>
-    <p>每日評分・事件紀錄・人際關係</p>
+    <div><h1>安橋勤務紀錄</h1><p>每日評分・事件紀錄・人際關係</p></div>
+    <div class="acts">
+      <button class="tbtn" data-act="lock" id="lock-btn" hidden>鎖定</button>
+      <button class="tbtn" data-tab="settings" aria-selected="false">設定</button>
+    </div>
   </header>
 
   <div class="banner" id="banner" hidden>
     <span>目前顯示的是範例資料</span>
-    <button class="btn" data-act="clear-sample">清除範例，開始使用</button>
+    <button class="btn sm" data-act="clear-sample">清除範例，開始使用</button>
   </div>
   <div class="banner" id="bk-banner" hidden>
     <span id="bk-text"></span>
-    <button class="btn" data-act="go-backup">去備份</button>
+    <button class="btn sm" data-act="go-backup">去備份</button>
   </div>
 
   <nav class="tabs" role="tablist">
-    <button role="tab" data-tab="daily" aria-selected="true">每日評分</button>
-    <button role="tab" data-tab="events" aria-selected="false">事件紀錄</button>
-    <button role="tab" data-tab="rel" aria-selected="false">人際關係</button>
+    <button role="tab" data-tab="daily" aria-selected="true">評分</button>
+    <button role="tab" data-tab="events" aria-selected="false">事件</button>
+    <button role="tab" data-tab="rel" aria-selected="false">關係</button>
     <button role="tab" data-tab="people" aria-selected="false">人員</button>
+    <button role="tab" data-tab="stats" aria-selected="false">統計</button>
   </nav>
 
   <!-- 每日評分 -->
@@ -154,14 +243,17 @@ details.card summary{cursor:pointer;font-weight:700}
       <input type="date" id="d-date" aria-label="評分日期">
       <button class="sq" id="d-next" aria-label="後一天">›</button>
     </div>
+    <div class="card" id="d-duty"></div>
     <div class="sum" id="d-sum"></div>
     <div class="card alert" id="d-att" hidden></div>
+    <div class="card alert" id="d-fu" hidden></div>
     <button class="btn ghost" id="d-allok" data-act="all-ok" hidden></button>
     <div class="view" id="d-list"></div>
   </section>
 
   <!-- 事件紀錄 -->
   <section class="view" id="tab-events" hidden>
+    <div class="card danger" id="e-alert" hidden></div>
     <button class="btn" id="e-new">＋ 新增事件</button>
     <form class="card" id="e-form" hidden>
       <h3 id="e-title">新增事件</h3>
@@ -169,27 +261,39 @@ details.card summary{cursor:pointer;font-weight:700}
         <label class="f">日期（時）<input type="date" id="e-date"></label>
         <label class="f">時間<input type="time" id="e-time"></label>
       </div>
+      <label class="f">地點（地）<input id="e-place" placeholder="例：大門哨交接處"></label>
       <div class="grid2">
-        <label class="f">地點（地）<input id="e-place" placeholder="例：大門哨交接處"></label>
         <label class="f">嚴重程度<select id="e-sev">
-          <option value="low">輕微</option>
-          <option value="mid" selected>一般</option>
-          <option value="high">嚴重</option>
+          <option value="low">輕微</option><option value="mid" selected>一般</option><option value="high">嚴重</option>
+        </select></label>
+        <label class="f">處理狀態<select id="e-status">
+          <option value="open">處理中</option><option value="report">需上報</option><option value="client">已通知客戶</option><option value="closed">已結案</option>
         </select></label>
       </div>
       <div class="f">相關人員（人）<div class="chips" id="e-people"></div></div>
+      <div class="f">已通報單位<div class="chips" id="e-units"></div></div>
       <label class="f">事件經過（事）<textarea id="e-what" rows="3" placeholder="只寫看到、聽到的事實：誰、做了什麼、說了什麼"></textarea></label>
       <label class="f">相關物品（物）<input id="e-items" placeholder="例：鑰匙箱、交接簿、監視器畫面"></label>
       <label class="f">處理方式<textarea id="e-handle" rows="2" placeholder="例：當場分開兩人，已口頭告誡"></textarea></label>
+      <div class="f">照片佐證<div class="photos" id="e-photos"></div></div>
       <div class="row">
         <button class="btn" type="submit" id="e-submit">儲存事件</button>
         <button class="btn ghost" type="button" id="e-cancel">取消</button>
       </div>
     </form>
-    <div class="grid2">
-      <label class="f">篩選人員<select id="e-filter"></select></label>
-      <label class="f">搜尋<input id="e-q" type="search" placeholder="地點、物品、關鍵字"></label>
-    </div>
+    <details class="card" id="e-filters">
+      <summary>篩選與搜尋</summary>
+      <div class="grid2">
+        <label class="f">人員<select id="e-filter"></select></label>
+        <label class="f">關鍵字<input id="e-q" type="search" placeholder="地點、物品、經過"></label>
+        <label class="f">嚴重程度<select id="e-fsev"><option value="">全部</option><option value="high">嚴重</option><option value="mid">一般</option><option value="low">輕微</option></select></label>
+        <label class="f">狀態<select id="e-fst"><option value="">全部</option><option value="open">處理中</option><option value="report">需上報</option><option value="client">已通知客戶</option><option value="closed">已結案</option></select></label>
+        <label class="f">起日<input type="date" id="e-from"></label>
+        <label class="f">迄日<input type="date" id="e-to"></label>
+      </div>
+      <button class="btn ghost sm" type="button" data-act="e-clear">清除篩選</button>
+    </details>
+    <p class="note" id="e-count"></p>
     <div class="view" id="e-list"></div>
   </section>
 
@@ -198,30 +302,33 @@ details.card summary{cursor:pointer;font-weight:700}
     <div class="card">
       <svg class="graph" id="r-svg" viewBox="0 0 360 340" role="img" aria-label="人際關係圖"></svg>
       <div class="legend">
-        <span><i class="l-conflict"></i>不合</span>
-        <span><i class="l-tension"></i>關係緊張</span>
-        <span><i class="l-good"></i>要好</span>
+        <span><i class="l-conflict"></i>不合</span><span><i class="l-tension"></i>關係緊張</span>
+        <span><i class="l-normal"></i>普通</span><span><i class="l-good"></i>要好</span>
       </div>
       <p class="note center" id="r-hint"></p>
     </div>
     <div class="card">
       <h3>排班檢查</h3>
       <p class="note">選出同一班的人，馬上看有沒有不合的組合。</p>
+      <div class="btns"><button class="btn ghost sm" data-act="s-duty">帶入今日在崗</button><button class="btn ghost sm" data-act="s-clear">清除</button><button class="btn ghost sm" data-act="s-copy">複製結果</button></div>
       <div class="chips" id="s-people"></div>
       <div id="s-result"></div>
     </div>
     <form class="card" id="r-form">
-      <h3>新增關係</h3>
+      <h3>新增或更新關係</h3>
       <div class="grid2">
         <label class="f">人員<select id="r-a"></select></label>
         <label class="f">和誰<select id="r-b"></select></label>
+        <label class="f">關係<select id="r-t">
+          <option value="conflict">不合</option><option value="tension">關係緊張</option><option value="normal">普通</option><option value="good">要好</option>
+        </select></label>
+        <label class="f">依據<select id="r-basis">
+          <option>親眼所見</option><option>當事人反映</option><option>他人轉述</option><option>經面談確認</option>
+        </select></label>
       </div>
-      <label class="f">關係<select id="r-t">
-        <option value="conflict">不合</option>
-        <option value="tension">關係緊張</option>
-        <option value="good">要好</option>
-      </select></label>
-      <label class="f">說明<input id="r-note" placeholder="例：交接常起爭執，排班避免同時段"></label>
+      <label class="f">具體說明（必填）<input id="r-note" placeholder="例：10/30 交接時因鑰匙數量爭執，排班避免同時段"></label>
+      <label class="f">記錄人<input id="r-by" placeholder="你的名字"></label>
+      <p class="note">同一組人再存一次會更新，舊的內容會留在修改紀錄裡。</p>
       <button class="btn" type="submit">儲存關係</button>
     </form>
     <div class="view" id="r-list"></div>
@@ -235,35 +342,110 @@ details.card summary{cursor:pointer;font-weight:700}
         <button class="btn" type="submit">新增</button>
       </div>
     </form>
-    <div class="grid2">
-      <label class="f">排序<select id="p-sort">
-        <option value="order">依新增順序</option>
-        <option value="issue">問題多的排前面</option>
-      </select></label>
-      <div class="f">近 30 天月報<button class="btn ghost" data-act="month-report">複製全部月報</button></div>
-    </div>
+    <label class="f">排序<select id="p-sort">
+      <option value="order">依新增順序</option><option value="issue">問題多的排前面</option><option value="cert">證照快到期的排前面</option>
+    </select></label>
     <div class="view" id="p-list"></div>
-    <details class="card" id="b-box">
-      <summary>資料備份與還原</summary>
-      <p class="note">資料只存在這支手機的瀏覽器，換手機或清除瀏覽資料就會消失。建議每週按「複製備份」，貼到 LINE 記事本或備忘錄保存。</p>
+  </section>
+
+  <!-- 統計 -->
+  <section class="view" id="tab-stats" hidden>
+    <div class="row">
+      <label class="f">月份<input type="month" id="st-month"></label>
+    </div>
+    <div class="tiles" id="st-tiles"></div>
+    <div class="card"><h3>每日評分分布</h3><div id="st-chart"></div>
+      <div class="legend"><span><i class="l-good"></i>合格</span><span><i style="border-color:var(--warn)"></i>待加強</span><span><i class="l-conflict"></i>不合格</span></div></div>
+    <div class="grid2">
+      <div class="card"><h3>近 6 個月合格率</h3><div id="st-trend" class="view" style="gap:6px"></div></div>
+      <div class="card"><h3>常見問題</h3><div id="st-tags" class="view" style="gap:6px"></div></div>
+    </div>
+    <div class="card"><h3>需要關注的人員</h3><div id="st-risk"></div></div>
+    <div class="card"><h3>個人與團隊比較</h3><div class="tblwrap" id="st-table"></div>
+      <p class="note">合格率低於團隊平均的會標成紅色。</p></div>
+    <div class="btns">
+      <button class="btn" data-act="st-copy">複製月報</button>
+      <button class="btn ghost" data-act="st-print">列印／存成 PDF</button>
+      <button class="btn ghost" data-act="st-csv">匯出 Excel</button>
+    </div>
+  </section>
+
+  <!-- 設定 -->
+  <section class="view" id="tab-settings" hidden>
+    <div class="card" id="b-box">
+      <h3>資料備份與還原</h3>
+      <p class="note">資料只存在這支手機。換手機前，先把備份檔傳到 LINE 或雲端硬碟，再到新手機匯入。</p>
       <p class="note" id="b-last"></p>
-      <button class="btn ghost" data-act="export">複製備份</button>
-      <textarea id="b-text" rows="4" placeholder="要還原時，把備份內容貼在這裡"></textarea>
-      <button class="btn ghost" data-act="import">用上面的內容還原</button>
-    </details>
-    <p class="note">紀錄只寫客觀事實（時間、地點、經過），避免主觀評價；這些是同事的個人資料，請勿外流。</p>
+      <div class="btns">
+        <button class="btn" data-act="bk-download">下載備份檔</button>
+        <button class="btn ghost" data-act="bk-share" id="bk-share" hidden>分享到 LINE／雲端</button>
+        <button class="btn ghost" data-act="bk-copy">複製備份文字</button>
+      </div>
+      <h4>還原</h4>
+      <label class="addphoto" style="height:auto;padding:10px 12px;justify-content:flex-start">選擇備份檔<input type="file" id="bk-file" accept=".json,application/json,text/plain" hidden></label>
+      <textarea id="b-text" rows="3" placeholder="或把備份文字貼在這裡"></textarea>
+      <label class="f">備份密碼（加密備份才需要）<input id="b-pin" type="password" inputmode="numeric" autocomplete="off"></label>
+      <button class="btn ghost" data-act="bk-import">還原（會取代目前全部資料）</button>
+    </div>
+    <div class="card">
+      <h3>匯出 Excel</h3>
+      <p class="note">CSV 檔可以直接用 Excel 或 Google 試算表開啟。</p>
+      <div class="btns"><button class="btn ghost" data-act="csv-daily">全部評分紀錄</button><button class="btn ghost" data-act="csv-events">全部事件紀錄</button></div>
+    </div>
+    <div class="card" id="pin-box">
+      <h3>密碼鎖</h3>
+      <p class="note" id="pin-state"></p>
+      <div class="grid2">
+        <label class="f">新密碼（4–8 位數字）<input id="pin1" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password"></label>
+        <label class="f">再輸入一次<input id="pin2" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password"></label>
+      </div>
+      <p class="hintw">密碼忘記就無法找回資料，請記在安全的地方。</p>
+      <div class="btns"><button class="btn" data-act="pin-set" id="pin-set">設定密碼</button><button class="btn ghost" data-act="pin-off" id="pin-off" hidden>取消密碼</button></div>
+      <label class="f">離開幾分鐘後自動鎖定<select id="set-autolock"><option value="1">1 分鐘</option><option value="3">3 分鐘</option><option value="10">10 分鐘</option><option value="30">30 分鐘</option></select></label>
+    </div>
+    <div class="card">
+      <h3>基本設定</h3>
+      <label class="f">記錄人（你的名字，會寫進報告）<input id="set-me" maxlength="12"></label>
+      <label class="f">外觀<select id="set-theme"><option value="">跟隨手機</option><option value="light">淺色</option><option value="dark">深色（夜班適用）</option></select></label>
+      <label class="f">扣分常用原因（用逗號或換行分開）<textarea id="set-bad" rows="2"></textarea></label>
+      <label class="f">優良表現常用標籤<textarea id="set-good" rows="2"></textarea></label>
+      <button class="btn ghost" data-act="set-save">儲存標籤</button>
+    </div>
+    <div class="card">
+      <h3>資料保留期限</h3>
+      <label class="f">自動刪除多久以前的評分和事件<select id="set-keep"><option value="0">不自動刪除</option><option value="6">6 個月</option><option value="12">1 年</option><option value="24">2 年</option><option value="36">3 年</option></select></label>
+      <div class="row"><label class="f">手動刪除這天以前的紀錄<input type="date" id="purge-date"></label><button class="btn ghost" data-act="purge">刪除</button></div>
+      <p class="note">人際關係不會被自動刪除，請定期在「關係」頁確認是否仍有效。</p>
+    </div>
+    <div class="card">
+      <h3>使用聲明</h3>
+      <p class="note">本系統紀錄僅供內部管理參考，正式獎懲仍須依公司工作規則程序與證據辦理。紀錄只寫客觀事實，涉及同仁個人資料，請依個人資料保護法妥善保管，勿外流。</p>
+      <p class="note">排班助手連動：本頁和安橋排班助手放在同一個網站時，「評分」頁可以直接帶入當天在崗人員和哨點。</p>
+    </div>
   </section>
 </div>
 
+<div class="viewer" id="viewer" hidden>
+  <img id="v-img" alt="照片">
+  <div class="btns"><button class="btn ghost" data-act="v-del">刪除這張</button><button class="btn" data-act="v-close">關閉</button></div>
+</div>
+<div id="print"></div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const KEY='anqiao-log-v1';
+/* ===== 常數 ===== */
+const IDBN='anqiao-log', LSK='anqiao-log-v1', THEMEK='anqiao-log-theme';
 const R={ok:'合格',improve:'待加強',fail:'不合格'};
-const RT={conflict:'不合',tension:'關係緊張',good:'要好'};
-const RC={conflict:'bad',tension:'warn',good:'ok'};
+const RT={conflict:'不合',tension:'關係緊張',normal:'普通',good:'要好'};
+const RC={conflict:'bad',tension:'warn',normal:'none',good:'ok'};
 const SEV={low:'輕微',mid:'一般',high:'嚴重'}, SC={low:'none',mid:'warn',high:'bad'};
-const CHIPS=['遲到','服儀不整','執勤滑手機','交接不清','登記漏寫','態度不佳','擅離崗位','不聽指揮'];
+const ST={open:'處理中',report:'需上報',client:'已通知客戶',closed:'已結案'}, STC={open:'warn',report:'bad',client:'none',closed:'ok'};
+const UNITS=['客戶','公司上級','警察','消防','醫療'];
+const BAD0=['遲到','服儀不整','執勤滑手機','交接不清','登記漏寫','態度不佳','擅離崗位','不聽指揮'];
+const GOOD0=['主動發現異常','客戶表揚','協助其他崗位','主動教新人','處理突發得當','全勤配合調班'];
+const DISC='本紀錄僅供內部管理參考，正式獎懲仍須依公司工作規則程序與證據辦理。';
+
+/* ===== 工具 ===== */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -273,40 +455,16 @@ const today=()=>fmt(new Date());
 const addDays=(s,n)=>{const d=new Date(s+'T00:00');d.setDate(d.getDate()+n);return fmt(d)};
 const daysAgo=n=>addDays(today(),-n);
 const dateDiff=(a,b)=>Math.round((new Date(b+'T00:00')-new Date(a+'T00:00'))/864e5);
-const md=s=>s.slice(5).replace('-','/');
-const empty=()=>({sample:false,people:[],daily:[],events:[],rels:[],lastBackup:''});
+const md=s=>s?s.slice(5).replace('-','/'):'';
+const ymd=s=>s?s.replace(/-/g,'/'):'';
+const thisYM=()=>today().slice(0,7);
+function prevYM(ym,n=1){const[y,m]=ym.split('-').map(Number);const d=new Date(y,m-1-n,1);return `${d.getFullYear()}-${pad(d.getMonth()+1)}`}
+function monthRange(ym){const[y,m]=ym.split('-').map(Number);const last=new Date(y,m,0).getDate();return [ym+'-01',ym+'-'+pad(last),last]}
+const pct=v=>v==null?'—':Math.round(v*100)+'%';
+const splitTags=s=>[...new Set(String(s).split(/[,，、\n]+/).map(x=>x.trim()).filter(Boolean))];
 
-function sample(){
-  const p=['組員A','組員B','組員C','組員D','組員E'].map(n=>({id:uid(),name:n}));
-  const [a,b,c,d,e]=p.map(x=>x.id), t=today(), y=daysAgo(1), y2=daysAgo(2);
-  const daily=[];
-  for(let i=29;i>=3;i--){const dd=daysAgo(i);p.forEach(x=>daily.push({id:uid(),date:dd,pid:x.id,r:'ok',why:''}))}
-  daily.push(
-    {id:uid(),date:y2,pid:a,r:'ok',why:''},{id:uid(),date:y2,pid:b,r:'ok',why:''},{id:uid(),date:y2,pid:c,r:'improve',why:'服儀不整，未戴識別證'},
-    {id:uid(),date:y,pid:a,r:'ok',why:''},{id:uid(),date:y,pid:b,r:'improve',why:'遲到 10 分鐘'},{id:uid(),date:y,pid:c,r:'ok',why:''},{id:uid(),date:y,pid:d,r:'ok',why:''},
-    {id:uid(),date:t,pid:a,r:'ok',why:''},
-    {id:uid(),date:t,pid:b,r:'improve',why:'交接不清、交接簿漏寫鑰匙借出數量'},
-    {id:uid(),date:t,pid:c,r:'fail',why:'執勤滑手機，提醒兩次仍未改善'});
-  return {sample:true,lastBackup:'',people:p,daily,
-    events:[{id:uid(),date:y,time:'07:10',place:'大門哨交接處',sev:'mid',pids:[b,c],
-      what:'交接時對鑰匙數量有爭執，雙方音量變大，當時有訪客在旁',items:'鑰匙箱、交接簿',
-      handle:'當場分開兩人，請雙方重新清點並簽名；已口頭告誡'}],
-    rels:[{id:uid(),a:b,b:c,t:'conflict',note:'交接常起爭執，排班避免同時段',date:y},
-          {id:uid(),a:c,b:e,t:'tension',note:'對巡邏分工有意見',date:y},
-          {id:uid(),a:a,b:d,t:'good',note:'常互相支援',date:y}]};
-}
-function load(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null}catch(e){return null}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}}
-function valid(o){return o&&Array.isArray(o.people)&&Array.isArray(o.daily)&&Array.isArray(o.events)&&Array.isArray(o.rels)}
-function migrate(o){o.events.forEach(e=>{if(!e.sev)e.sev='mid';if(!Array.isArray(e.pids))e.pids=[]});if(o.lastBackup==null)o.lastBackup='';return o}
-
-let D=load(); D=valid(D)?migrate(D):sample();
-let tab='daily', eSel=new Set(), eEdit=null, focusId=null, shiftSel=new Set(), renaming=null, expanded=new Set(), armed=null;
-const name=id=>(D.people.find(p=>p.id===id)||{name:'（已刪除）'}).name;
-const curDate=()=>$('d-date').value||today();
-const rec=pid=>D.daily.find(x=>x.date===curDate()&&x.pid===pid);
-
-function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
+function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2400)}
+let armed=null;
 function confirmTap(b){
   const k=b.dataset.act+(b.dataset.id||'');
   if(armed===k){armed=null;return true}
@@ -316,22 +474,181 @@ function confirmTap(b){
 }
 function copyText(t,msg){
   const fb=()=>{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
-    let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();toast(ok?msg:'複製失敗，請改用電腦或其他瀏覽器')};
+    let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();toast(ok?msg:'複製失敗，請換個瀏覽器再試')};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast(msg),fb);else fb();
 }
+function download(name,text,type){
+  const blob=new Blob([text],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+}
+async function shareFile(name,text,type){
+  try{const f=new File([text],name,{type});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return true}}
+  catch(e){if(e&&e.name==='AbortError')return true}
+  return false;
+}
+function csv(rows){return '﻿'+rows.map(r=>r.map(v=>{v=String(v??'');return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')).join('\r\n')}
+function compress(file){return new Promise((res,rej)=>{const img=new Image(),url=URL.createObjectURL(file);
+  img.onload=()=>{const s=Math.min(1,1280/Math.max(img.width,img.height));const c=document.createElement('canvas');
+    c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',0.7))};
+  img.onerror=()=>{URL.revokeObjectURL(url);rej()};img.src=url})}
+async function readPhotos(files){const out=[];for(const f of files){try{out.push(await compress(f))}catch(e){}}return out}
+
+/* ===== 加密 ===== */
+const CAN_CRYPTO=!!(window.crypto&&crypto.subtle&&window.isSecureContext);
+function b64(u8){let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s)}
+function ub64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+async function deriveKey(pin,salt){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function encryptObj(key,obj){const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(obj)));return {iv:b64(iv),ct:b64(new Uint8Array(ct))}}
+async function decryptObj(key,rec){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(rec.iv)},key,ub64(rec.ct));return JSON.parse(new TextDecoder().decode(pt))}
+
+/* ===== 儲存（IndexedDB，失敗時用 localStorage） ===== */
+let DBH=null;
+function idb(){return new Promise((res,rej)=>{if(!window.indexedDB)return rej(new Error('no idb'));const r=indexedDB.open(IDBN,1);
+  r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function kvGet(k){
+  try{DBH=DBH||await idb();return await new Promise((res,rej)=>{const q=DBH.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+  catch(e){try{const v=localStorage.getItem(IDBN+':'+k);return v?JSON.parse(v):undefined}catch(e2){return undefined}}
+}
+async function kvSet(k,v){
+  try{DBH=DBH||await idb();await new Promise((res,rej)=>{const t=DBH.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+  catch(e){try{localStorage.setItem(IDBN+':'+k,JSON.stringify(v))}catch(e2){toast('儲存失敗，空間可能不足，請先下載備份並刪除舊照片')}}
+}
+let D=null, KEYOBJ=null, SALT='', CURPIN='', STORED=null, saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(persist,300)}
+async function persist(){clearTimeout(saveT);if(!D)return;
+  const rec=KEYOBJ?Object.assign({enc:true,salt:SALT},await encryptObj(KEYOBJ,D)):{enc:false,data:D};
+  await kvSet('store',rec)}
+
+function valid(o){return o&&Array.isArray(o.people)&&Array.isArray(o.daily)&&Array.isArray(o.events)&&Array.isArray(o.rels)}
+function migrate(o){
+  o.settings=Object.assign({me:'',bad:BAD0.slice(),good:GOOD0.slice(),keepMonths:0,autoLock:3},o.settings||{});
+  o.duty=o.duty||{}; if(o.lastBackup==null)o.lastBackup='';
+  o.people.forEach(p=>{['hired','cert','contact','training','note'].forEach(k=>{if(p[k]==null)p[k]=''})});
+  o.daily.forEach(x=>{x.why=x.why||'';x.good=x.good||'';x.photos=x.photos||[];if(x.fu===undefined)x.fu=null});
+  o.events.forEach(e=>{e.sev=e.sev||'mid';e.pids=e.pids||[];e.status=e.status||'closed';e.units=e.units||[];e.photos=e.photos||[];
+    e.created=e.created||e.date;e.updated=e.updated||'';e.by=e.by||''});
+  o.rels.forEach(r=>{r.basis=r.basis||'';r.by=r.by||'';r.hist=r.hist||[];r.date=r.date||today();r.note=r.note||''});
+  return o;
+}
+const empty=()=>migrate({sample:false,people:[],daily:[],events:[],rels:[],duty:{},lastBackup:''});
+
+function sample(){
+  const p=['組員A','組員B','組員C','組員D','組員E'].map(n=>({id:uid(),name:n}));
+  const [a,b,c,d,e]=p.map(x=>x.id), t=today(), y=daysAgo(1), y2=daysAgo(2);
+  p[0].hired='2024-03-01'; p[0].cert=addDays(t,18); p[0].contact='（範例）家人 0912-000-000'; p[0].training='大門哨、安檢哨已結訓';
+  p[1].hired='2025-11-15'; p[1].cert=addDays(t,200); p[2].hired='2026-06-01'; p[2].training='安檢哨訓練中';
+  const daily=[];
+  for(let i=59;i>=3;i--){const dd=daysAgo(i);p.forEach((x,j)=>{
+    const r=(i*7+j*3)%23===0?'improve':((i*5+j)%41===0?'fail':'ok');
+    daily.push({id:uid(),date:dd,pid:x.id,r,why:r==='ok'?'':(r==='fail'?'擅離崗位 15 分鐘未報備':'登記漏寫'),good:r==='ok'&&(i+j)%17===0?'協助其他崗位':''})})}
+  daily.push(
+    {id:uid(),date:y2,pid:a,r:'ok',why:'',good:'主動發現異常、客戶表揚'},{id:uid(),date:y2,pid:b,r:'ok',why:''},
+    {id:uid(),date:y2,pid:c,r:'improve',why:'服儀不整，未戴識別證',fu:{date:t,plan:'每班開始前自我檢查識別證',done:null}},
+    {id:uid(),date:y,pid:a,r:'ok',why:''},{id:uid(),date:y,pid:b,r:'improve',why:'遲到 10 分鐘',fu:{date:addDays(t,5),plan:'',done:null}},
+    {id:uid(),date:y,pid:c,r:'ok',why:''},{id:uid(),date:y,pid:d,r:'ok',why:''},
+    {id:uid(),date:t,pid:a,r:'ok',why:'',good:'協助其他崗位'},
+    {id:uid(),date:t,pid:b,r:'improve',why:'交接不清、交接簿漏寫鑰匙借出數量',fu:{date:addDays(t,7),plan:'交接時逐項念一次再簽名',done:null}},
+    {id:uid(),date:t,pid:c,r:'fail',why:'執勤滑手機，提醒兩次仍未改善',fu:{date:addDays(t,7),plan:'',done:null}});
+  const duty={};duty[t]={[a]:'大門主哨',[b]:'安檢主哨',[c]:'安檢副哨',[d]:'東回收哨'};
+  return migrate({sample:true,lastBackup:'',people:p,daily,duty,
+    settings:{me:'（範例）組長'},
+    events:[
+      {id:uid(),date:y,time:'07:10',place:'大門哨交接處',sev:'mid',status:'open',units:['公司上級'],pids:[b,c],
+       what:'交接時對鑰匙數量有爭執，雙方音量變大，當時有訪客在旁',items:'鑰匙箱、交接簿',handle:'當場分開兩人，請雙方重新清點並簽名；已口頭告誡',by:'（範例）組長'},
+      {id:uid(),date:daysAgo(9),time:'22:40',place:'東回收區',sev:'high',status:'report',units:['客戶','公司上級'],pids:[e],
+       what:'巡邏時發現回收區側門未上鎖，門外有不明車輛停留約 5 分鐘後離開',items:'側門門鎖、監視器畫面',handle:'立即上鎖並通報客戶值班人員，調閱監視器存證',by:'（範例）組長'}],
+    rels:[{id:uid(),a:b,b:c,t:'conflict',basis:'親眼所見',by:'（範例）組長',note:'交接常起爭執，排班避免同時段',date:y,hist:[]},
+          {id:uid(),a:c,b:e,t:'tension',basis:'當事人反映',by:'（範例）組長',note:'對巡邏分工有意見',date:daysAgo(120),hist:[]},
+          {id:uid(),a:a,b:d,t:'good',basis:'親眼所見',by:'（範例）組長',note:'常互相支援',date:y,hist:[]}]});
+}
+
+/* ===== 狀態 ===== */
+let tab='daily', eSel=new Set(), eUnits=new Set(), ePhotos=[], eEdit=null, focusId=null, shiftSel=new Set(),
+    pEdit=null, expanded=new Set(), relHist=new Set(), goodOpen=new Set(), dutyEdit=false, showAll=false, VIEW=null, pendingImport=null;
+const name=id=>{const p=D&&D.people.find(p=>p.id===id);return p?p.name:'（已刪除）'};
+const curDate=()=>$('d-date').value||today();
+const rec=pid=>D.daily.find(x=>x.date===curDate()&&x.pid===pid);
+const recById=id=>D.daily.find(x=>x.id===id);
+
+/* ===== 啟動與鎖定 ===== */
+function applyTheme(){let t='';try{t=localStorage.getItem(THEMEK)||''}catch(e){}
+  if(t)document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;
+  $('set-theme').value=t}
+async function init(){
+  applyTheme();
+  let r=await kvGet('store');
+  if(!r){let old=null;try{old=JSON.parse(localStorage.getItem(LSK))}catch(e){}
+    if(valid(old)){r={enc:false,data:old};await kvSet('store',r);try{localStorage.removeItem(LSK)}catch(e){}}}
+  if(r&&r.enc){STORED=r;showLock();return}
+  D=r&&valid(r.data)?migrate(r.data):sample();
+  if(!r)await persist();
+  start();
+}
+function start(){
+  $('lock').hidden=true;$('app').hidden=false;
+  if(!$('d-date').value)$('d-date').value=today();
+  if(!$('st-month').value)$('st-month').value=thisYM();
+  const n=purgeOld(); if(n)toast(`已依保留期限刪除 ${n} 筆舊紀錄`);
+  setTab(tab);
+}
+function showLock(){$('app').hidden=true;$('lock').hidden=false;$('lock-err').hidden=true;$('lock-pin').value='';setTimeout(()=>$('lock-pin').focus(),50)}
+async function lockNow(){if(!KEYOBJ)return;await persist();STORED=await kvGet('store');D=null;KEYOBJ=null;CURPIN='';SALT='';closeViewer();showLock()}
+let hiddenAt=0;
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){hiddenAt=Date.now();if(D)persist()}
+  else if(KEYOBJ&&D&&hiddenAt&&Date.now()-hiddenAt>(+D.settings.autoLock||3)*60000)lockNow();
+});
+window.addEventListener('pagehide',()=>{if(D)persist()});
+$('lock-form').addEventListener('submit',async e=>{e.preventDefault();
+  const pin=$('lock-pin').value.trim(); if(!pin)return;
+  try{const key=await deriveKey(pin,ub64(STORED.salt));const obj=await decryptObj(key,STORED);
+    D=migrate(obj);KEYOBJ=key;SALT=STORED.salt;CURPIN=pin;STORED=null;start()}
+  catch(err){$('lock-err').textContent='密碼錯誤，請再試一次';$('lock-err').hidden=false;$('lock-pin').select()}
+});
 
 function setTab(t){
   tab=t;
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
-  ['daily','events','rel','people'].forEach(x=>$('tab-'+x).hidden=x!==t);
+  ['daily','events','rel','people','stats','settings'].forEach(x=>$('tab-'+x).hidden=x!==t);
   render(); window.scrollTo(0,0);
 }
 function render(){
+  if(!D)return;
   $('banner').hidden=!D.sample;
+  $('lock-btn').hidden=!KEYOBJ;
   const need=!D.sample&&D.people.length>0&&(!D.lastBackup||dateDiff(D.lastBackup,today())>=7);
-  $('bk-banner').hidden=!need;
+  $('bk-banner').hidden=!need||tab==='settings';
   if(need)$('bk-text').textContent=D.lastBackup?`已經 ${dateDiff(D.lastBackup,today())} 天沒備份資料`:'還沒備份過資料，換手機就會遺失';
-  ({daily:rDaily,events:rEvents,rel:rRel,people:rPeople})[tab]();
+  ({daily:rDaily,events:rEvents,rel:rRel,people:rPeople,stats:rStats,settings:rSettings})[tab]();
+}
+
+/* ===== 照片 ===== */
+function thumbs(list,kind,id){return list.map((src,i)=>`<button type="button" class="thumb" data-act="view" data-kind="${kind}" data-id="${id||''}" data-i="${i}"><img src="${src}" alt="照片 ${i+1}"></button>`).join('')}
+function photoList(kind,id){if(kind==='daily'){const r=recById(id);return r?r.photos:[]}if(kind==='event'){const e=D.events.find(x=>x.id===id);return e?e.photos:[]}return ePhotos}
+function openViewer(kind,id,i){VIEW={kind,id,i};$('v-img').src=photoList(kind,id)[i]||'';$('viewer').hidden=false}
+function closeViewer(){VIEW=null;$('viewer').hidden=true;$('v-img').removeAttribute('src')}
+
+/* ===== 排班助手連動 ===== */
+function readRoster(date){
+  try{
+    const keys=[];const last=localStorage.getItem('guard_last');if(last)keys.push('guard_slot_'+last);
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('guard_slot_')&&!keys.includes(k))keys.push(k)}
+    const ym=date.slice(0,7), day=+date.slice(8)-1;
+    for(const k of keys){
+      const root=JSON.parse(localStorage.getItem(k)||'null'); if(!root||!root.list)continue;
+      const out=[];
+      Object.values(root.list).forEach(S=>{const Rr=S&&S.roster&&S.roster[ym]; if(!Rr||!Rr.cells)return;
+        (S.ppl||[]).forEach(p=>{const c=(Rr.cells[p.uid]||[])[day];
+          if(c&&c!=='休'&&c!=='—'&&String(p.name||'').trim()){const post=(S.posts||[]).find(x=>String(x.code)===String(c));
+            out.push({name:String(p.name).trim(),post:post?post.name:String(c)})}})});
+      if(out.length)return {list:out,src:root.saveName||'排班助手'};
+    }
+  }catch(e){}
+  return null;
 }
 
 /* ===== 每日評分 ===== */
@@ -346,104 +663,188 @@ function attention(date){
     return {p,wk,st,fails};
   }).filter(a=>a.wk>=3||a.st>=2||a.fails>=2);
 }
+function certInfo(p){if(!p.cert)return null;const n=dateDiff(today(),p.cert);if(n<0)return {cls:'bad',txt:`證照已過期 ${-n} 天`,n};if(n<=30)return {cls:'warn',txt:`證照剩 ${n} 天到期`,n};return {cls:'none',txt:`證照到期 ${ymd(p.cert)}`,n}}
 function rDaily(){
-  const recs=D.daily.filter(x=>x.date===curDate());
-  const c={ok:0,improve:0,fail:0}; recs.forEach(x=>c[x.r]++);
-  const left=D.people.filter(p=>!recs.some(r=>r.pid===p.id)).length;
-  $('d-sum').innerHTML=`<span class="pill ok">合格 ${c.ok}</span><span class="pill warn">待加強 ${c.improve}</span><span class="pill bad">不合格 ${c.fail}</span><span class="pill none">未評 ${left}</span>`;
-  const att=attention(curDate());
-  $('d-att').hidden=!att.length;
-  $('d-att').innerHTML=`<h3>注意名單・建議面談</h3>`+att.map(a=>{
-    const bits=[`近 7 天待加強／不合格 ${a.wk} 次`];
-    if(a.st>=2)bits.push(`連續 ${a.st} 天`);
-    if(a.fails>=2)bits.push(`不合格 ${a.fails} 次`);
-    return `<p class="meta"><b>${esc(a.p.name)}</b>：${bits.join('，')}</p>`}).join('');
-  $('d-allok').hidden=!left||!D.people.length;
-  $('d-allok').textContent=left===D.people.length?`全部 ${left} 人合格`:`其餘 ${left} 人全部合格`;
+  const date=curDate(), duty=D.duty[date];
+  /* 在崗名單 */
+  let dh='';
+  if(dutyEdit){
+    dh=`<div class="head"><h3>選擇今日在崗人員</h3><button class="btn sm" data-act="duty-done">完成</button></div>
+      <div class="chips">${D.people.map(p=>`<button type="button" class="chip" data-act="duty-pick" data-id="${p.id}" aria-pressed="${!!(duty&&p.id in duty)}">${esc(p.name)}</button>`).join('')||'<span class="note">先到「人員」頁新增同事</span>'}</div>`;
+  }else if(duty){
+    const n=Object.keys(duty).filter(id=>D.people.some(p=>p.id===id)).length;
+    dh=`<div class="head"><h3>今日在崗 ${n} 人</h3><span class="acts">
+      <button class="del" data-act="duty-edit">編輯</button><button class="del" data-act="duty-all">${showAll?'只顯示在崗':'顯示全部人員'}</button><button class="del" data-act="duty-clear">清除</button></span></div>`;
+  }else{
+    dh=`<h3>今日在崗名單</h3><p class="note">還沒設定，目前列出全部人員。</p>
+      <div class="btns"><button class="btn ghost sm" data-act="duty-roster">從排班助手帶入</button><button class="btn ghost sm" data-act="duty-prev">沿用前一天</button><button class="btn ghost sm" data-act="duty-edit">手動選擇</button></div>`;
+  }
+  $('d-duty').innerHTML=dh;
+  const ppl=duty&&!showAll&&!dutyEdit?D.people.filter(p=>p.id in duty):D.people;
+  const recs=D.daily.filter(x=>x.date===date);
+  const c={ok:0,improve:0,fail:0}; recs.forEach(x=>{if(ppl.some(p=>p.id===x.pid))c[x.r]++});
+  const left=ppl.filter(p=>!recs.some(r=>r.pid===p.id)).length;
+  const gd=recs.filter(x=>x.good).length;
+  $('d-sum').innerHTML=`<span class="pill ok">合格 ${c.ok}</span><span class="pill warn">待加強 ${c.improve}</span><span class="pill bad">不合格 ${c.fail}</span><span class="pill none">未評 ${left}</span>${gd?`<span class="pill star">優良 ${gd}</span>`:''}`;
+  /* 注意名單 */
+  const att=attention(date), lines=[];
+  att.forEach(a=>{const bits=[`近 7 天待加強／不合格 ${a.wk} 次`];if(a.st>=2)bits.push(`連續 ${a.st} 天`);if(a.fails>=2)bits.push(`不合格 ${a.fails} 次`);
+    lines.push(`<p class="meta"><b>${esc(a.p.name)}</b>：${bits.join('，')}，建議面談</p>`)});
+  if(duty){const ids=Object.keys(duty);D.rels.filter(r=>(r.t==='conflict'||r.t==='tension')&&ids.includes(r.a)&&ids.includes(r.b))
+    .forEach(r=>lines.push(`<p class="meta">今日同班<span class="pill sm ${RC[r.t]}">${RT[r.t]}</span>：<b>${esc(name(r.a))}</b> ↔ <b>${esc(name(r.b))}</b></p>`))}
+  D.people.forEach(p=>{const ci=certInfo(p);if(ci&&ci.n<=30)lines.push(`<p class="meta"><b>${esc(p.name)}</b>：<span class="pill sm ${ci.cls}">${ci.txt}</span></p>`)});
+  $('d-att').hidden=!lines.length;
+  $('d-att').innerHTML=`<h3>注意事項</h3>`+lines.join('');
+  /* 待複查 */
+  const due=D.daily.filter(x=>x.fu&&!x.fu.done&&x.fu.date&&x.fu.date<=date&&D.people.some(p=>p.id===x.pid)).sort((a,b)=>a.fu.date.localeCompare(b.fu.date));
+  $('d-fu').hidden=!due.length;
+  $('d-fu').innerHTML=`<h3>待複查 ${due.length} 筆</h3>`+due.map(x=>`<div class="fu"><div><p class="meta"><b>${esc(name(x.pid))}</b> ${md(x.date)} <span class="pill sm ${x.r==='fail'?'bad':'warn'}">${R[x.r]}</span> ${esc(x.why||'未填原因')}</p>
+    ${x.fu.plan?`<p class="meta small">改善計畫：${esc(x.fu.plan)}</p>`:''}<p class="meta small">複查日 ${md(x.fu.date)}${x.fu.date<date?`，已逾期 ${dateDiff(x.fu.date,date)} 天`:''}</p></div>
+    <div class="btns"><button class="btn sm" data-act="fu-ok" data-id="${x.id}">已改善</button><button class="btn ghost sm" data-act="fu-no" data-id="${x.id}">未改善</button></div></div>`).join('');
+  $('d-allok').hidden=!left;
+  $('d-allok').textContent=left===ppl.length?`全部 ${left} 人合格`:`其餘 ${left} 人全部合格`;
   if(!D.people.length){$('d-list').innerHTML=`<p class="empty">還沒有人員。到「人員」頁新增同事後，就能在這裡每日評分。</p>`;return}
-  $('d-list').innerHTML=D.people.map(p=>{
+  const B=D.settings.bad, G=D.settings.good;
+  $('d-list').innerHTML=ppl.map(p=>{
     const r=recs.find(x=>x.pid===p.id), v=r?r.r:'';
-    const why=v&&v!=='ok'?`<div class="why">
-      <div class="chips">${CHIPS.map(t=>`<button type="button" class="chip" data-act="chip" data-pid="${p.id}" data-c="${t}">${t}</button>`).join('')}</div>
-      <textarea id="why-${p.id}" data-why="${p.id}" rows="2" placeholder="原因（必填）：幾點、在哪裡、發生什麼事">${esc(r.why)}</textarea>
-      <p class="err" id="err-${p.id}" ${r.why.trim()?'hidden':''}>請填寫原因，之後才有依據可查</p></div>`:'';
-    return `<div class="pc ${v}"><div class="pc-h"><b>${esc(p.name)}</b><div class="seg">${
+    const post=duty&&duty[p.id]?`<span class="post">${esc(duty[p.id])}</span>`:'';
+    let body='';
+    if(v&&v!=='ok'){
+      const fu=r.fu||{date:'',plan:''};
+      body=`<div class="why">
+        <div class="chips">${B.map(t=>`<button type="button" class="chip" data-act="chip" data-pid="${p.id}" data-c="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+        <textarea data-why="${p.id}" rows="2" placeholder="原因（必填）：幾點、在哪裡、發生什麼事">${esc(r.why)}</textarea>
+        <p class="err" id="err-${p.id}" ${r.why.trim()?'hidden':''}>請填寫原因，之後才有依據可查</p>
+        <div class="grid2"><label class="f">複查日期<input type="date" data-fu-date="${p.id}" value="${esc(fu.date)}"></label>
+          <label class="f">改善計畫<input data-fu-plan="${p.id}" value="${esc(fu.plan)}" placeholder="例：一週內交接逐項念一次"></label></div>
+        <div class="photos">${thumbs(r.photos,'daily',r.id)}<label class="addphoto">＋ 照片<input type="file" accept="image/*" multiple data-photo-daily="${r.id}" hidden></label></div>
+        ${v==='fail'&&!r.photos.length?'<p class="hintw">不合格建議附上照片佐證</p>':''}
+      </div>`;
+    }else if(v==='ok'){
+      const open=goodOpen.has(p.id)||!!r.good;
+      body=`<button type="button" class="starbtn" data-act="good-toggle" data-pid="${p.id}" aria-pressed="${!!r.good}">${r.good?'★ 優良表現':'☆ 加註優良表現'}</button>
+        ${open?`<div class="why"><div class="chips">${G.map(t=>`<button type="button" class="chip g" data-act="gchip" data-pid="${p.id}" data-c="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+        <input data-good="${p.id}" value="${esc(r.good)}" placeholder="例：主動發現側門未鎖並回報"></div>`:''}`;
+    }
+    return `<div class="pc ${v}"><div class="pc-h"><b>${esc(p.name)}${post}</b><div class="seg">${
       Object.keys(R).map(k=>`<button type="button" class="s-${k}" data-act="rate" data-pid="${p.id}" data-r="${k}" aria-pressed="${v===k}">${R[k]}</button>`).join('')
-    }</div></div>${why}</div>`;
+    }</div></div>${body}</div>`;
   }).join('');
 }
 function rate(pid,r){
-  const i=D.daily.findIndex(x=>x.date===curDate()&&x.pid===pid);
-  if(i>=0&&D.daily[i].r===r) D.daily.splice(i,1);
-  else if(i>=0){D.daily[i].r=r; if(r==='ok')D.daily[i].why=''}
-  else D.daily.push({id:uid(),date:curDate(),pid,r,why:''});
+  const date=curDate(), i=D.daily.findIndex(x=>x.date===date&&x.pid===pid);
+  if(i>=0&&D.daily[i].r===r){D.daily.splice(i,1)}
+  else if(i>=0){const x=D.daily[i];x.r=r;if(r==='ok'){x.why='';x.fu=null}else{x.good='';if(!x.fu)x.fu={date:addDays(date,7),plan:'',done:null}}}
+  else D.daily.push({id:uid(),date,pid,r,why:'',good:'',photos:[],fu:r==='ok'?null:{date:addDays(date,7),plan:'',done:null}});
   save(); rDaily();
-  if(r!=='ok'){const t=$('why-'+pid); if(t&&!t.value.trim())t.focus()}
+  if(r!=='ok'){const t=document.querySelector(`[data-why="${pid}"]`); if(t&&!t.value.trim())t.focus()}
 }
-function shiftDate(n){$('d-date').value=addDays(curDate(),n);rDaily()}
+function shiftDate(n){$('d-date').value=addDays(curDate(),n);dutyEdit=false;rDaily()}
 
 /* ===== 事件紀錄 ===== */
+function eventPassesFilter(e){
+  const f=$('e-filter').value, q=$('e-q').value.trim().toLowerCase(), sv=$('e-fsev').value, st=$('e-fst').value, from=$('e-from').value, to=$('e-to').value;
+  if(f&&!e.pids.includes(f))return false; if(sv&&e.sev!==sv)return false; if(st&&e.status!==st)return false;
+  if(from&&e.date<from)return false; if(to&&e.date>to)return false;
+  if(!q)return true;
+  return [e.place,e.what,e.items,e.handle,e.units.join(' '),e.pids.map(name).join(' ')].join(' ').toLowerCase().includes(q);
+}
 function rEvents(){
-  const f=$('e-filter'), cur=f.value, q=$('e-q').value.trim().toLowerCase();
+  const f=$('e-filter'), cur=f.value;
   f.innerHTML=`<option value="">全部人員</option>`+D.people.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
   f.value=D.people.some(p=>p.id===cur)?cur:'';
   $('e-people').innerHTML=D.people.map(p=>`<button type="button" class="chip" data-act="e-pick" data-id="${p.id}" aria-pressed="${eSel.has(p.id)}">${esc(p.name)}</button>`).join('')||'<span>先到「人員」頁新增同事</span>';
-  const list=D.events.filter(e=>{
-    if(f.value&&!e.pids.includes(f.value))return false;
-    if(!q)return true;
-    return [e.place,e.what,e.items,e.handle,e.pids.map(name).join(' ')].join(' ').toLowerCase().includes(q);
-  }).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  $('e-units').innerHTML=UNITS.map(u=>`<button type="button" class="chip" data-act="e-unit" data-id="${u}" aria-pressed="${eUnits.has(u)}">${u}</button>`).join('');
+  $('e-photos').innerHTML=thumbs(ePhotos,'form','')+`<label class="addphoto">＋ 照片<input type="file" accept="image/*" multiple id="e-photo" hidden></label>`;
+  const pend=D.events.filter(e=>(e.sev==='high'||e.status==='report')&&e.status!=='closed').sort((a,b)=>b.date.localeCompare(a.date));
+  $('e-alert').hidden=!pend.length;
+  $('e-alert').innerHTML=`<h3>需上報或追蹤 ${pend.length} 件</h3>`+pend.map(e=>`<p class="meta">${md(e.date)} <span class="pill sm ${SC[e.sev]}">${SEV[e.sev]}</span> <span class="pill sm ${STC[e.status]}">${ST[e.status]}</span> ${esc(e.place?e.place+'：':'')}${esc(e.what.slice(0,30))}${e.what.length>30?'…':''}</p>`).join('')
+    +`<p class="note">處理完請把狀態改成「已結案」。</p>`;
+  const list=D.events.filter(eventPassesFilter).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  const filtered=list.length!==D.events.length;
+  $('e-count').textContent=D.events.length?(filtered?`符合條件 ${list.length} 件，共 ${D.events.length} 件`:`共 ${D.events.length} 件`):'';
   $('e-list').innerHTML=list.length?list.map(e=>`<article class="card">
-    <div class="head"><span class="when">${e.date.replace(/-/g,'/')} ${esc(e.time)} <span class="pill sm ${SC[e.sev]}">${SEV[e.sev]}</span></span>
-      <span class="acts"><button class="del" data-act="edit-event" data-id="${e.id}">編輯</button><button class="del" data-act="del-event" data-id="${e.id}">刪除</button></span></div>
+    <div class="head"><span class="when">${ymd(e.date)} ${esc(e.time)} <span class="pill sm ${SC[e.sev]}">${SEV[e.sev]}</span><span class="pill sm ${STC[e.status]}">${ST[e.status]}</span></span></div>
     <dl class="ev">
       <dt>人</dt><dd>${e.pids.map(id=>esc(name(id))).join('、')||'—'}</dd>
       <dt>地</dt><dd>${esc(e.place)||'—'}</dd>
       <dt>事</dt><dd>${esc(e.what)}</dd>
       <dt>物</dt><dd>${esc(e.items)||'—'}</dd>
       <dt>處理</dt><dd>${esc(e.handle)||'—'}</dd>
-    </dl></article>`).join(''):`<p class="empty">${D.events.length?'沒有符合條件的事件。':'沒有事件紀錄。按「新增事件」記下人、事、時、地、物。'}</p>`;
+      ${e.units.length?`<dt>通報</dt><dd>${e.units.map(esc).join('、')}</dd>`:''}
+    </dl>
+    ${e.photos.length?`<div class="photos">${thumbs(e.photos,'event',e.id)}</div>`:''}
+    <p class="meta small">紀錄人 ${esc(e.by||'—')}・建立 ${ymd(e.created)}${e.updated?`・最後修改 ${ymd(e.updated)}`:''}</p>
+    <div class="acts" style="justify-content:flex-start">
+      <button class="del" data-act="ev-copy" data-id="${e.id}">複製報告</button><button class="del" data-act="ev-print" data-id="${e.id}">列印／PDF</button>
+      <button class="del" data-act="edit-event" data-id="${e.id}">編輯</button><button class="del" data-act="del-event" data-id="${e.id}">刪除</button></div>
+    </article>`).join(''):`<p class="empty">${D.events.length?'沒有符合條件的事件。':'沒有事件紀錄。按「新增事件」記下人、事、時、地、物。'}</p>`;
 }
 function openEventForm(e){
   eEdit=e?e.id:null;
-  $('e-title').textContent=e?'編輯事件':'新增事件';
-  $('e-submit').textContent=e?'儲存修改':'儲存事件';
+  $('e-title').textContent=e?'編輯事件':'新增事件'; $('e-submit').textContent=e?'儲存修改':'儲存事件';
   $('e-date').value=e?e.date:today(); $('e-time').value=e?e.time:'';
-  $('e-place').value=e?e.place:''; $('e-sev').value=e?e.sev:'mid';
+  $('e-place').value=e?e.place:''; $('e-sev').value=e?e.sev:'mid'; $('e-status').value=e?e.status:'open';
   $('e-what').value=e?e.what:''; $('e-items').value=e?e.items:''; $('e-handle').value=e?e.handle:'';
-  eSel=new Set(e?e.pids:[]);
+  eSel=new Set(e?e.pids:[]); eUnits=new Set(e?e.units:[]); ePhotos=e?e.photos.slice():[];
   $('e-form').hidden=false; $('e-new').hidden=true; rEvents();
   $('e-form').scrollIntoView({block:'start'});
 }
-function closeEventForm(){eEdit=null;eSel.clear();$('e-form').hidden=true;$('e-new').hidden=false}
+function closeEventForm(){eEdit=null;eSel.clear();eUnits.clear();ePhotos=[];$('e-form').hidden=true;$('e-new').hidden=false}
+function eventReport(e){
+  return [`【安橋保全 事件報告】`,`發生時間：${ymd(e.date)} ${e.time||''}`,`發生地點：${e.place||'—'}`,`相關人員：${e.pids.map(name).join('、')||'—'}`,
+    `嚴重程度：${SEV[e.sev]}　處理狀態：${ST[e.status]}`,`已通報單位：${e.units.join('、')||'無'}`,`事件經過：${e.what}`,`相關物品：${e.items||'—'}`,
+    `處理方式：${e.handle||'—'}`,`照片：${e.photos.length?e.photos.length+' 張（另附）':'無'}`,`紀錄人：${e.by||D.settings.me||'—'}　紀錄日期：${ymd(e.created)}`,'',`※ ${DISC}`].join('\n');
+}
+function printHTML(html){$('print').innerHTML=html;setTimeout(()=>{try{window.print()}catch(e){toast('這個環境無法列印，請改用「複製報告」')}},50)}
+function eventPrintHTML(e){
+  const row=(k,v)=>`<tr><th style="width:22%">${k}</th><td>${esc(v)}</td></tr>`;
+  return `<h1>安橋保全 事件報告</h1><table>${row('發生時間',`${ymd(e.date)} ${e.time||''}`)}${row('發生地點',e.place||'—')}${row('相關人員',e.pids.map(name).join('、')||'—')}
+    ${row('嚴重程度',SEV[e.sev])}${row('處理狀態',ST[e.status])}${row('已通報單位',e.units.join('、')||'無')}${row('事件經過',e.what)}${row('相關物品',e.items||'—')}${row('處理方式',e.handle||'—')}
+    ${row('紀錄人',e.by||D.settings.me||'—')}${row('紀錄日期',ymd(e.created))}</table>
+    ${e.photos.length?`<h2>照片佐證</h2><div class="ph">${e.photos.map(s=>`<img src="${s}" alt="">`).join('')}</div>`:''}
+    <div class="sig"><span>紀錄人簽名：＿＿＿＿＿＿</span><span>主管簽名：＿＿＿＿＿＿</span></div><p class="disc">※ ${DISC}</p>`;
+}
 
 /* ===== 人際關係 ===== */
 function rRel(){
   const opts=D.people.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
   ['r-a','r-b'].forEach(id=>{const s=$(id),v=s.value;s.innerHTML=opts;if(D.people.some(p=>p.id===v))s.value=v});
   if(D.people.length>1&&$('r-a').value===$('r-b').value)$('r-b').selectedIndex=1;
+  if(!$('r-by').value)$('r-by').value=D.settings.me||'';
   if(focusId&&!D.people.some(p=>p.id===focusId))focusId=null;
   drawGraph();
   $('r-hint').textContent=focusId?`只顯示 ${name(focusId)} 的關係，再點一次顯示全部`:(D.people.length?'點人名可以只看他的關係':'');
   $('s-people').innerHTML=D.people.map(p=>`<button type="button" class="chip" data-act="s-pick" data-id="${p.id}" aria-pressed="${shiftSel.has(p.id)}">${esc(p.name)}</button>`).join('')||'<span class="note">先到「人員」頁新增同事</span>';
   rShift();
-  const order=['conflict','tension','good'];
+  const order=['conflict','tension','normal','good'];
   const list=D.rels.filter(r=>D.people.some(p=>p.id===r.a)&&D.people.some(p=>p.id===r.b))
     .filter(r=>!focusId||r.a===focusId||r.b===focusId)
     .sort((x,y)=>order.indexOf(x.t)-order.indexOf(y.t));
-  $('r-list').innerHTML=list.length?list.map(r=>`<article class="card">
+  $('r-list').innerHTML=list.length?list.map(r=>{
+    const age=dateDiff(r.date,today()), stale=age>90, open=relHist.has(r.id);
+    return `<article class="card">
     <div class="head"><span class="pair">${esc(name(r.a))} ↔ ${esc(name(r.b))} <span class="pill ${RC[r.t]}">${RT[r.t]}</span></span>
     <button class="del" data-act="del-rel" data-id="${r.id}">刪除</button></div>
-    ${r.note?`<p class="meta">${esc(r.note)}</p>`:''}</article>`).join(''):`<p class="empty">還沒有關係紀錄。用上面的表單記下誰和誰不合或要好。</p>`;
+    ${r.note?`<p class="meta">${esc(r.note)}</p>`:''}
+    <p class="meta small">依據：${esc(r.basis||'未填')}・記錄人：${esc(r.by||'未填')}・最後確認：${ymd(r.date)}</p>
+    ${stale?`<div class="row" style="align-items:center"><span class="hintw">已 ${age} 天沒有確認，關係可能已改變</span><button class="btn ghost sm" data-act="rel-ok" data-id="${r.id}">確認仍有效</button></div>`:''}
+    ${r.hist.length?`<button class="link" data-act="rel-hist" data-id="${r.id}">${open?'收合修改紀錄':`修改紀錄（${r.hist.length}）`}</button>`:''}
+    ${open?`<ul class="hist">${r.hist.slice().reverse().map(h=>`<li><span class="d">${md(h.date)}</span><span class="pill sm ${RC[h.t]||'none'}">${h.act||RT[h.t]}</span><span>${esc(h.note||'')}${h.by?`（${esc(h.by)}）`:''}</span></li>`).join('')}</ul>`:''}
+    </article>`}).join(''):`<p class="empty">還沒有關係紀錄。用上面的表單記下誰和誰不合或要好。</p>`;
+}
+function shiftResult(){
+  const bad=D.rels.filter(r=>(r.t==='conflict'||r.t==='tension')&&shiftSel.has(r.a)&&shiftSel.has(r.b));
+  const good=D.rels.filter(r=>r.t==='good'&&shiftSel.has(r.a)&&shiftSel.has(r.b));
+  return {bad,good};
 }
 function rShift(){
   for(const id of [...shiftSel]) if(!D.people.some(p=>p.id===id)) shiftSel.delete(id);
   const box=$('s-result');
   if(shiftSel.size<2){box.innerHTML=D.people.length>1?'<p class="note">至少選 2 個人。</p>':'';return}
-  const bad=D.rels.filter(r=>r.t!=='good'&&shiftSel.has(r.a)&&shiftSel.has(r.b));
-  const good=D.rels.filter(r=>r.t==='good'&&shiftSel.has(r.a)&&shiftSel.has(r.b));
+  const {bad,good}=shiftResult();
   box.innerHTML=(bad.length
-    ?`<p class="err">這組人有 ${bad.length} 組需要注意：</p>`+bad.map(r=>`<p class="meta"><span class="pill sm ${RC[r.t]}">${RT[r.t]}</span> <b>${esc(name(r.a))}</b> ↔ <b>${esc(name(r.b))}</b>${r.note?`：${esc(r.note)}`:''}</p>`).join('')
+    ?`<p class="err">建議調整：這組人有 ${bad.length} 組需要注意</p>`+bad.map(r=>`<p class="meta"><span class="pill sm ${RC[r.t]}">${RT[r.t]}</span> <b>${esc(name(r.a))}</b> ↔ <b>${esc(name(r.b))}</b>${r.note?`：${esc(r.note)}`:''}</p>`).join('')
     :`<p class="meta"><span class="pill ok">可以排</span> 這組人沒有已知的不合紀錄</p>`)
     +(good.length?`<p class="meta">互相支援：${good.map(r=>`${esc(name(r.a))} ↔ ${esc(name(r.b))}`).join('、')}</p>`:'');
 }
@@ -465,132 +866,320 @@ function drawGraph(){
 }
 
 /* ===== 人員 ===== */
-function stats(pid,from,to){const c={ok:0,improve:0,fail:0};D.daily.filter(x=>x.pid===pid&&x.date>=from&&x.date<=to).forEach(x=>c[x.r]++);return c}
+function stats(pid,from,to){const c={ok:0,improve:0,fail:0,good:0};D.daily.filter(x=>x.pid===pid&&x.date>=from&&x.date<=to).forEach(x=>{c[x.r]++;if(x.good)c.good++});return c}
 function strip(pid){
   const end=today(); let h='';
   for(let i=29;i>=0;i--){const d=addDays(end,-i);const r=D.daily.find(x=>x.pid===pid&&x.date===d);
     h+=`<i class="${r?r.r:''}" title="${md(d)} ${r?R[r.r]:'未評'}"></i>`}
   return `<div class="strip" aria-label="近 30 天每日結果">${h}</div><div class="strip-l"><span>30 天前</span><span>今天</span></div>`;
 }
+function tenure(h){if(!h)return '';const m=(new Date().getFullYear()-+h.slice(0,4))*12+(new Date().getMonth()+1-+h.slice(5,7));if(m<1)return '未滿 1 個月';return (m>=12?`${Math.floor(m/12)} 年 `:'')+(m%12?`${m%12} 個月`:'')}
 function rPeople(){
   const from=daysAgo(29), to=today();
-  let ppl=[...D.people];
-  if($('p-sort').value==='issue'){const sc=p=>{const c=stats(p.id,from,to);return c.improve+c.fail*2};ppl.sort((a,b)=>sc(b)-sc(a))}
-  const last=D.lastBackup?`上次備份：${D.lastBackup.replace(/-/g,'/')}（${dateDiff(D.lastBackup,today())} 天前）`:'還沒有備份過。';
-  $('b-last').textContent=last;
+  let ppl=[...D.people]; const s=$('p-sort').value;
+  if(s==='issue'){const sc=p=>{const c=stats(p.id,from,to);return c.improve+c.fail*2};ppl.sort((a,b)=>sc(b)-sc(a))}
+  if(s==='cert'){const cv=p=>p.cert?p.cert:'9999';ppl.sort((a,b)=>cv(a).localeCompare(cv(b)))}
   $('p-list').innerHTML=ppl.length?ppl.map(p=>{
-    const c=stats(p.id,from,to);
+    if(pEdit===p.id) return `<article class="card"><h3>編輯 ${esc(p.name)}</h3>
+      <div class="grid2"><label class="f">姓名<input id="pe-name" value="${esc(p.name)}" maxlength="12"></label>
+      <label class="f">到職日<input type="date" id="pe-hired" value="${esc(p.hired)}"></label>
+      <label class="f">保全證照到期日<input type="date" id="pe-cert" value="${esc(p.cert)}"></label>
+      <label class="f">緊急聯絡人<input id="pe-contact" value="${esc(p.contact)}" placeholder="姓名、關係、電話"></label></div>
+      <label class="f">訓練紀錄<textarea id="pe-training" rows="2" placeholder="例：大門哨已結訓、安檢哨訓練中">${esc(p.training)}</textarea></label>
+      <label class="f">備註<input id="pe-note" value="${esc(p.note)}"></label>
+      <div class="btns"><button class="btn" data-act="pe-save" data-id="${p.id}">儲存</button><button class="btn ghost" data-act="pe-cancel">取消</button></div></article>`;
+    const c=stats(p.id,from,to), ci=certInfo(p);
     const allBad=D.daily.filter(x=>x.pid===p.id&&x.r!=='ok').sort((a,b)=>b.date.localeCompare(a.date));
-    const watch=D.rels.filter(r=>r.t!=='good'&&(r.a===p.id||r.b===p.id)).map(r=>`${name(r.a===p.id?r.b:r.a)}（${RT[r.t]}）`);
+    const goods=D.daily.filter(x=>x.pid===p.id&&x.good).sort((a,b)=>b.date.localeCompare(a.date));
+    const watch=D.rels.filter(r=>(r.t==='conflict'||r.t==='tension')&&(r.a===p.id||r.b===p.id)).map(r=>`${name(r.a===p.id?r.b:r.a)}（${RT[r.t]}）`);
     const evs=D.events.filter(e=>e.pids.includes(p.id)).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
     const open=expanded.has(p.id);
-    const head=renaming===p.id
-      ?`<div class="row" style="flex:1"><input id="rn-input" value="${esc(p.name)}" maxlength="12" aria-label="新姓名"><button class="btn" data-act="rn-save" data-id="${p.id}">儲存</button><button class="btn ghost" data-act="rn-cancel">取消</button></div>`
-      :`<h3>${esc(p.name)}</h3><span class="acts"><button class="del" data-act="report" data-id="${p.id}">複製報告</button><button class="del" data-act="rename" data-id="${p.id}">改名</button><button class="del" data-act="del-person" data-id="${p.id}">刪除</button></span>`;
-    const histItem=x=>`<li><span class="d">${md(x.date)}</span><span class="pill sm ${x.r==='fail'?'bad':'warn'}">${R[x.r]}</span><span>${esc(x.why||'（未填原因）')}</span></li>`;
+    const histItem=x=>`<li><span class="d">${md(x.date)}</span><span class="pill sm ${x.r==='fail'?'bad':'warn'}">${R[x.r]}</span><span>${esc(x.why||'（未填原因）')}${x.fu&&x.fu.done?`（複查：${x.fu.done==='ok'?'已改善':'未改善'}）`:''}</span></li>`;
+    const info=[p.hired?`年資 ${tenure(p.hired)}`:'',p.contact?`緊急聯絡：${esc(p.contact)}`:''].filter(Boolean).join('・');
     return `<article class="card">
-      <div class="head">${head}</div>
+      <div class="head"><h3>${esc(p.name)}</h3><span class="acts"><button class="del" data-act="report" data-id="${p.id}">複製報告</button><button class="del" data-act="pe-open" data-id="${p.id}">編輯</button><button class="del" data-act="del-person" data-id="${p.id}">刪除</button></span></div>
+      ${info||ci?`<div class="sum">${ci?`<span class="pill sm ${ci.cls}">${ci.txt}</span>`:''}${info?`<span class="meta small">${info}</span>`:''}</div>`:''}
+      ${p.training?`<p class="meta small">訓練：${esc(p.training)}</p>`:''}
       ${strip(p.id)}
-      <div class="sum"><span class="pill ok">合格 ${c.ok}</span><span class="pill warn">待加強 ${c.improve}</span><span class="pill bad">不合格 ${c.fail}</span><span class="note">近 30 天</span></div>
+      <div class="sum"><span class="pill ok">合格 ${c.ok}</span><span class="pill warn">待加強 ${c.improve}</span><span class="pill bad">不合格 ${c.fail}</span>${c.good?`<span class="pill star">優良 ${c.good}</span>`:''}<span class="note">近 30 天</span></div>
       ${watch.length?`<p class="meta">關係需留意：${watch.map(esc).join('、')}</p>`:''}
       ${allBad.length?`<ul class="hist">${allBad.slice(0,open?allBad.length:3).map(histItem).join('')}</ul>`:''}
+      ${open&&goods.length?`<div class="more"><h4>優良表現</h4><ul class="hist">${goods.map(x=>`<li><span class="d">${md(x.date)}</span><span class="pill sm star">優良</span><span>${esc(x.good)}</span></li>`).join('')}</ul></div>`:''}
       ${open&&evs.length?`<div class="more"><h4>相關事件</h4><ul class="hist">${evs.map(e=>`<li><span class="d">${md(e.date)}</span><span class="pill sm ${SC[e.sev]}">${SEV[e.sev]}</span><span>${esc(e.place?e.place+'：':'')}${esc(e.what)}</span></li>`).join('')}</ul></div>`:''}
-      ${(allBad.length>3||evs.length)?`<button class="link" data-act="expand" data-id="${p.id}">${open?'收合':`查看全部紀錄（扣分 ${allBad.length} 筆・事件 ${evs.length} 件）`}</button>`:''}
+      ${(allBad.length>3||evs.length||goods.length)?`<button class="link" data-act="expand" data-id="${p.id}">${open?'收合':`查看全部紀錄（扣分 ${allBad.length}・優良 ${goods.length}・事件 ${evs.length}）`}</button>`:''}
     </article>`}).join(''):`<p class="empty">還沒有人員，從上面輸入姓名新增。</p>`;
-  if(renaming){const i=$('rn-input');if(i){i.focus();i.select()}}
 }
 function personLines(p,from,to){
-  const c=stats(p.id,from,to);
-  const L=[`${p.name}：合格 ${c.ok}／待加強 ${c.improve}／不合格 ${c.fail}`];
-  D.daily.filter(x=>x.pid===p.id&&x.date>=from&&x.date<=to&&x.r!=='ok').sort((a,b)=>a.date.localeCompare(b.date))
-    .forEach(x=>L.push(`  ・${md(x.date)} ${R[x.r]}：${x.why||'未填原因'}`));
+  const c=stats(p.id,from,to), n=c.ok+c.improve+c.fail;
+  const L=[`${p.name}：合格 ${c.ok}／待加強 ${c.improve}／不合格 ${c.fail}（合格率 ${pct(n?c.ok/n:null)}）${c.good?`，優良 ${c.good} 次`:''}`];
+  D.daily.filter(x=>x.pid===p.id&&x.date>=from&&x.date<=to&&(x.r!=='ok'||x.good)).sort((a,b)=>a.date.localeCompare(b.date))
+    .forEach(x=>L.push(x.r==='ok'?`  ・${md(x.date)} 優良：${x.good}`:`  ・${md(x.date)} ${R[x.r]}：${x.why||'未填原因'}${x.fu&&x.fu.done?`（複查${x.fu.done==='ok'?'已改善':'未改善'}）`:''}`));
   D.events.filter(e=>e.pids.includes(p.id)&&e.date>=from&&e.date<=to).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))
-    .forEach(e=>L.push(`  ・${md(e.date)} 事件（${SEV[e.sev]}）：${e.place?e.place+'，':''}${e.what}${e.handle?`；處理：${e.handle}`:''}`));
+    .forEach(e=>L.push(`  ・${md(e.date)} 事件（${SEV[e.sev]}・${ST[e.status]}）：${e.place?e.place+'，':''}${e.what}`));
   return L;
-}
-function monthReport(){
-  const to=today(), from=daysAgo(29);
-  const L=[`【安橋勤務月報】${md(from)}–${md(to)}`,''];
-  D.people.forEach(p=>{L.push(...personLines(p,from,to),'')});
-  const conf=D.rels.filter(r=>r.t!=='good');
-  if(conf.length){L.push('【關係需留意】');conf.forEach(r=>L.push(`  ・${name(r.a)} ↔ ${name(r.b)}（${RT[r.t]}）${r.note?'：'+r.note:''}`))}
-  return L.join('\n').trim();
 }
 function personReport(p){
   const to=today(), from=daysAgo(29);
   const L=[`【${p.name} 近 30 天紀錄】${md(from)}–${md(to)}`,...personLines(p,from,to)];
-  const w=D.rels.filter(r=>r.t!=='good'&&(r.a===p.id||r.b===p.id));
+  const w=D.rels.filter(r=>(r.t==='conflict'||r.t==='tension')&&(r.a===p.id||r.b===p.id));
   if(w.length)L.push('關係需留意：'+w.map(r=>`${name(r.a===p.id?r.b:r.a)}（${RT[r.t]}）`).join('、'));
+  L.push('',`※ ${DISC}`);
   return L.join('\n');
 }
 
-/* ===== 事件綁定 ===== */
-document.addEventListener('click',ev=>{
-  const tb=ev.target.closest('[data-tab]'); if(tb){setTab(tb.dataset.tab);return}
+/* ===== 統計 ===== */
+function mStats(ym,pid){const[f,t]=monthRange(ym);const c={ok:0,improve:0,fail:0,good:0,n:0};
+  D.daily.forEach(x=>{if(x.date>=f&&x.date<=t&&(!pid||x.pid===pid)){c[x.r]++;c.n++;if(x.good)c.good++}});c.rate=c.n?c.ok/c.n:null;return c}
+function dayChart(ym){
+  const[,,n]=monthRange(ym), W=640,H=220,pl=38,pb=30,pt=10, cw=(W-pl-8)/n;
+  const days=[];let mx=1;
+  for(let i=1;i<=n;i++){const d=ym+'-'+pad(i);const c={ok:0,improve:0,fail:0};D.daily.forEach(x=>{if(x.date===d)c[x.r]++});mx=Math.max(mx,c.ok+c.improve+c.fail);days.push(c)}
+  const sy=v=>(H-pb-pt)*v/mx; let s='';
+  [...new Set([0,Math.round(mx/2),mx])].forEach(v=>{const y=(H-pb-sy(v)).toFixed(1);s+=`<line class="grid" x1="${pl}" x2="${W-8}" y1="${y}" y2="${y}"/><text class="ax" x="${pl-6}" y="${y}" dy="0.32em" text-anchor="end">${v}</text>`});
+  days.forEach((c,i)=>{let y=H-pb;const x=pl+i*cw+cw*0.15,w=cw*0.7;
+    [['ok','b-ok'],['improve','b-warn'],['fail','b-bad']].forEach(([k,cl])=>{if(!c[k])return;const h=sy(c[k]);y-=h;
+      s+=`<rect class="${cl}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"><title>${i+1} 日 ${R[k]} ${c[k]}</title></rect>`});
+    if(i===0||(i+1)%5===0)s+=`<text class="ax" x="${(x+w/2).toFixed(1)}" y="${H-4}" text-anchor="middle">${i+1}</text>`});
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="每日評分分布">${s}</svg>`;
+}
+function tagCounts(ym){const[f,t]=monthRange(ym);const recs=D.daily.filter(x=>x.date>=f&&x.date<=t&&x.r!=='ok');
+  const out=D.settings.bad.map(tag=>({tag,n:recs.filter(x=>x.why.includes(tag)).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n);
+  const other=recs.filter(x=>!D.settings.bad.some(tag=>x.why.includes(tag))).length; if(other)out.push({tag:'其他',n:other});return out}
+function rStats(){
+  const ym=$('st-month').value||thisYM(), pv=prevYM(ym);
+  const c=mStats(ym), p=mStats(pv);
+  const[f,t]=monthRange(ym);
+  const evs=D.events.filter(e=>e.date>=f&&e.date<=t), hi=evs.filter(e=>e.sev==='high').length;
+  const delta=c.rate!=null&&p.rate!=null?Math.round((c.rate-p.rate)*100):null;
+  $('st-tiles').innerHTML=`
+    <div class="tile"><span>合格率</span><b>${pct(c.rate)}</b>${delta!=null?`<em class="${delta>=0?'up':'down'}">比上月 ${delta>=0?'+':''}${delta} 個百分點</em>`:'<em class="note">上月無資料</em>'}</div>
+    <div class="tile"><span>評分筆數</span><b>${c.n}</b><em class="note">上月 ${p.n}</em></div>
+    <div class="tile"><span>待加強</span><b style="color:var(--warn)">${c.improve}</b><em class="note">上月 ${p.improve}</em></div>
+    <div class="tile"><span>不合格</span><b style="color:var(--bad)">${c.fail}</b><em class="note">上月 ${p.fail}</em></div>
+    <div class="tile"><span>優良表現</span><b style="color:var(--star)">${c.good}</b><em class="note">上月 ${p.good}</em></div>
+    <div class="tile"><span>事件</span><b>${evs.length}</b><em class="note">其中嚴重 ${hi} 件</em></div>`;
+  $('st-chart').innerHTML=c.n?dayChart(ym):'<p class="empty">這個月還沒有評分紀錄</p>';
+  const tr=[];for(let i=5;i>=0;i--){const m=prevYM(ym,i);tr.push({m,s:mStats(m)})}
+  $('st-trend').innerHTML=tr.map(x=>`<div class="barrow"><span>${x.m.replace('-','/')}</span><span class="track"><i style="width:${x.s.rate==null?0:Math.round(x.s.rate*100)}%"></i></span><b>${pct(x.s.rate)}</b></div>`).join('');
+  const tg=tagCounts(ym), tmax=Math.max(1,...tg.map(x=>x.n));
+  $('st-tags').innerHTML=tg.length?tg.slice(0,7).map(x=>`<div class="barrow"><span>${esc(x.tag)}</span><span class="track"><i class="w" style="width:${Math.round(x.n/tmax*100)}%"></i></span><b>${x.n} 次</b></div>`).join(''):'<p class="note">這個月沒有扣分紀錄</p>';
+  const rows=D.people.map(pp=>{const s=mStats(ym,pp.id);return {pp,s,ev:evs.filter(e=>e.pids.includes(pp.id)).length,score:s.improve+s.fail*2}});
+  const risk=rows.filter(r=>r.score>=2||r.ev>=2).sort((a,b)=>b.score-a.score);
+  $('st-risk').innerHTML=risk.length?risk.map(r=>`<p class="meta"><b>${esc(r.pp.name)}</b>：待加強 ${r.s.improve}、不合格 ${r.s.fail}${r.ev?`、事件 ${r.ev} 件`:''}，合格率 ${pct(r.s.rate)}</p>`).join(''):'<p class="note">這個月沒有需要特別關注的人員</p>';
+  $('st-table').innerHTML=`<table class="tbl"><thead><tr><th>人員</th><th>評分天數</th><th>合格率</th><th>待加強</th><th>不合格</th><th>優良</th><th>事件</th></tr></thead><tbody>
+    <tr class="team"><td>團隊</td><td>${c.n}</td><td>${pct(c.rate)}</td><td>${c.improve}</td><td>${c.fail}</td><td>${c.good}</td><td>${evs.length}</td></tr>
+    ${rows.map(r=>`<tr><td>${esc(r.pp.name)}</td><td>${r.s.n}</td><td class="${r.s.rate!=null&&c.rate!=null&&r.s.rate<c.rate?'low':''}">${pct(r.s.rate)}</td><td>${r.s.improve}</td><td>${r.s.fail}</td><td>${r.s.good}</td><td>${r.ev}</td></tr>`).join('')}
+    </tbody></table>`;
+}
+function monthText(ym){
+  const[f,t]=monthRange(ym), c=mStats(ym);
+  const L=[`【安橋勤務月報】${ym.replace('-','/')}（${md(f)}–${md(t)}）`,`記錄人：${D.settings.me||'—'}`,`團隊合格率 ${pct(c.rate)}，待加強 ${c.improve}、不合格 ${c.fail}、優良 ${c.good}`,''];
+  D.people.forEach(p=>{if(mStats(ym,p.id).n||D.events.some(e=>e.pids.includes(p.id)&&e.date>=f&&e.date<=t))L.push(...personLines(p,f,t),'')});
+  const conf=D.rels.filter(r=>r.t==='conflict'||r.t==='tension');
+  if(conf.length){L.push('【關係需留意】');conf.forEach(r=>L.push(`  ・${name(r.a)} ↔ ${name(r.b)}（${RT[r.t]}）${r.note?'：'+r.note:''}`));L.push('')}
+  L.push(`※ ${DISC}`);
+  return L.join('\n');
+}
+function monthPrintHTML(ym){
+  const[f,t]=monthRange(ym), c=mStats(ym);
+  const evs=D.events.filter(e=>e.date>=f&&e.date<=t).sort((a,b)=>a.date.localeCompare(b.date));
+  const rows=D.people.map(p=>{const s=mStats(ym,p.id);return `<tr><td>${esc(p.name)}</td><td>${s.n}</td><td>${pct(s.rate)}</td><td>${s.improve}</td><td>${s.fail}</td><td>${s.good}</td></tr>`}).join('');
+  const det=D.daily.filter(x=>x.date>=f&&x.date<=t&&x.r!=='ok').sort((a,b)=>a.date.localeCompare(b.date))
+    .map(x=>`<tr><td>${md(x.date)}</td><td>${esc(name(x.pid))}</td><td>${R[x.r]}</td><td>${esc(x.why)}</td><td>${x.fu&&x.fu.done?(x.fu.done==='ok'?'已改善':'未改善'):(x.fu&&x.fu.date?'待複查':'')}</td></tr>`).join('');
+  return `<h1>安橋勤務月報 ${ym.replace('-','/')}</h1><p>期間 ${ymd(f)}–${ymd(t)}　記錄人 ${esc(D.settings.me||'—')}</p>
+    <p>團隊合格率 ${pct(c.rate)}　待加強 ${c.improve}　不合格 ${c.fail}　優良表現 ${c.good}　事件 ${evs.length} 件</p>
+    <h2>人員統計</h2><table><tr><th>人員</th><th>評分天數</th><th>合格率</th><th>待加強</th><th>不合格</th><th>優良</th></tr>${rows}</table>
+    ${det?`<h2>待加強／不合格明細</h2><table><tr><th>日期</th><th>人員</th><th>結果</th><th>原因</th><th>複查</th></tr>${det}</table>`:''}
+    ${evs.length?`<h2>事件</h2><table><tr><th>日期</th><th>地點</th><th>人員</th><th>程度</th><th>狀態</th><th>經過與處理</th></tr>${evs.map(e=>`<tr><td>${md(e.date)} ${esc(e.time)}</td><td>${esc(e.place)}</td><td>${esc(e.pids.map(name).join('、'))}</td><td>${SEV[e.sev]}</td><td>${ST[e.status]}</td><td>${esc(e.what)}${e.handle?'；處理：'+esc(e.handle):''}</td></tr>`).join('')}</table>`:''}
+    <div class="sig"><span>記錄人簽名：＿＿＿＿＿＿</span><span>主管簽名：＿＿＿＿＿＿</span></div><p class="disc">※ ${DISC}</p>`;
+}
+function dailyRows(list){return [['日期','姓名','結果','原因','優良表現','複查日期','改善計畫','複查結果','照片數'],
+  ...list.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>[x.date,name(x.pid),R[x.r],x.why,x.good,x.fu?x.fu.date:'',x.fu?x.fu.plan:'',x.fu&&x.fu.done?(x.fu.done==='ok'?'已改善':'未改善'):'',x.photos.length])]}
+function eventRows(list){return [['日期','時間','地點','相關人員','嚴重程度','狀態','通報單位','事件經過','相關物品','處理方式','照片數','紀錄人'],
+  ...list.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(e=>[e.date,e.time,e.place,e.pids.map(name).join('、'),SEV[e.sev],ST[e.status],e.units.join('、'),e.what,e.items,e.handle,e.photos.length,e.by])]}
+
+/* ===== 設定 ===== */
+function rSettings(){
+  $('b-last').textContent=D.lastBackup?`上次備份：${ymd(D.lastBackup)}（${dateDiff(D.lastBackup,today())} 天前）`:'還沒有備份過。';
+  $('bk-share').hidden=!(navigator.canShare&&(()=>{try{return navigator.canShare({files:[new File(['x'],'x.json',{type:'application/json'})]})}catch(e){return false}})());
+  $('set-me').value=D.settings.me||''; $('set-bad').value=D.settings.bad.join('、'); $('set-good').value=D.settings.good.join('、');
+  $('set-keep').value=String(D.settings.keepMonths||0); $('set-autolock').value=String(D.settings.autoLock||3);
+  $('pin-box').hidden=!CAN_CRYPTO;
+  $('pin-state').textContent=KEYOBJ?'已設定密碼，資料已加密保存。開啟程式和離開一段時間後都要輸入密碼。':'目前沒有密碼，拿到這支手機的人都能看到紀錄。';
+  $('pin-set').textContent=KEYOBJ?'更換密碼':'設定密碼'; $('pin-off').hidden=!KEYOBJ;
+}
+async function backupPayload(){
+  D.lastBackup=today(); await persist();
+  if(KEYOBJ){const e=await encryptObj(KEYOBJ,D);return JSON.stringify(Object.assign({app:'anqiao-log',v:2,at:today(),enc:true,salt:SALT},e))}
+  return JSON.stringify({app:'anqiao-log',v:2,at:today(),enc:false,data:D});
+}
+async function parseBackup(text,pin){
+  let o;try{o=JSON.parse(text)}catch(e){throw new Error('檔案格式不對，請選擇正確的備份檔')}
+  if(o&&o.app==='anqiao-log'){
+    if(o.enc){
+      if(!CAN_CRYPTO)throw new Error('這個瀏覽器無法解開加密備份');
+      for(const p of [pin,CURPIN].filter(Boolean)){try{const k=await deriveKey(p,ub64(o.salt));return migrate(await decryptObj(k,o))}catch(e){}}
+      throw new Error('這是加密備份，請在「備份密碼」輸入備份當時的密碼');
+    }
+    o=o.data;
+  }
+  if(!valid(o))throw new Error('檔案內容不完整，無法還原');
+  return migrate(o);
+}
+function purgeBefore(date){
+  const n1=D.daily.length,n2=D.events.length;
+  D.daily=D.daily.filter(x=>x.date>=date);D.events=D.events.filter(e=>e.date>=date);
+  Object.keys(D.duty).forEach(k=>{if(k<date)delete D.duty[k]});
+  return (n1-D.daily.length)+(n2-D.events.length);
+}
+function purgeOld(){const m=+D.settings.keepMonths;if(!m)return 0;const d=new Date();d.setMonth(d.getMonth()-m);const n=purgeBefore(fmt(d));if(n)save();return n}
+
+/* ===== 點擊 ===== */
+document.addEventListener('click',async ev=>{
+  const tb=ev.target.closest('[data-tab]'); if(tb&&D){dutyEdit=false;setTab(tb.dataset.tab);return}
   const b=ev.target.closest('[data-act]'); if(!b)return;
   const a=b.dataset.act, id=b.dataset.id;
+  if(a==='wipe'){if(confirmTap(b)){D=empty();KEYOBJ=null;SALT='';CURPIN='';STORED=null;await persist();start();toast('已清除全部資料')}return}
+  if(!D)return;
   switch(a){
+    /* 評分 */
     case 'rate': rate(b.dataset.pid,b.dataset.r); break;
     case 'chip': {const r=rec(b.dataset.pid);if(r){r.why=r.why.trim()?r.why.trim()+'、'+b.dataset.c:b.dataset.c;save();rDaily()}} break;
-    case 'all-ok': {let n=0;D.people.forEach(p=>{if(!rec(p.id)){D.daily.push({id:uid(),date:curDate(),pid:p.id,r:'ok',why:''});n++}});save();rDaily();toast(`已將 ${n} 人評為合格`)} break;
+    case 'gchip': {const r=rec(b.dataset.pid);if(r){r.good=r.good.trim()?r.good.trim()+'、'+b.dataset.c:b.dataset.c;save();rDaily()}} break;
+    case 'good-toggle': {const pid=b.dataset.pid,r=rec(pid);if(r&&r.good){if(confirmTap(b)){r.good='';goodOpen.delete(pid);save();rDaily()}}else{goodOpen.has(pid)?goodOpen.delete(pid):goodOpen.add(pid);rDaily()}} break;
+    case 'all-ok': {const duty=D.duty[curDate()];const ppl=duty&&!showAll?D.people.filter(p=>p.id in duty):D.people;let n=0;
+      ppl.forEach(p=>{if(!rec(p.id)){D.daily.push({id:uid(),date:curDate(),pid:p.id,r:'ok',why:'',good:'',photos:[],fu:null});n++}});save();rDaily();toast(`已將 ${n} 人評為合格`)} break;
+    case 'fu-ok': case 'fu-no': {const r=recById(id);if(r&&r.fu){r.fu.done=a==='fu-ok'?'ok':'no';r.fu.doneDate=curDate();save();rDaily();toast(a==='fu-ok'?'已記錄：已改善':'已記錄：未改善，可再評一次待加強或不合格')}} break;
+    case 'duty-roster': {const res=readRoster(curDate());
+      if(!res){toast('找不到排班助手這天的班表。兩個程式要放在同一個網站，且排班助手已排好這個月');return}
+      const m={};let added=0;
+      res.list.forEach(x=>{let p=D.people.find(pp=>pp.name===x.name);if(!p){p={id:uid(),name:x.name,hired:'',cert:'',contact:'',training:'',note:''};D.people.push(p);added++}m[p.id]=x.post});
+      D.duty[curDate()]=m;save();rDaily();toast(`已帶入 ${res.list.length} 人${added?`，新增 ${added} 位人員`:''}`)} break;
+    case 'duty-prev': {let d=curDate(),found=null;for(let i=1;i<=14;i++){d=addDays(d,-1);if(D.duty[d]){found=d;break}}
+      if(!found){toast('前 14 天都沒有在崗名單');return}D.duty[curDate()]=Object.assign({},D.duty[found]);save();rDaily();toast(`已沿用 ${md(found)} 的在崗名單`)} break;
+    case 'duty-edit': dutyEdit=true; if(!D.duty[curDate()])D.duty[curDate()]={}; rDaily(); break;
+    case 'duty-pick': {const m=D.duty[curDate()];if(id in m)delete m[id];else m[id]='';b.setAttribute('aria-pressed',id in m);save()} break;
+    case 'duty-done': dutyEdit=false; if(D.duty[curDate()]&&!Object.keys(D.duty[curDate()]).length)delete D.duty[curDate()]; save(); rDaily(); break;
+    case 'duty-all': showAll=!showAll; rDaily(); break;
+    case 'duty-clear': if(confirmTap(b)){delete D.duty[curDate()];save();rDaily()} break;
+    /* 照片 */
+    case 'view': openViewer(b.dataset.kind,id,+b.dataset.i); break;
+    case 'v-close': closeViewer(); break;
+    case 'v-del': if(VIEW&&confirmTap(b)){const list=photoList(VIEW.kind,VIEW.id);list.splice(VIEW.i,1);if(VIEW.kind!=='form')save();closeViewer();render();toast('已刪除照片')} break;
+    /* 事件 */
     case 'e-pick': eSel.has(id)?eSel.delete(id):eSel.add(id); b.setAttribute('aria-pressed',eSel.has(id)); break;
+    case 'e-unit': eUnits.has(id)?eUnits.delete(id):eUnits.add(id); b.setAttribute('aria-pressed',eUnits.has(id)); break;
+    case 'e-clear': ['e-filter','e-q','e-fsev','e-fst','e-from','e-to'].forEach(k=>$(k).value='');rEvents(); break;
     case 'edit-event': {const e=D.events.find(x=>x.id===id);if(e)openEventForm(e)} break;
     case 'del-event': if(confirmTap(b)){D.events=D.events.filter(e=>e.id!==id);if(eEdit===id)closeEventForm();save();render();toast('已刪除事件')} break;
+    case 'ev-copy': {const e=D.events.find(x=>x.id===id);if(e)copyText(eventReport(e),'事件報告已複製，可貼到 LINE')} break;
+    case 'ev-print': {const e=D.events.find(x=>x.id===id);if(e)printHTML(eventPrintHTML(e))} break;
+    /* 關係 */
     case 'node': focusId=focusId===id?null:id; rRel(); break;
     case 's-pick': shiftSel.has(id)?shiftSel.delete(id):shiftSel.add(id); b.setAttribute('aria-pressed',shiftSel.has(id)); rShift(); break;
+    case 's-duty': {const d=D.duty[today()];if(!d){toast('今天還沒有在崗名單，請先到「評分」頁設定');return}shiftSel=new Set(Object.keys(d));rRel()} break;
+    case 's-clear': shiftSel.clear(); rRel(); break;
+    case 's-copy': {if(shiftSel.size<2){toast('至少選 2 個人');return}const {bad,good}=shiftResult();
+      const L=[`【排班檢查】${ymd(today())}`,`人員：${[...shiftSel].map(name).join('、')}`];
+      if(bad.length){L.push('建議調整：');bad.forEach(r=>L.push(`  ・${name(r.a)} ↔ ${name(r.b)}（${RT[r.t]}）${r.note?'：'+r.note:''}`))}else L.push('沒有已知的不合組合，可以排。');
+      if(good.length)L.push('互相支援：'+good.map(r=>`${name(r.a)} ↔ ${name(r.b)}`).join('、'));
+      copyText(L.join('\n'),'排班檢查結果已複製')} break;
     case 'del-rel': if(confirmTap(b)){D.rels=D.rels.filter(r=>r.id!==id);save();render();toast('已刪除關係')} break;
-    case 'rename': renaming=id; rPeople(); break;
-    case 'rn-cancel': renaming=null; rPeople(); break;
-    case 'rn-save': {const n=$('rn-input').value.trim();
-      if(!n){toast('姓名不能空白');return}
-      if(D.people.some(p=>p.name===n&&p.id!==id)){toast('已經有同名的人');return}
-      const p=D.people.find(x=>x.id===id);if(p)p.name=n;renaming=null;save();rPeople();toast('已改名')} break;
+    case 'rel-ok': {const r=D.rels.find(x=>x.id===id);if(r){r.hist.push({date:today(),t:r.t,act:'確認仍有效',note:'',by:D.settings.me||''});r.date=today();save();rRel();toast('已確認')}} break;
+    case 'rel-hist': relHist.has(id)?relHist.delete(id):relHist.add(id); rRel(); break;
+    /* 人員 */
+    case 'pe-open': pEdit=id; rPeople(); break;
+    case 'pe-cancel': pEdit=null; rPeople(); break;
+    case 'pe-save': {const p=D.people.find(x=>x.id===id);if(!p)return;const n=$('pe-name').value.trim();
+      if(!n){toast('姓名不能空白');return} if(D.people.some(x=>x.name===n&&x.id!==id)){toast('已經有同名的人');return}
+      Object.assign(p,{name:n,hired:$('pe-hired').value,cert:$('pe-cert').value,contact:$('pe-contact').value.trim(),training:$('pe-training').value.trim(),note:$('pe-note').value.trim()});
+      pEdit=null;save();rPeople();toast('已儲存')} break;
     case 'expand': expanded.has(id)?expanded.delete(id):expanded.add(id); rPeople(); break;
     case 'report': {const p=D.people.find(x=>x.id===id);if(p)copyText(personReport(p),`${p.name} 的報告已複製，可貼到 LINE`)} break;
-    case 'month-report': if(!D.people.length){toast('還沒有人員');return} copyText(monthReport(),'月報已複製，可貼到 LINE 給主管'); break;
     case 'del-person': if(confirmTap(b)){D.people=D.people.filter(p=>p.id!==id);D.daily=D.daily.filter(x=>x.pid!==id);
-      D.rels=D.rels.filter(r=>r.a!==id&&r.b!==id);D.events.forEach(e=>e.pids=e.pids.filter(x=>x!==id));
+      D.rels=D.rels.filter(r=>r.a!==id&&r.b!==id);D.events.forEach(e=>e.pids=e.pids.filter(x=>x!==id));Object.values(D.duty).forEach(m=>delete m[id]);
       shiftSel.delete(id);expanded.delete(id);if(focusId===id)focusId=null;save();render();toast('已刪除人員')} break;
-    case 'clear-sample': D=empty();eSel.clear();shiftSel.clear();expanded.clear();focusId=null;save();setTab('people');toast('範例已清除，先新增同事');$('p-name').focus(); break;
-    case 'go-backup': setTab('people'); $('b-box').open=true; $('b-box').scrollIntoView({block:'start'}); break;
-    case 'export': {const t=JSON.stringify(D);$('b-text').value=t;D.lastBackup=today();save();render();copyText(t,'備份已複製，貼到記事本保存')} break;
-    case 'import': {let o;try{o=JSON.parse($('b-text').value)}catch(e){toast('備份內容格式不對，請貼上完整的備份文字');return}
-      if(!valid(o)){toast('備份內容格式不對，請貼上完整的備份文字');return}
-      if(confirmTap(b)){D=migrate(o);D.sample=false;save();render();toast('已還原')}} break;
+    /* 統計 */
+    case 'st-copy': copyText(monthText($('st-month').value||thisYM()),'月報已複製，可貼到 LINE 給主管'); break;
+    case 'st-print': printHTML(monthPrintHTML($('st-month').value||thisYM())); break;
+    case 'st-csv': {const ym=$('st-month').value||thisYM(),[f,t]=monthRange(ym);
+      const rows=[[`安橋勤務月報 ${ym}`],[],['【每日評分】'],...dailyRows(D.daily.filter(x=>x.date>=f&&x.date<=t)),[],['【事件】'],...eventRows(D.events.filter(e=>e.date>=f&&e.date<=t)),[],[DISC]];
+      download(`安橋勤務月報_${ym}.csv`,csv(rows),'text/csv;charset=utf-8');toast('已下載，可用 Excel 開啟')} break;
+    /* 設定・備份 */
+    case 'clear-sample': D=empty();eSel.clear();shiftSel.clear();expanded.clear();focusId=null;await persist();setTab('people');toast('範例已清除，先新增同事');$('p-name').focus(); break;
+    case 'go-backup': setTab('settings'); break;
+    case 'bk-download': {const t=await backupPayload();download(`安橋勤務紀錄備份_${today()}.json`,t,'application/json');render();toast(KEYOBJ?'已下載加密備份檔':'已下載備份檔，請傳到 LINE 或雲端保存')} break;
+    case 'bk-share': {const t=await backupPayload();const ok=await shareFile(`安橋勤務紀錄備份_${today()}.json`,t,'application/json');render();if(!ok)toast('這支手機不支援直接分享，請改用下載')} break;
+    case 'bk-copy': {const t=await backupPayload();$('b-text').value=t;render();copyText(t,'備份文字已複製，貼到記事本保存')} break;
+    case 'bk-import': {const text=pendingImport||$('b-text').value.trim();if(!text){toast('請先選擇備份檔或貼上備份文字');return}
+      let o;try{o=await parseBackup(text,$('b-pin').value.trim())}catch(e){toast(e.message);return}
+      if(confirmTap(b)){D=o;D.sample=false;pendingImport=null;$('b-text').value='';$('b-pin').value='';await persist();setTab('daily');toast('已還原')}} break;
+    case 'csv-daily': download(`安橋評分紀錄_${today()}.csv`,csv(dailyRows(D.daily.slice())),'text/csv;charset=utf-8');toast('已下載'); break;
+    case 'csv-events': download(`安橋事件紀錄_${today()}.csv`,csv(eventRows(D.events.slice())),'text/csv;charset=utf-8');toast('已下載'); break;
+    case 'pin-set': {const p1=$('pin1').value.trim(),p2=$('pin2').value.trim();
+      if(!/^\d{4,8}$/.test(p1)){toast('密碼要 4 到 8 位數字');return} if(p1!==p2){toast('兩次輸入的密碼不一樣');return}
+      const salt=crypto.getRandomValues(new Uint8Array(16));KEYOBJ=await deriveKey(p1,salt);SALT=b64(salt);CURPIN=p1;
+      $('pin1').value='';$('pin2').value='';await persist();render();toast('密碼已設定，資料已加密')} break;
+    case 'pin-off': if(confirmTap(b)){KEYOBJ=null;SALT='';CURPIN='';await persist();render();toast('已取消密碼')} break;
+    case 'lock': lockNow(); break;
+    case 'set-save': {const bad=splitTags($('set-bad').value),good=splitTags($('set-good').value);
+      D.settings.bad=bad.length?bad:BAD0.slice();D.settings.good=good.length?good:GOOD0.slice();save();rSettings();toast('標籤已儲存')} break;
+    case 'purge': {const d=$('purge-date').value;if(!d){toast('請先選日期');return}
+      if(confirmTap(b)){const n=purgeBefore(d);save();toast(`已刪除 ${n} 筆紀錄`)}} break;
   }
 });
-document.addEventListener('input',ev=>{const t=ev.target;
-  if(t.dataset.why){const r=rec(t.dataset.why);if(r){r.why=t.value;save();$('err-'+t.dataset.why).hidden=!!t.value.trim()}}});
-document.addEventListener('keydown',ev=>{if(ev.target.id==='rn-input'&&ev.key==='Enter'){ev.preventDefault();document.querySelector('[data-act="rn-save"]').click()}});
-$('d-date').addEventListener('change',rDaily);
+
+/* ===== 輸入 ===== */
+document.addEventListener('input',ev=>{const t=ev.target;if(!D)return;
+  if(t.dataset.why){const r=rec(t.dataset.why);if(r){r.why=t.value;save();const e=$('err-'+t.dataset.why);if(e)e.hidden=!!t.value.trim()}}
+  else if(t.dataset.good){const r=rec(t.dataset.good);if(r){r.good=t.value;save()}}
+  else if(t.dataset.fuPlan){const r=rec(t.dataset.fuPlan);if(r){r.fu=r.fu||{date:'',plan:'',done:null};r.fu.plan=t.value;save()}}
+});
+document.addEventListener('change',async ev=>{const t=ev.target;if(!D)return;
+  if(t.dataset.fuDate){const r=rec(t.dataset.fuDate);if(r){r.fu=r.fu||{date:'',plan:'',done:null};r.fu.date=t.value;r.fu.done=null;save()}}
+  else if(t.dataset.photoDaily){const r=recById(t.dataset.photoDaily);if(r&&t.files.length){toast('照片處理中…');r.photos.push(...await readPhotos(t.files));save();rDaily();toast('照片已加入')}}
+  else if(t.id==='e-photo'&&t.files.length){toast('照片處理中…');ePhotos.push(...await readPhotos(t.files));rEvents()}
+  else if(t.id==='bk-file'&&t.files[0]){pendingImport=await t.files[0].text();$('b-text').value='';toast(`已選擇 ${t.files[0].name}，按「還原」繼續`)}
+  else if(t.id==='set-me'){D.settings.me=t.value.trim();save()}
+  else if(t.id==='set-theme'){try{t.value?localStorage.setItem(THEMEK,t.value):localStorage.removeItem(THEMEK)}catch(e){}applyTheme()}
+  else if(t.id==='set-keep'){D.settings.keepMonths=+t.value;const n=purgeOld();save();toast(n?`已刪除 ${n} 筆超過期限的紀錄`:'已設定保留期限')}
+  else if(t.id==='set-autolock'){D.settings.autoLock=+t.value;save()}
+});
+$('b-text').addEventListener('input',()=>{pendingImport=null});
+$('d-date').addEventListener('change',()=>{dutyEdit=false;rDaily()});
 $('d-prev').onclick=()=>shiftDate(-1); $('d-next').onclick=()=>shiftDate(1);
-$('e-filter').addEventListener('change',rEvents);
+['e-filter','e-fsev','e-fst','e-from','e-to'].forEach(k=>$(k).addEventListener('change',rEvents));
 $('e-q').addEventListener('input',rEvents);
 $('p-sort').addEventListener('change',rPeople);
+$('st-month').addEventListener('change',rStats);
 $('e-new').onclick=()=>openEventForm(null);
 $('e-cancel').onclick=()=>{closeEventForm();rEvents()};
 $('e-form').addEventListener('submit',e=>{e.preventDefault();
   const what=$('e-what').value.trim(); if(!what){toast('請填寫事件經過');$('e-what').focus();return}
-  const data={date:$('e-date').value||today(),time:$('e-time').value,place:$('e-place').value.trim(),sev:$('e-sev').value,
-    pids:[...eSel],what,items:$('e-items').value.trim(),handle:$('e-handle').value.trim()};
+  const sev=$('e-sev').value, handle=$('e-handle').value.trim();
+  if(sev==='high'&&!handle){toast('嚴重事件必須填寫處理方式');$('e-handle').focus();return}
+  const data={date:$('e-date').value||today(),time:$('e-time').value,place:$('e-place').value.trim(),sev,status:$('e-status').value,
+    units:[...eUnits],pids:[...eSel],what,items:$('e-items').value.trim(),handle,photos:ePhotos.slice()};
   const ex=eEdit&&D.events.find(x=>x.id===eEdit);
-  if(ex)Object.assign(ex,data); else D.events.push({id:uid(),...data});
+  if(ex)Object.assign(ex,data,{updated:today()}); else D.events.push(Object.assign({id:uid(),created:today(),updated:'',by:D.settings.me||''},data));
   save();closeEventForm();rEvents();toast(ex?'事件已更新':'事件已儲存')});
 $('r-form').addEventListener('submit',e=>{e.preventDefault();
-  const a=$('r-a').value,b=$('r-b').value;
+  const a=$('r-a').value,b=$('r-b').value,note=$('r-note').value.trim(),by=$('r-by').value.trim();
   if(!a||!b){toast('請先到「人員」頁新增同事');return}
   if(a===b){toast('請選兩個不同的人');return}
+  if(!note){toast('請填寫具體說明，避免主觀標記');$('r-note').focus();return}
+  const t=$('r-t').value, basis=$('r-basis').value;
   const ex=D.rels.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a));
-  if(ex){ex.t=$('r-t').value;ex.note=$('r-note').value.trim();ex.date=today()}
-  else D.rels.push({id:uid(),a,b,t:$('r-t').value,note:$('r-note').value.trim(),date:today()});
-  $('r-note').value='';save();rRel();toast(ex?'已更新關係':'已儲存關係')});
+  if(ex){ex.hist.push({date:ex.date,t:ex.t,note:ex.note,basis:ex.basis,by:ex.by});Object.assign(ex,{t,note,basis,by,date:today()})}
+  else D.rels.push({id:uid(),a,b,t,note,basis,by,date:today(),hist:[]});
+  if(by&&!D.settings.me)D.settings.me=by;
+  $('r-note').value='';save();rRel();toast(ex?'已更新關係，舊內容已留在修改紀錄':'已儲存關係')});
 $('p-form').addEventListener('submit',e=>{e.preventDefault();
   const n=$('p-name').value.trim(); if(!n){toast('請輸入姓名');return}
   if(D.people.some(p=>p.name===n)){toast('已經有這個人了');return}
-  D.people.push({id:uid(),name:n});$('p-name').value='';save();render();toast(`已新增 ${n}`)});
+  D.people.push({id:uid(),name:n,hired:'',cert:'',contact:'',training:'',note:''});$('p-name').value='';save();render();toast(`已新增 ${n}`)});
 
-$('d-date').value=today();
-setTab('daily');
+init();
 </script>
 </body>
 </html>
