@@ -552,7 +552,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 var(--sans);
   <section class="view" id="tab-settings" hidden>
     <div class="card" id="b-box">
       <h3>資料備份與還原</h3>
-      <p class="note">組長助手的資料只存在這支手機。換手機前先把備份檔傳到 LINE 或雲端硬碟，再到新手機匯入。班表請另外在排班頁備份。</p>
+      <p class="note">資料只存在這支手機。換手機前先把備份檔傳到 LINE 或雲端硬碟，再到新手機匯入。備份檔包含班表、評分、事件、關懷和照片影片。</p>
       <p class="note" id="b-last"></p>
       <div class="btns">
         <button class="btn" data-act="bk-download">下載備份檔</button>
@@ -1542,7 +1542,7 @@ function learnOf(name){
 }
 function syncPeople(){
   if(!D)return 0;let n=0;
-  rosterNames().forEach(nm=>{if(!D.people.some(p=>p.name===nm)){D.people.push({id:uid(),name:nm,hired:'',cert:'',contact:'',training:'',note:'',left:'',mentor:'',fromRoster:true});n++}});
+  rosterNames().forEach(nm=>{if(!D.people.some(p=>p.name===nm)){D.people.push({id:uid(),name:nm,hired:'',cert:'',contact:'',training:'',note:'',left:'',mentor:'',leftReason:'',moves:[],fromRoster:true});n++}});
   if(n)save();return n;
 }
 async function refreshRoster(){await loadRoster();syncPeople();if(D&&tab!=='roster')render()}
@@ -1577,6 +1577,7 @@ let tab='home', psub='list', rsub='stats', eSel=new Set(), eUnits=new Set(), ePh
 const name=id=>{const p=D&&D.people.find(p=>p.id===id);return p?p.name:'（已刪除）'};
 const pByName=n=>D.people.find(p=>p.name===n);
 const active=()=>D.people.filter(p=>!p.left||p.left>today());
+function workDate(){const sh=rosterSheets();const night=sh.length&&sh.every(({S})=>(+String(S.start||'19:00').split(':')[0]||0)>=12);return night&&new Date().getHours()<12?addDays(today(),-1):today()}
 const curDate=()=>$('d-date').value||today();
 const homeDate=()=>$('h-date').value||today();
 const rec=pid=>D.daily.find(x=>x.date===curDate()&&x.pid===pid);
@@ -1614,6 +1615,7 @@ function setSub(kind,s){
 }
 function render(){
   if(!D)return;
+  D.people.forEach(p=>{if(!Array.isArray(p.moves))p.moves=[];if(p.leftReason==null)p.leftReason=''});
   const need=D.people.length>0&&(!D.lastBackup||dateDiff(D.lastBackup,today())>=7);
   $('bk-banner').hidden=!need||tab==='settings';
   if(need)$('bk-text').textContent=D.lastBackup?`已經 ${dateDiff(D.lastBackup,today())} 天沒備份資料`:'還沒備份過資料，換手機就會遺失';
@@ -1727,7 +1729,7 @@ function rDaily(){
   const postOf={},sheetOf={};duty.forEach(x=>{const p=pByName(x.name);if(p){postOf[p.id]=x.st==='sb'?'備勤':x.post;sheetOf[p.id]=x.sheet}});
   const dutyIds=Object.keys(postOf);
   $('d-duty').innerHTML=dutyIds.length
-    ?`<div class="head"><h3>依班表在崗 ${dutyIds.length} 人</h3><button class="del" data-act="duty-all">${showAll?'只顯示在崗':'顯示全部人員'}</button></div>`
+    ?`<div class="head"><h3>依班表上班 ${dutyIds.length} 人${duty.filter(x=>x.st==='sb').length?`（含備勤 ${duty.filter(x=>x.st==='sb').length}）`:''}</h3><button class="del" data-act="duty-all">${showAll?'只顯示在崗':'顯示全部人員'}</button></div>`
     :`<h3>今日名單</h3><p class="note">排班助手沒有這天的班表，先列出全部在職人員。</p>`;
   const ppl=dutyIds.length&&!showAll?active().filter(p=>p.id in postOf):active();
   const recs=D.daily.filter(x=>x.date===date);
@@ -1842,7 +1844,7 @@ function rPeople(){
       <label class="f">離職原因<select id="pe-lreason"><option value="">（在職）</option>${LEAVE_REASONS.map(r=>`<option ${p.leftReason===r?'selected':''}>${r}</option>`).join('')}</select></label></div>
       <label class="f">訓練紀錄<textarea id="pe-training" rows="2">${esc(p.training)}</textarea></label>
       <label class="f">備註<input id="pe-note" value="${esc(p.note)}"></label>
-      <div class="more"><h4>異動紀錄</h4>${p.moves.length?`<ul class="hist">${p.moves.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(m=>`<li><span class="d">${ymd(m.date)}</span><span class="pill sm none">${esc(m.type)}</span><span>${esc(m.note)} <button class="del" data-act="x-mv-del" data-p="${p.id}" data-id="${m.id}">刪除</button></span></li>`).join('')}</ul>`:'<p class="note">沒有異動紀錄。</p>'}
+      <div class="more"><h4>異動紀錄</h4>${(p.moves||[]).length?`<ul class="hist">${(p.moves||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)).map(m=>`<li><span class="d">${ymd(m.date)}</span><span class="pill sm none">${esc(m.type)}</span><span>${esc(m.note)} <button class="del" data-act="x-mv-del" data-p="${p.id}" data-id="${m.id}">刪除</button></span></li>`).join('')}</ul>`:'<p class="note">沒有異動紀錄。</p>'}
       <div class="grid3"><label class="f">日期<input type="date" id="mv-date" value="${today()}"></label><label class="f">類型<select id="mv-type">${MOVE_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></label><label class="f">說明<input id="mv-note" placeholder="例：調到台南廠夜班"></label></div>
       <button class="btn ghost sm" data-act="x-mv-add" data-id="${p.id}">新增異動</button></div>
       <div class="btns"><button class="btn" data-act="pe-save" data-id="${p.id}">儲存</button><button class="btn ghost" data-act="pe-cancel">取消</button></div></article>`;
@@ -1910,7 +1912,8 @@ function rCareForm(){
   const sumExit=`<div class="cq"><h4>關懷人總結</h4><p class="meta">主要原因：<b>${main||'（第 2 題還沒選）'}</b>${main?`（歸類：${EXIT_CAT[main]||'其他'}）`:''}</p>
     <div class="f">是否可以避免<div class="chips">${['可以','很難','個人因素，無法避免'].map(t=>`<button type="button" class="chip" data-act="cf-avoid" data-c="${t}" aria-pressed="${CF.avoid===t}">${t}</button>`).join('')}</div></div>
     <label class="f">要回報經理的事<textarea id="cf-report" rows="2">${esc(CF.report)}</textarea></label>
-    <label class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="cf-left" style="width:auto" ${CF.markLeft?'checked':''}>同時把 ${esc(p?p.name:'')} 標記為離職，離職日 <input type="date" id="cf-leftdate" value="${esc(CF.leftDate)}" style="width:auto"></label></div>`;
+    <label class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="cf-left" style="width:auto" ${CF.markLeft?'checked':''}>同時把 ${esc(p?p.name:'')} 標記為離職，離職日 <input type="date" id="cf-leftdate" value="${esc(CF.leftDate)}" style="width:auto"></label>
+    <label class="f">離職原因分類（統計流動原因用）<select id="cf-lreason">${LEAVE_REASONS.map(r=>`<option ${(CF.leftReason||EXIT2LEAVE[main]||'')===r?'selected':''}>${r}</option>`).join('')}</select></label></div>`;
   box.innerHTML=`<div class="head"><h3>${CF.kind==='exit'?'離職':'在職'}關懷：${esc(p?p.name:'')}</h3><button class="del" data-act="care-cancel">取消</button></div>
     <div class="grid2"><label class="f">日期<input type="date" id="cf-date" value="${esc(CF.date)}"></label><label class="f">關懷人<input id="cf-by" value="${esc(CF.by)}"></label></div>
     ${qs.map(q).join('')}${CF.kind==='exit'?sumExit:sumStay}
@@ -2008,8 +2011,10 @@ function dayChart(ym){
     if(i===0||(i+1)%5===0)s+=`<text class="ax" x="${(x+w/2).toFixed(1)}" y="${H-4}" text-anchor="middle">${i+1}</text>`});
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="每日評分分布">${s}</svg>`}
 function tagCounts(ym){const[f,t]=monthRange(ym);const recs=D.daily.filter(x=>x.date>=f&&x.date<=t&&x.r!=='ok');
-  const out=D.settings.bad.map(tag=>({tag,n:recs.filter(x=>x.why.includes(tag)).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n);
-  const other=recs.filter(x=>!D.settings.bad.some(tag=>x.why.includes(tag))).length;if(other)out.push({tag:'其他',n:other});return out}
+  const has=(x,tag)=>(x.tags||[]).includes(tag)||x.why.includes(tag);
+  const all=[...new Set([...D.settings.bad,...Object.values(D.settings.tagSets||{}).flatMap(s=>s.bad||[]),...recs.flatMap(x=>x.tags||[])])];
+  const out=all.map(tag=>({tag,n:recs.filter(x=>has(x,tag)).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n);
+  const other=recs.filter(x=>!all.some(tag=>has(x,tag))).length;if(other)out.push({tag:'其他',n:other});return out}
 function rStats(){
   const ym=repYM(),pv=prevYM(ym),c=mStats(ym),p=mStats(pv),[f,t]=monthRange(ym);
   const evs=D.events.filter(e=>e.date>=f&&e.date<=t),hi=evs.filter(e=>e.sev==='high').length;
@@ -2145,19 +2150,22 @@ function rSettings(){
   $('set-keep').value=String(D.settings.keepMonths||0);
   rTagSets();
 }
-async function backupPayload(withMedia=true){D.lastBackup=today();await persist();return JSON.stringify({app:'anqiao-team',v:1,at:today(),data:D,media:withMedia?await mediaDump():{}})}
+function rosterDump(){const o={};try{if(typeof window.flush==='function'&&rosterRoot())window.flush()}catch(e){}
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('guard_slot_')||k==='guard_idx'||k==='guard_last'||k==='guard_defnames'))o[k]=localStorage.getItem(k)}}catch(e){}return o}
+async function backupPayload(withMedia=true){D.lastBackup=today();await persist();return JSON.stringify({app:'anqiao-team',v:2,at:today(),data:D,roster:rosterDump(),media:withMedia?await mediaDump():{}})}
 async function parseBackup(text){
   let o;try{o=JSON.parse(text)}catch(e){throw new Error('檔案格式不對，請選擇正確的備份檔')}
-  let media={};
-  if(o&&(o.app==='anqiao-team'||o.app==='anqiao-log')){if(o.enc)throw new Error('這是加密的勤務紀錄備份，無法直接匯入');media=o.media||{};o=o.data}
+  let media={},roster={};
+  if(o&&(o.app==='anqiao-team'||o.app==='anqiao-log')){if(o.enc)throw new Error('這是加密的勤務紀錄備份，無法直接匯入');media=o.media||{};roster=o.roster||{};o=o.data}
   if(!valid(o))throw new Error('檔案內容不完整，無法還原');
-  return {d:migrate(o),media};
+  return {d:migrate(o),media,roster};
 }
 function purgeBefore(date){const n1=D.daily.length,n2=D.events.length;D.daily=D.daily.filter(x=>x.date>=date);D.events=D.events.filter(e=>e.date>=date);return (n1-D.daily.length)+(n2-D.events.length)}
 function purgeOld(){const m=+D.settings.keepMonths;if(!m)return 0;const d=new Date();d.setMonth(d.getMonth()-m);const n=purgeBefore(fmt(d));if(n)save();return n}
 
 /* ===== 擴充功能：學習計畫、趨勢、溝通紀錄、離職原因、班別標籤、LINE 精簡版 ===== */
-const LEAVE_REASONS=['家庭因素','另有高就','不適應夜班','不適應工作內容','薪資待遇','人際問題','健康因素','升學／轉行','公司調派','其他'];
+const LEAVE_REASONS=['家庭因素','另有高就','不適應夜班','不適應工作內容','排班休假問題','薪資待遇','人際問題','健康因素','升學／轉行','公司調派','其他'];
+const EXIT2LEAVE={'太累':'不適應工作內容','跟想像不一樣':'不適應工作內容','沒人教':'不適應工作內容','客戶壓力':'不適應工作內容','排班休假':'排班休假問題','同事':'人際問題','主管':'人際問題','薪水工時':'薪資待遇','沒有未來感':'另有高就','個人因素':'家庭因素'};
 const MOVE_TYPES=['調廠區','調班別','調哨點','留職停薪','復職','其他'];
 const COMM_WITH=['客戶','公司上級','其他'];
 const COMM_HOW=['口頭','電話','LINE','書面','會議','Email'];
@@ -2338,7 +2346,7 @@ function lineToday(date){
   const duty=dutyFor(date).filter(x=>x.st!=='off'),names=new Set(duty.map(x=>x.name));
   const ppl=names.size?active().filter(p=>names.has(p.name)):active();
   const recs=D.daily.filter(x=>x.date===date&&ppl.some(p=>p.id===x.pid)),c={ok:0,improve:0,fail:0};recs.forEach(x=>c[x.r]++);
-  const L=[`【${siteName()} ${md(date)} 勤務回報】`,`在崗 ${ppl.length} 人｜合格 ${c.ok}・待加強 ${c.improve}・不合格 ${c.fail}${ppl.length-recs.length>0?`・未評 ${ppl.length-recs.length}`:''}`];
+  const L=[`【${siteName()} ${md(date)} 勤務回報】`,`上班 ${ppl.length} 人${duty.filter(x=>x.st==='sb').length?`（含備勤 ${duty.filter(x=>x.st==='sb').length}）`:''}｜合格 ${c.ok}・待加強 ${c.improve}・不合格 ${c.fail}${ppl.length-recs.length>0?`・未評 ${ppl.length-recs.length}`:''}`];
   recs.filter(x=>x.r!=='ok').forEach(x=>L.push(`・${name(x.pid)} ${R[x.r]}：${short(x.why,18)}`));
   recs.filter(x=>x.good).forEach(x=>L.push(`・${name(x.pid)} 優良：${short(x.good,18)}`));
   const evs=D.events.filter(e=>e.date===date);if(evs.length){L.push(`事件 ${evs.length} 件`);evs.forEach(e=>L.push(`・${e.place?e.place+'：':''}${short(e.what,20)}（${ST[e.status]}）`))}
@@ -2405,8 +2413,8 @@ document.addEventListener('click',async ev=>{
     case 'x-comm-for': {const e=D.events.find(x=>x.id===id);window.__cmPre={eventId:id,with:'客戶',content:e?short((e.place?e.place+'：':'')+e.what,60):''};cmEdit=null;setEsub('comm');window.scrollTo(0,0)}break;
     case 'x-place': $('e-place').value=b.dataset.c;break;
     case 'x-item': {const v=$('e-items').value.trim();$('e-items').value=v?v+'、'+b.dataset.c:b.dataset.c}break;
-    case 'x-mv-add': {const p=D.people.find(x=>x.id===id);if(!p)return;const d=$('mv-date').value||today();p.moves.push({id:uid(),date:d,type:$('mv-type').value,note:$('mv-note').value.trim()});save();rPeople();toast('已新增異動紀錄')}break;
-    case 'x-mv-del': {const p=D.people.find(x=>x.id===b.dataset.p);if(p&&confirmTap(b)){p.moves=p.moves.filter(m=>m.id!==id);save();rPeople()}}break;
+    case 'x-mv-add': {const p=D.people.find(x=>x.id===id);if(!p)return;const d=$('mv-date').value||today();(p.moves=p.moves||[]).push({id:uid(),date:d,type:$('mv-type').value,note:$('mv-note').value.trim()});save();rPeople();toast('已新增異動紀錄')}break;
+    case 'x-mv-del': {const p=D.people.find(x=>x.id===b.dataset.p);if(p&&confirmTap(b)){p.moves=(p.moves||[]).filter(m=>m.id!==id);save();rPeople()}}break;
     case 'x-ts-save': {const s=$('ts-sheet').value;if(!s){toast('還沒有班表');return}D.settings.tagSets[s]={bad:splitTags($('ts-bad').value),good:splitTags($('ts-good').value)};save();toast(`已儲存「${s}」的常用標籤`)}break;
     case 'x-ts-clear': {const s=$('ts-sheet').value;delete D.settings.tagSets[s];save();rTagSets();toast('已改回共用標籤')}break;
     case 'x-line-today': copyText(lineToday(homeDate()),'今日回報已複製，貼到 LINE 就好');break;
@@ -2436,7 +2444,7 @@ document.addEventListener('click',async ev=>{
     case 'go-events': setTab('events');break;
     /* 評分 */
     case 'rate': rate(b.dataset.pid,b.dataset.r);break;
-    case 'chip': {const r=rec(b.dataset.pid);if(r){bumpTag('bad',b.dataset.sh||'',b.dataset.c);r.why=r.why.trim()?r.why.trim()+'、'+b.dataset.c:b.dataset.c;save();rDaily()}}break;
+    case 'chip': {const r=rec(b.dataset.pid);if(r){bumpTag('bad',b.dataset.sh||'',b.dataset.c);r.tags=[...new Set([...(r.tags||[]),b.dataset.c])];r.why=r.why.trim()?r.why.trim()+'、'+b.dataset.c:b.dataset.c;save();rDaily()}}break;
     case 'gchip': {const r=rec(b.dataset.pid);if(r){bumpTag('good',b.dataset.sh||'',b.dataset.c);r.good=r.good.trim()?r.good.trim()+'、'+b.dataset.c:b.dataset.c;save();rDaily()}}break;
     case 'good-toggle': {const pid=b.dataset.pid,r=rec(pid);if(r&&r.good){if(confirmTap(b)){r.good='';goodOpen.delete(pid);save();rDaily()}}else{goodOpen.has(pid)?goodOpen.delete(pid):goodOpen.add(pid);rDaily()}}break;
     case 'all-ok': {const ids=dutyFor(curDate()).filter(x=>x.st!=='off').map(x=>pByName(x.name)).filter(Boolean).map(p=>p.id);
@@ -2484,7 +2492,7 @@ document.addEventListener('click',async ev=>{
       const reason=CF.kind==='exit'&&CF.ans.e2&&CF.ans.e2.o!=null?EXITQ[1].opts[CF.ans.e2.o]:'';
       if(CF.kind==='exit'&&!reason){toast('請在第 2 題選出最主要的原因');return}
       const recd={id:uid(),pid:CF.pid,kind:CF.kind,date:CF.date||today(),by:CF.by,ans:CF.ans,issues:CF.kind==='stay'?CF.issues:[],risk:CF.kind==='stay'?CF.risk:'',follow:CF.follow,reason,avoid:CF.avoid,report:CF.report};
-      D.care.push(recd);if(CF.kind==='exit'&&CF.markLeft){const p=D.people.find(x=>x.id===CF.pid);if(p)p.left=CF.leftDate||today()}
+      D.care.push(recd);if(CF.kind==='exit'&&CF.markLeft){const p=D.people.find(x=>x.id===CF.pid);if(p){p.left=CF.leftDate||today();p.leftReason=($('cf-lreason')&&$('cf-lreason').value)||EXIT2LEAVE[reason]||'其他'}}
       if(CF.by&&!D.settings.me)D.settings.me=CF.by;CF=null;save();rCare();window.scrollTo(0,0);
       toast(recd.risk==='high'?'已儲存。離職風險高，記得一週內回報經理':'關懷紀錄已儲存')}break;
     case 'care-view': careOpen.has(id)?careOpen.delete(id):careOpen.add(id);rCare();break;
@@ -2521,7 +2529,11 @@ document.addEventListener('click',async ev=>{
     case 'bk-copy': {const t=await backupPayload(false);$('b-text').value=t;render();copyText(t,allVideos().length?'已複製。文字備份不含影片，影片請用下載備份檔':'備份文字已複製')}break;
     case 'bk-import': {const text=pendingImport||$('b-text').value.trim();if(!text){toast('請先選擇備份檔或貼上備份文字');return}
       let o;try{o=await parseBackup(text)}catch(e){toast(e.message);return}
-      if(confirmTap(b)){toast('還原中…');for(const [k,u] of Object.entries(o.media)){try{await mediaPut(k,dataURLtoBlob(u))}catch(e){}}D=o.d;syncPeople();pendingImport=null;$('b-text').value='';await persist();setTab('home');toast('已還原')}}break;
+      if(confirmTap(b)){toast('還原中…');for(const [k,u] of Object.entries(o.media)){try{await mediaPut(k,dataURLtoBlob(u))}catch(e){}}
+      const rk=Object.keys(o.roster||{});rk.forEach(k=>{try{localStorage.setItem(k,o.roster[k])}catch(e){}});
+      D=o.d;pendingImport=null;$('b-text').value='';await persist();
+      if(rk.some(k=>k.startsWith('guard_slot_'))){toast('已還原，含班表，重新載入中…');setTimeout(()=>location.reload(),900);return}
+      syncPeople();setTab('home');toast('已還原')}}break;
     case 'import-log': if(confirmTap(b)){await importFromLog(true);render()}break;
     case 'csv-daily': download(`anqiao-daily_${today()}.csv`,csv(dailyRows(D.daily.slice())),'text/csv;charset=utf-8');toast('已下載');break;
     case 'csv-events': download(`anqiao-events_${today()}.csv`,csv(eventRows(D.events.slice())),'text/csv;charset=utf-8');toast('已下載');break;
@@ -2550,6 +2562,7 @@ document.addEventListener('change',async ev=>{const t=ev.target;if(!D||!t.closes
   else if(t.id==='bk-file'&&t.files[0]){pendingImport=await t.files[0].text();$('b-text').value='';toast(`已選擇 ${t.files[0].name}，按「還原」繼續`)}
   else if(t.id==='cf-date'&&CF)CF.date=t.value;
   else if(t.id==='cf-left'&&CF)CF.markLeft=t.checked;
+  else if(t.id==='cf-lreason'&&CF)CF.leftReason=t.value;
   else if(t.id==='cf-leftdate'&&CF)CF.leftDate=t.value;
   else if(t.id==='cl-hide'){clientNotes(repYM()).hideNames=t.checked;save();rClient()}
   else if(t.id==='set-me'){D.settings.me=t.value.trim();save()}
@@ -2588,12 +2601,13 @@ $('r-form').addEventListener('submit',e=>{e.preventDefault();
   $('r-note').value='';save();rRel();toast(ex?'已更新關係':'已儲存關係')});
 $('p-form').addEventListener('submit',e=>{e.preventDefault();
   const n=$('p-name').value.trim();if(!n){toast('請輸入姓名');return}if(D.people.some(p=>p.name===n)){toast('已經有這個人了');return}
-  D.people.push({id:uid(),name:n,hired:'',cert:'',contact:'',training:'',note:'',left:'',mentor:''});$('p-name').value='';save();rPeople();toast(`已新增 ${n}`)});
+  D.people.push({id:uid(),name:n,hired:'',cert:'',contact:'',training:'',note:'',left:'',mentor:'',leftReason:'',moves:[]});$('p-name').value='';save();rPeople();toast(`已新增 ${n}`)});
 window.addEventListener('storage',e=>{if(e.key&&e.key.startsWith('guard_'))refreshRosterQuiet()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(D)persist()}else refreshRosterQuiet()});
 window.addEventListener('pagehide',()=>{if(D)persist()});
 
 /* ===== 啟動 ===== */
+window.addEventListener('unhandledrejection',e=>{console.error('未處理的錯誤',e.reason);toast('操作出了點問題，請重新整理後再試')});
 (async function init(){
   applyTheme();
   let s=await kvGet('store');
@@ -2601,7 +2615,7 @@ window.addEventListener('pagehide',()=>{if(D)persist()});
   await loadRoster();
   if(!valid(s)){await importFromLog(false)}
   syncPeople();await persist();
-  $('d-date').value=today();$('h-date').value=today();$('st-month').value=thisYM();
+  const dd=workDate();$('d-date').value=dd;$('h-date').value=dd;$('st-month').value=thisYM();
   const n=purgeOld();if(n)toast(`已依保留期限刪除 ${n} 筆舊紀錄`);
   gcMedia();setTab('home');
 })();
