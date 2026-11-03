@@ -325,6 +325,14 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 var(--sans);
 }
 #tm #r-sub{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
 #tm #r-sub button{flex:1 0 auto;white-space:nowrap;min-width:0;padding:7px 12px}
+#tm .ywho em{font-style:normal;font-size:12px;color:var(--muted);margin-left:4px}
+#tm .ygh{margin:8px 0 2px;font-size:13px;color:var(--muted)}
+#tm .ym tr.on th,#tm .ym tr.on td{background:var(--accent-soft,var(--bg))}
+#tm .ym td.bad{color:var(--bad);font-weight:700}
+#tm #y-sites .del{font-weight:900}
+#tm .ywho{flex-wrap:wrap;row-gap:2px}
+#tm .ywho em{flex-basis:100%;order:3;margin-left:0}
+#tm #y-sites th,#tm #y-sites td{white-space:nowrap;font-size:12.5px;padding:5px 4px}
 
 
 /* ===== 排班助手 ===== */
@@ -442,6 +450,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 var(--sans);
       <input type="date" id="h-date" aria-label="日期">
       <button class="sq" id="h-next" aria-label="後一天">›</button>
     </div>
+    <div class="card" id="y-sites" hidden></div>
     <div class="card" id="h-todo"></div>
     <div class="btns">
       <button class="btn" data-act="q-rate">每日評分</button>
@@ -623,6 +632,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 var(--sans);
   <!-- 設定 -->
   <section class="view" id="tab-settings" hidden>
     <div class="card" id="y-users"></div>
+    <div class="card" id="y-siteset" hidden></div>
     <div class="card" id="y-hoset"></div>
     <div class="card" id="y-rules"></div>
     <div class="card" id="b-box">
@@ -1596,7 +1606,7 @@ async function loadRoster(){
   let d=a; if(b&&(!a||(b.savedAt||0)>(a.savedAt||0)))d=b;
   RROOT=d&&d.list?d:null;
 }
-function rosterSheets(){return RROOT?Object.entries(RROOT.list).map(([k,S])=>({k,S})).filter(x=>x.S):[]}
+function rosterSheets(){return RROOT?Object.entries(RROOT.list).map(([k,S])=>({k,S})).filter(x=>x.S&&sheetInSite(x.S)):[]}
 function rosterNames(){const s=new Set();rosterSheets().forEach(({S})=>(S.ppl||[]).forEach(p=>{const n=String(p.name||'').trim();if(n)s.add(n)}));return [...s]}
 const lvOf=(p,code)=>!(p.nl||[]).includes(code)?0:(p.lr||[]).includes(code)?2:1;
 function dutyFor(date){
@@ -2508,10 +2518,10 @@ document.addEventListener('change',ev=>{const t=ev.target;if(!D||!t.closest('#tm
 });
 
 /* ===== 展示版：身份權限、稽核軌跡、電子交接、事件升級通知、客戶儀表板 ===== */
-const ROLES={manager:'經理／區主管',leader:'組長',deputy:'副組長',auditor:'稽核人員',client:'客戶窗口'};
+const ROLES={manager:'經理／區主管',super:'駐廠督導',leader:'組長',deputy:'副組長',auditor:'稽核人員',client:'客戶窗口'};
 const ALLTABS=['home','roster','daily','handover','events','people','report','settings'];
-const TABS_OF={manager:ALLTABS,leader:ALLTABS,deputy:['home','daily','handover','events'],auditor:['report'],client:['report']};
-const RSUB_OF={manager:['stats','sum','client','dash','audit'],leader:['stats','sum','client','dash','audit'],auditor:['stats','dash','audit'],client:['dash']};
+const TABS_OF={manager:ALLTABS,super:ALLTABS,leader:ALLTABS,deputy:['home','daily','handover','events'],auditor:['report'],client:['report']};
+const RSUB_OF={manager:['stats','sum','client','dash','audit'],super:['stats','sum','client','dash','audit'],leader:['stats','sum','client','dash','audit'],auditor:['stats','dash','audit'],client:['dash']};
 const HO_ITEMS0=['鑰匙數量正確','對講機正常且已充電','門禁卡／識別證齊全','交接簿已填寫','監視器畫面正常','未結事項已說明'];
 const READ_ACTS=new Set(['view','vview','v-close','v-save','ev-copy','ev-print','ev-files','st-copy','st-csv','st-print','sum-copy','sum-print','cl-copy','cl-print','x-line-sum','x-line-client','expand']);
 const HARD_DEL=new Set(['del-person','care-del','del-rel','x-comm-del','x-mv-del','purge']);
@@ -2534,6 +2544,7 @@ function migrate2(o){
   ['audit','notices','handovers'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[]});
   if(!Array.isArray(o.hoItems)||!o.hoItems.length)o.hoItems=HO_ITEMS0.slice();
   if(typeof o.clockShift!=='number')o.clockShift=0;
+  migrateSites(o);
   o.events.forEach(e=>{if(!Array.isArray(e.hist))e.hist=[]});
   return o;
 }
@@ -2552,10 +2563,10 @@ async function sha(s){
   try{if(crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}}catch(e){}
   let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return 'f'+(h>>>0).toString(16).padStart(8,'0');
 }
-const auBody=e=>JSON.stringify([e.n,e.ts,e.uid,e.name,e.role,e.act,e.detail,e.ph]);
+const auBody=e=>JSON.stringify(e.site===undefined?[e.n,e.ts,e.uid,e.name,e.role,e.act,e.detail,e.ph]:[e.n,e.ts,e.uid,e.name,e.role,e.site,e.act,e.detail,e.ph]);
 let auQ=Promise.resolve();
 function audit(act,detail){
-  const u=me(),snap={uid:u.id,name:u.name,role:u.role};
+  const u=me(),snap={uid:u.id,name:u.name,role:u.role,site:D.activeSite||''};
   auQ=auQ.then(async()=>{const prev=D.audit[D.audit.length-1];
     const e={n:prev?prev.n+1:1,ts:nowISO(),...snap,act,detail:String(detail||'').slice(0,200),ph:prev?prev.h:'0'.repeat(16)};
     e.h=await sha(auBody(e));D.audit.push(e);save();if(tab==='report'&&rsub==='audit')rAudit()}).catch(err=>console.error('audit',err));
@@ -2569,6 +2580,7 @@ async function verifyChain(list){
 
 /* ---------- 權限 ---------- */
 function applyRole(){
+  const mu=me();if(mu.site&&mu.site!==D.activeSite)setActiveSite(mu.site);
   const r=role(),tabs=TABS_OF[r]||[],rs=RSUB_OF[r]||[];
   $('tm').dataset.role=r;
   document.querySelectorAll('#tm .tabs [data-tab]').forEach(b=>b.hidden=!tabs.includes(b.dataset.tab));
@@ -2582,12 +2594,14 @@ function applyRole(){
 }
 function denyMsg(a,b){
   const r=role(),RN=roleName(r);
+  if(a==='y-site-add'&&r!=='manager')return '只有經理可以管理廠區';
   if(r==='client'||r==='auditor'){
     if(a.startsWith('y-')&&!/^y-(user|ho-|hoi)/.test(a))return '';
     return READ_ACTS.has(a)?'':`${RN} 是唯讀身份，只能查看，不能修改資料`;
   }
   if(a==='v-del'&&VIEW&&VIEW.kind==='form')return '';
   if(r==='manager')return '';
+  if(r==='super'&&(a==='del-event'||/^y-user/.test(a)))return '';
   if(a==='del-event')return '事件紀錄不能刪除。登錯的事件請經理「作廢」，原始內容會保留';
   if(a==='v-del')return '佐證照片／影片一經儲存就不能刪除（要刪除需經理處理並留下紀錄）';
   if(HARD_DEL.has(a))return `${RN} 沒有刪除或覆蓋資料的權限，需由經理處理`;
@@ -2644,39 +2658,26 @@ async function afterEventSubmit(){
     if(!ch.length)return;
     e.hist.push({ts:nowISO(),uid:u.id,name:u.name,role:u.role,ch,before:evBefore});
     if(e.status==='closed'&&evBefore.status!=='closed')e.closedTs=nowISO();
-    if(e.status==='report'&&evBefore.status!=='report')notify(e,['manager'],'通知',`事件改為「需上報」：${short(e.what,24)}`,'rep'+e.hist.length);
-    if(e.sev==='high'&&evBefore.sev!=='high')notify(e,['leader','manager'],'通知',`事件升為嚴重：${short(e.what,24)}`,'new-high');
+    if(e.status==='report'&&evBefore.status!=='report')notify(e,['super','manager'],'通知',`事件改為「需上報」：${short(e.what,24)}`,'rep'+e.hist.length);
+    if(e.sev==='high'&&evBefore.sev!=='high')notify(e,['leader','super','manager'],'通知',`事件升為嚴重：${short(e.what,24)}`,'new-high');
     save();await audit('event-edit',`修改事件 ${md(e.date)}：${ch.map(c=>c.f+(c.from?`「${short(c.from,10)}」→`:'')+`「${short(c.to,12)}」`).join('；')}`);
   }else{const e=D.events.find(x=>!evIds.has(x.id));if(!e)return;
     Object.assign(e,{createdTs:nowISO(),byUid:u.id,byName:u.name,byRole:u.role,hist:[]});if(!e.by)e.by=u.name;
     if(e.status==='closed')e.closedTs=e.createdTs;
     const fp=[];for(const p of e.photos||[])fp.push((await sha(p)).slice(0,10));e.fp=fp;
-    if(e.sev==='high')notify(e,['leader','manager'],'通知',`嚴重事件：${short(e.what,30)}`,'new-high');
+    if(e.sev==='high')notify(e,['leader','super','manager'],'通知',`嚴重事件：${short(e.what,30)}`,'new-high');
     else if(e.sev==='mid'||u.role==='deputy')notify(e,['leader'],'通知',`${SEV[e.sev]}事件：${short(e.what,30)}`,'new');
-    if(e.status==='report')notify(e,['manager'],'通知',`需上報：${short(e.what,30)}`,'rep0');
+    if(e.status==='report')notify(e,['super','manager'],'通知',`需上報：${short(e.what,30)}`,'rep0');
     save();await audit('event-new',`新增${SEV[e.sev]}事件 ${md(e.date)} ${e.time||''}：${short(e.what,30)}${fp.length?`（照片 ${fp.length} 張，指紋 ${fp.join('、')}）`:''}`);
   }
   evBefore=null;render();
 }
 
 /* ---------- 事件升級與通知 ---------- */
-function notify(e,to,level,text,key){
+function notify(e,to,level,text,key,site){
   const k=(e?e.id:'')+':'+key;if(D.notices.some(n=>n.key===k))return;
-  D.notices.push({id:uid(),key:k,ts:nowISO(),eventId:e?e.id:'',to,level,text,acks:{}});
+  D.notices.push({site:site||D.activeSite,id:uid(),key:k,ts:nowISO(),eventId:e?e.id:'',to,level,text,acks:{}});
 }
-function checkEsc(){
-  let n=0;const now=nowMs();
-  D.events.forEach(e=>{if(e.void||e.status==='closed'||!e.createdTs)return;
-    const age=(now-new Date(e.createdTs))/60000;
-    const first=D.notices.find(x=>x.key===e.id+':new-high');
-    if(e.sev==='high'&&first&&!Object.keys(first.acks).length&&age>=30&&!D.notices.some(x=>x.key===e.id+':esc30')){notify(e,['manager'],'升級',`嚴重事件超過 30 分鐘沒人確認：${short(e.what,24)}`,'esc30');n++}
-    if(e.sev==='mid'&&age>=240&&!D.notices.some(x=>x.key===e.id+':esc4h')){notify(e,['manager'],'升級',`一般事件超過 4 小時未結案：${short(e.what,24)}`,'esc4h');n++}
-  });
-  D.handovers.forEach(h=>{if(h.status==='wait'&&(now-new Date(h.fromTs))/60000>=30&&!D.notices.some(x=>x.key===h.id+':ho30')){D.notices.push({id:uid(),key:h.id+':ho30',ts:nowISO(),eventId:'',to:['leader'],level:'升級',text:`${h.post} 交接超過 30 分鐘沒有接班確認`,acks:{}});n++}});
-  if(n){save();audit('escalate',`系統自動升級通知 ${n} 則`)}
-  return n;
-}
-const forMe=n=>role()==='manager'||n.to.includes(role());
 const unacked=()=>D.notices.filter(n=>forMe(n)&&!n.acks[me().id]);
 setInterval(()=>{if(D&&checkEsc())render()},30000);
 
@@ -2701,18 +2702,8 @@ function yTodos(){
 }
 
 /* ---------- 頁首、通知中心、身份切換 ---------- */
-function afterRender(){
-  const u=me();$('y-who').innerHTML=`目前身份：<b>${esc(u.name)}</b>（${roleName(u.role)}）<span>切換 ▾</span>`;
-  const n=unacked().length;$('y-bn').hidden=!n;$('y-bn').textContent=n;
-  $('bk-banner').hidden=$('bk-banner').hidden||!['manager','leader'].includes(u.role);
-}
 function openSheet(html){$('y-panel').innerHTML=html;$('y-sheet').hidden=false}
 function closeSheet(){$('y-sheet').hidden=true}
-function rWho(){
-  openSheet(`<div class="head"><h3>切換身份（展示用）</h3><button class="del" data-act="y-close">關閉</button></div>
-  <p class="note">正式版每個人用自己的帳號登入，不能切換；這裡是讓你一支手機示範不同身份看到的畫面。</p>
-  <div class="view" style="gap:6px">${D.users.map(u=>`<button class="yrow${u.id===me().id?' on':''}" data-act="y-as" data-id="${u.id}"><b>${esc(u.name)}</b><span class="pill sm ${u.role==='manager'?'bad':u.role==='leader'?'ok':'none'}">${roleName(u.role)}</span><small>${esc(roleDesc(u.role))}</small></button>`).join('')}</div>`);
-}
 function roleDesc(r){return {manager:'全部功能；收嚴重事件與升級通知；可作廢事件、管理帳號',leader:'全部日常功能；不能刪除紀錄或佐證',deputy:'評分、交接、記錄事件；看不到人員檔案和報表',auditor:'只能看統計、儀表板、稽核紀錄，不能改任何資料',client:'只看客戶儀表板（不顯示人名）'}[r]}
 function rBell(){
   const list=D.notices.filter(forMe).slice().reverse();
@@ -2757,7 +2748,7 @@ document.addEventListener('submit',ev=>{
   if(items.some(i=>!i.ok)&&!note){toast('有異常項目，請寫明狀況');$('ho-note').focus();return}
   const u=me(),h={id:uid(),date:workDate(),post,from,to,items,note,fromTs:nowISO(),fromUid:u.id,fromName:u.name,toTs:'',status:'wait'};
   D.handovers.push(h);
-  if(items.some(i=>!i.ok))D.notices.push({id:uid(),key:h.id+':bad',ts:nowISO(),eventId:'',to:['leader'],level:'通知',text:`${post} 交接有異常：${items.filter(i=>!i.ok).map(i=>i.t).join('、')}`,acks:{}});
+  if(items.some(i=>!i.ok))D.notices.push({site:D.activeSite,id:uid(),key:h.id+':bad',ts:nowISO(),eventId:'',to:['leader'],level:'通知',text:`${post} 交接有異常：${items.filter(i=>!i.ok).map(i=>i.t).join('、')}`,acks:{}});
   hoForm={post:'',from:'',to:'',chk:{},note:''};save();audit('ho-new',`交班：${post} ${from} → ${to}${items.some(i=>!i.ok)?'（有異常）':''}`);rHandover();afterRender();toast('已送出，等待接班人確認');
 });
 document.addEventListener('change',ev=>{const t=ev.target;if(!t.closest||!t.closest('#ho-form'))return;
@@ -2786,7 +2777,7 @@ function rDash(){
   const trend=months.map(m=>{const [a,b]=monthRange(m);const L=D.events.filter(e=>!e.void&&e.date>=a&&e.date<=b);return [m.slice(5)+'月',L.length,L.some(e=>e.sev==='high')?'bad':'']});
   const skill=[];rosterSheets().forEach(({S})=>(S.posts||[]).filter(p=>p.on&&p.code).forEach(p=>{const ok=(S.ppl||[]).filter(x=>String(x.name||'').trim()&&lvOf(x,p.code)===0).length;skill.push([p.name,ok,ok<3?'bad':''])}));
   const tile=(k,v,sub,c)=>`<div class="tile"><span>${k}</span><b class="${c||''}">${v}</b>${sub?`<em>${sub}</em>`:''}</div>`;
-  $('rs-dash').innerHTML=`<div class="card ydash"><div class="head"><h3>${esc(D.settings.site||'服務廠區')} 保全服務儀表板・${ym.replace('-','年')}月</h3></div>
+  $('rs-dash').innerHTML=`<div class="card ydash"><div class="head"><h3>${esc(D.activeSite||'服務廠區')} 保全服務儀表板・${ym.replace('-','年')}月</h3></div>
     <p class="note">給客戶看的版本，不顯示任何人員姓名。資料更新：${tsFull(nowISO())}</p></div>
     <div class="tiles">${tile('人力到位率',rate==null?'—':rate+'%',st.need?`${st.fill}/${st.need} 哨次`:'需要班表資料',rate!=null&&rate<95?'bad':'')}
       ${tile('熟悉哨點人員比例',qr==null?'—':qr+'%','在崗人員中已會該哨點')}
@@ -2799,37 +2790,13 @@ function rDash(){
     <div class="card"><h3>近 6 個月異常事件</h3>${bars(trend,Math.max(1,...trend.map(r=>r[1])),' 件')}<p class="note">紅色代表該月有嚴重事件。</p></div>
     <div class="card"><h3>哨點技能覆蓋</h3>${skill.length?bars(skill,Math.max(3,...skill.map(r=>r[1])),' 人'):'<p class="note">需要排班助手的哨點和學習進度資料。</p>'}<p class="note">每個哨點「會」的人數；少於 3 人標紅，代表請假時容易找不到人頂。</p></div>
     <div class="btns"><button class="btn ghost" data-act="y-dash-copy">複製儀表板摘要</button></div>`;
-  rDash.text=`【${D.settings.site||'服務廠區'} 保全服務 ${ym}】\n人力到位率 ${rate==null?'—':rate+'%'}\n評核合格率 ${pass==null?'—':pass+'%'}\n異常事件 ${evs.length} 件（嚴重 ${evs.filter(e=>e.sev==='high').length}）\n平均處理時間 ${avgH==null?'—':durTxt(Math.round(avgH))}\n交接完成率 ${hos.length?Math.round(hoDone/hos.length*100)+'%':'—'}`;
+  rDash.text=`【${D.activeSite||'服務廠區'} 保全服務 ${ym}】\n人力到位率 ${rate==null?'—':rate+'%'}\n評核合格率 ${pass==null?'—':pass+'%'}\n異常事件 ${evs.length} 件（嚴重 ${evs.filter(e=>e.sev==='high').length}）\n平均處理時間 ${avgH==null?'—':durTxt(Math.round(avgH))}\n交接完成率 ${hos.length?Math.round(hoDone/hos.length*100)+'%':'—'}`;
 }
 
 /* ---------- 稽核紀錄頁 ---------- */
 const AU_ACT={denied:'被拒絕',void:'作廢','event-new':'新增事件','event-edit':'修改事件',escalate:'自動升級',ack:'確認通知',as:'切換身份','ho-new':'交班','ho-ok':'接班確認','ho-issue':'交接有出入',edit:'修改欄位',user:'帳號管理'};
-function rAudit(){
-  const L=D.audit.filter(e=>!auF||e.role===auF).slice().reverse();
-  const td=D.audit.filter(e=>e.ts.slice(0,10)===new Date(nowMs()).toISOString().slice(0,10)).length;
-  $('rs-audit').innerHTML=`<div class="card"><h3>稽核紀錄（誰、何時、做了什麼）</h3>
-    <p class="note">每一筆都包含前一筆的指紋（雜湊鏈）。只要有人偷改或刪掉任何一筆，「驗證」就會抓出來。正式版存在雲端，只能新增、不能修改刪除。</p>
-    <div class="tiles"><div class="tile"><span>總筆數</span><b>${D.audit.length}</b></div><div class="tile"><span>今天</span><b>${td}</b></div><div class="tile"><span>被拒絕的操作</span><b class="${D.audit.some(e=>e.act==='denied')?'bad':''}">${D.audit.filter(e=>e.act==='denied').length}</b></div></div>
-    <div class="btns"><button class="btn sm" data-act="y-verify">驗證完整性</button><button class="btn ghost sm" data-act="y-tamper">示範：有人偷改會怎樣</button><button class="btn ghost sm" data-act="y-au-csv">下載 CSV</button></div>
-    <p class="meta" id="y-vres"></p>
-    <label class="f">篩選身份<select id="y-auf"><option value="">全部</option>${Object.entries(ROLES).map(([k,v])=>`<option value="${k}"${auF===k?' selected':''}>${v}</option>`).join('')}</select></label></div>
-    <div class="card"><div class="yau">${L.slice(0,200).map(e=>`<div class="ar${e.act==='denied'?' bad':''}"><small>#${e.n}・${tsFull(e.ts)}</small><b>${esc(e.name)}<span>（${roleName(e.role)}）</span></b><p>${AU_ACT[e.act]?`<span class="pill sm ${e.act==='denied'?'bad':'none'}">${AU_ACT[e.act]}</span> `:''}${esc(e.detail)}</p><code>${e.h.slice(0,12)}</code></div>`).join('')||'<p class="empty">還沒有紀錄。</p>'}</div>${L.length>200?`<p class="note">只顯示最近 200 筆，完整內容請下載 CSV。</p>`:''}</div>`;
-}
 
 /* ---------- 設定：帳號、交接項目、規則 ---------- */
-function rYSettings(){
-  const isM=role()==='manager';
-  $('y-users').hidden=!isM;
-  if(isM)$('y-users').innerHTML=`<h3>帳號與身份</h3><p class="note">只有經理能看到這裡。正式版由經理發邀請，對方用自己的 Google 帳號登入。</p>
-    ${D.users.map(u=>`<div class="yhl"><div><b>${esc(u.name)}</b></div><span class="pill sm none">${roleName(u.role)}</span>${u.id===me().id?'<small>（你）</small>':`<button class="del" data-act="y-user-del" data-id="${u.id}">移除</button>`}</div>`).join('')}
-    <div class="grid2"><label class="f">姓名<input id="y-un" maxlength="12"></label><label class="f">身份<select id="y-ur">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label></div>
-    <button class="btn ghost sm" data-act="y-user-add">新增帳號</button>`;
-  const canHo=['manager','leader'].includes(role());
-  $('y-hoset').innerHTML=`<h3>交接檢查項目</h3><label class="f">每行一項<textarea id="y-hoi" rows="5"${canHo?'':' disabled'}>${esc(D.hoItems.join('\n'))}</textarea></label>${canHo?'<button class="btn ghost sm" data-act="y-ho-items">儲存交接項目</button>':''}`;
-  const M=[['功能','經理','組長','副組長','稽核','客戶'],['今日／評分／交接／事件','✔','✔','✔','—','—'],['排班、人員檔案、關懷、訓練','✔','✔','—','—','—'],['報表、客戶月報','✔','✔','—','看','—'],['客戶儀表板（無人名）','✔','✔','—','看','看'],['稽核紀錄','✔','看','—','看','—'],['作廢事件、刪除資料','✔','—','—','—','—'],['管理帳號','✔','—','—','—','—']];
-  $('y-rules').innerHTML=`<h3>權限與升級規則</h3><div class="tblwrap"><table class="ym"><tbody>${M.map((r,i)=>`<tr>${r.map(c=>i?`<td>${c}</td>`:`<th>${c}</th>`).join('')}</tr>`).join('')}</tbody></table></div>
-    <h4>事件自動通知與升級</h4><ul class="yrl"><li><b>嚴重</b>：立即通知組長＋經理；30 分鐘沒人確認 → 再次升級給經理</li><li><b>一般</b>：通知組長；4 小時未結案 → 升級給經理</li><li><b>改為「需上報」</b>：立即通知經理</li><li><b>交接</b>：有異常項目通知組長；30 分鐘沒人接班確認 → 通知組長</li><li>每一次通知、確認、升級都有時間戳，寫進稽核紀錄</li></ul>`;
-}
 
 /* ---------- y- 動作 ---------- */
 document.addEventListener('click',async ev=>{
@@ -2841,15 +2808,15 @@ document.addEventListener('click',async ev=>{
     case 'y-who': rWho();break;
     case 'y-bell': rBell();break;
     case 'y-close': closeSheet();break;
-    case 'y-as': {const u=D.users.find(x=>x.id===id);if(!u)return;D.session.uid=u.id;save();closeSheet();audit('as',`切換為 ${u.name}（${roleName(u.role)}）`);
+    case 'y-as': {const u=D.users.find(x=>x.id===id);if(!u)return;D.session.uid=u.id;if(u.site&&u.site!==D.activeSite)setActiveSite(u.site);save();closeSheet();audit('as',`切換為 ${u.name}（${roleName(u.role)}）`);
       if(!(TABS_OF[u.role]||[]).includes(tab))setTab(TABS_OF[u.role][0]);else render();toast(`現在是 ${u.name}（${roleName(u.role)}）`)}break;
     case 'y-ack': {const n=D.notices.find(x=>x.id===id);if(!n)return;n.acks[me().id]=nowISO();save();audit('ack',`確認通知：${n.text}`);rBell();render()}break;
-    case 'y-goev': closeSheet();if(!(TABS_OF[role()]||[]).includes('events')){toast('你的身份不能查看事件明細');return}esub='ev';setTab('events');break;
+    case 'y-goev': closeSheet();{const n=D.notices.find(x=>x.eventId===id);if(n&&n.site&&n.site!==D.activeSite)setActiveSite(n.site)}if(!(TABS_OF[role()]||[]).includes('events')){toast('你的身份不能查看事件明細');return}esub='ev';setTab('events');break;
     case 'y-ff': {const m=+b.dataset.m;D.clockShift=m?D.clockShift+m:0;const n=checkEsc();save();rBell();render();toast(m?`已快轉，觸發 ${n} 則升級通知`:'已回到現在時間')}break;
     case 'y-hoi': {const i=+b.dataset.i,v=b.dataset.v==='1';hoForm.chk[i]=hoForm.chk[i]===v?undefined:v;hoForm.note=$('ho-note').value;rHandover()}break;
     case 'y-ho-ok': case 'y-ho-issue': {const h=D.handovers.find(x=>x.id===id);if(!h)return;const u=me();
       h.toTs=nowISO();h.toUid=u.id;h.toName=u.name;h.status=a==='y-ho-ok'?'done':'issue';
-      if(h.status==='issue')D.notices.push({id:uid(),key:h.id+':issue',ts:nowISO(),eventId:'',to:['leader'],level:'通知',text:`${h.post} 接班人回報交接內容有出入`,acks:{}});
+      if(h.status==='issue')D.notices.push({site:D.activeSite,id:uid(),key:h.id+':issue',ts:nowISO(),eventId:'',to:['leader'],level:'通知',text:`${h.post} 接班人回報交接內容有出入`,acks:{}});
       save();audit(a==='y-ho-ok'?'ho-ok':'ho-issue',`${h.post} ${h.from} → ${h.to}，交班後 ${minsBetween(h.fromTs,h.toTs)} 分鐘${a==='y-ho-ok'?'確認接班':'回報有出入'}`);rHandover();afterRender();toast(a==='y-ho-ok'?'交接完成':'已通知組長')}break;
     case 'y-dash-copy': copyText(rDash.text||'','已複製儀表板摘要');break;
     case 'y-verify': {$('y-vres').textContent='驗證中…';await auQ;const bad=await verifyChain(D.audit);$('y-vres').innerHTML=bad?`<span class="bad">✕ 第 ${bad} 筆之後的紀錄對不上，資料可能被改過</span>`:`<span class="ok">✔ 全部 ${D.audit.length} 筆完整，沒有被修改</span>`}break;
@@ -2857,13 +2824,138 @@ document.addEventListener('click',async ev=>{
       const c=JSON.parse(JSON.stringify(D.audit)),k=Math.floor(c.length/2);c[k].detail=c[k].detail+'（被偷改）';
       const bad=await verifyChain(c);$('y-vres').innerHTML=`示範：把第 ${c[k].n} 筆的內容偷偷改掉後驗證 → <span class="bad">✕ 第 ${bad} 筆被抓出來</span>（真正的紀錄沒有被改）`}break;
     case 'y-au-csv': downloadBlob(`anqiao-audit-${today()}.csv`,new Blob([csv([['序號','時間','姓名','身份','動作','內容','前一筆指紋','本筆指紋'],...D.audit.map(e=>[e.n,tsFull(e.ts),e.name,roleName(e.role),AU_ACT[e.act]||e.act,e.detail,e.ph,e.h])])],{type:'text/csv'}));break;
-    case 'y-user-add': {const n=$('y-un').value.trim(),r=$('y-ur').value;if(!n){toast('請輸入姓名');return}D.users.push({id:uid(),name:n,role:r});save();audit('user',`新增帳號 ${n}（${roleName(r)}）`);rYSettings();toast('已新增')}break;
+    case 'y-user-add': {const n=$('y-un').value.trim(),r=$('y-ur').value,st=$('y-us')?$('y-us').value:me().site;if(!n){toast('請輸入姓名');return}
+      if(role()==='super'&&!['leader','deputy','client'].includes(r)){toast('駐廠督導只能新增本廠的組長、副組長、客戶');return}
+      const site=['manager','auditor'].includes(r)?'':st;D.users.push({id:uid(),name:n,role:r,site});save();audit('user',`新增帳號 ${n}（${roleName(r)}${site?'・'+site:''}）`);rYSettings();toast('已新增')}break;
     case 'y-user-del': {const u=D.users.find(x=>x.id===id);if(!u||!confirmTap(b))return;if(u.role==='manager'&&D.users.filter(x=>x.role==='manager').length<2){toast('至少要保留一位經理');return}
+      if(role()==='super'&&(u.site!==me().site||['manager','super','auditor'].includes(u.role))){toast('只能移除本廠的組長、副組長、客戶');return}
       D.users=D.users.filter(x=>x.id!==id);save();audit('user',`移除帳號 ${u.name}（${roleName(u.role)}）`);rYSettings()}break;
+    case 'y-site': {const st=b.dataset.s;if(!D.sites.includes(st))return;if(!canSeeAllSites()){toast('你只能查看自己的廠區');return}setActiveSite(st);closeSheet();audit('site',`切換到 ${st}`);render();toast(`現在查看 ${st}`)}break;
+    case 'y-site-add': {const n=$('y-sn').value.trim();if(!n){toast('請輸入廠區名稱');return}if(D.sites.includes(n)){toast('已經有這個廠區');return}
+      D.sites.push(n);D.sitesData[n]=blankSite();save();audit('site',`新增廠區 ${n}`);rYSettings();toast(`已新增 ${n}`)}break;
     case 'y-ho-items': {const L=$('y-hoi').value.split('\n').map(s=>s.trim()).filter(Boolean);if(!L.length){toast('至少要一項');return}D.hoItems=L;hoForm.chk={};save();audit('edit',`修改交接檢查項目（${L.length} 項）`);toast('已儲存')}break;
   }
 });
 document.addEventListener('change',ev=>{if(ev.target.id==='y-auf'){auF=ev.target.value;rAudit()}});
+
+/* ===== 多廠區（路竹廠、台南廠、彩晶廠…）與駐廠督導 ===== */
+const SITEK=['people','daily','events','rels','care','checks','improve','client','comms','learn','tagUse','handovers','hoItems'];
+const SITES0=['路竹廠','台南廠','彩晶廠'];
+function blankSite(){return {people:[],daily:[],events:[],rels:[],care:[],checks:[],improve:{},client:{},comms:[],learn:{},tagUse:{},handovers:[],hoItems:HO_ITEMS0.slice()}}
+function migrateSites(o){
+  if(!Array.isArray(o.sites)||!o.sites.length){o.sites=SITES0.slice();o.activeSite=o.sites[0]}
+  if(!o.sites.includes(o.activeSite))o.activeSite=o.sites[0];
+  if(!o.sitesData||typeof o.sitesData!=='object')o.sitesData={};
+  delete o.sitesData[o.activeSite];
+  o.sites.forEach(s=>{if(s===o.activeSite)return;const b=blankSite(),d=o.sitesData[s]||(o.sitesData[s]={});SITEK.forEach(k=>{if(d[k]==null)d[k]=b[k]})});
+  o.settings.site=o.activeSite;
+  if(!o.usersV2){
+    const old=(o.users||[]).find(u=>u.id==='u-leader'),me0=old?old.name:((o.settings&&o.settings.me)||'陳正和');
+    const U=[{id:'u-mgr',name:'經理（示範）',role:'manager',site:''},{id:'u-aud',name:'稽核人員（示範）',role:'auditor',site:''}];
+    SITES0.forEach((s,i)=>{const a=s.slice(0,2);
+      U.push({id:i?`u-sup-${i}`:'u-sup',name:`${a}督導（示範）`,role:'super',site:s});
+      U.push({id:i?`u-lead-${i}`:'u-leader',name:i?`${a}組長（示範）`:me0,role:'leader',site:s});
+      U.push({id:i?`u-dep-${i}`:'u-dep',name:`${a}副組長（示範）`,role:'deputy',site:s});
+      U.push({id:i?`u-cli-${i}`:'u-cli',name:`${a}客戶窗口（示範）`,role:'client',site:s})});
+    o.users=U;o.usersV2=true;
+    if(!o.session||!U.some(u=>u.id===o.session.uid))o.session={uid:'u-leader'};
+  }
+}
+function sheetInSite(S){
+  if(!D||!D.activeSite||!Array.isArray(D.sites))return true;
+  const nm=String(S.site||''),hit=D.sites.find(s=>nm.includes(s.replace(/廠$/,'')));
+  return hit?hit===D.activeSite:D.activeSite===D.sites[0];
+}
+const siteData=s=>s===D.activeSite?D:(D.sitesData[s]||blankSite());
+const canSeeAllSites=()=>['manager','auditor'].includes(role());
+const siteOf=x=>x.site||D.sites[0];
+function setActiveSite(s){
+  if(!D.sites.includes(s)||s===D.activeSite)return;
+  const cur=D.activeSite,keep={};SITEK.forEach(k=>keep[k]=D[k]);D.sitesData[cur]=keep;
+  const nx=D.sitesData[s]||blankSite(),b=blankSite();SITEK.forEach(k=>D[k]=nx[k]!=null?nx[k]:b[k]);delete D.sitesData[s];
+  D.activeSite=s;D.settings.site=s;
+  eEdit=null;eSel.clear();eUnits.clear();ePhotos=[];eVideos=[];CF=null;pEdit=null;focusId=null;hoForm={post:'',from:'',to:'',chk:{},note:''};
+  try{if(!$('e-form').hidden)closeEventForm()}catch(e){}
+  syncPeople();save();
+}
+
+/* ---------- 通知對象：依身份＋廠區 ---------- */
+const forMe=n=>{const r=role();if(r==='manager')return true;if(r==='auditor'||r==='client')return false;return n.to.includes(r)&&siteOf(n)===me().site};
+function checkEsc(){
+  let n=0;const now=nowMs();
+  D.sites.forEach(s=>{const d=siteData(s);
+    (d.events||[]).forEach(e=>{if(e.void||e.status==='closed'||!e.createdTs)return;
+      const age=(now-new Date(e.createdTs))/60000,first=D.notices.find(x=>x.key===e.id+':new-high');
+      if(e.sev==='high'&&first&&!Object.keys(first.acks).length&&age>=30&&!D.notices.some(x=>x.key===e.id+':esc30')){notify(e,['manager'],'升級',`【${s}】嚴重事件超過 30 分鐘沒人確認：${short(e.what,24)}`,'esc30',s);n++}
+      if(e.sev==='mid'&&age>=240&&!D.notices.some(x=>x.key===e.id+':esc4h')){notify(e,['super'],'升級',`一般事件超過 4 小時未結案：${short(e.what,24)}`,'esc4h',s);n++}});
+    (d.handovers||[]).forEach(h=>{if(h.status==='wait'&&(now-new Date(h.fromTs))/60000>=30&&!D.notices.some(x=>x.key===h.id+':ho30')){D.notices.push({site:s,id:uid(),key:h.id+':ho30',ts:nowISO(),eventId:'',to:['leader','super'],level:'升級',text:`${h.post} 交接超過 30 分鐘沒有接班確認`,acks:{}});n++}});
+  });
+  if(n){save();audit('escalate',`系統自動升級通知 ${n} 則`)}
+  return n;
+}
+
+/* ---------- 頁首、全區總覽 ---------- */
+function afterRender(){
+  const u=me();
+  $('y-who').innerHTML=`目前身份：<b>${esc(u.name)}</b>（${roleName(u.role)}${u.site?'・'+esc(u.site):''}）${canSeeAllSites()?`<em>查看：${esc(D.activeSite)}</em>`:''}<span>切換 ▾</span>`;
+  const n=unacked().length;$('y-bn').hidden=!n;$('y-bn').textContent=n;
+  $('bk-banner').hidden=$('bk-banner').hidden||!['manager','super','leader'].includes(u.role);
+  const box=$('y-sites');box.hidden=!(tab==='home'&&role()==='manager');
+  if(!box.hidden){const ym=thisYM(),[f,t]=monthRange(ym);
+    const rows=D.sites.map(s=>{const d=siteData(s),ev=(d.events||[]).filter(e=>!e.void&&e.status!=='closed'),dl=(d.daily||[]).filter(x=>x.date>=f&&x.date<=t);
+      const un=D.notices.filter(x=>siteOf(x)===s&&!Object.keys(x.acks).length).length,hw=(d.handovers||[]).filter(h=>h.status==='wait').length;
+      return `<tr class="${s===D.activeSite?'on':''}"><th><button class="del" data-act="y-site" data-s="${esc(s)}">${esc(s)}</button></th><td class="${ev.some(e=>e.sev==='high')?'bad':''}">${ev.length}${ev.some(e=>e.sev==='high')?`（嚴重 ${ev.filter(e=>e.sev==='high').length}）`:''}</td><td>${hw}</td><td class="${un?'bad':''}">${un}</td><td>${dl.length?Math.round(dl.filter(x=>x.r==='ok').length/dl.length*100)+'%':'—'}</td></tr>`}).join('');
+    box.innerHTML=`<h3>各廠區總覽</h3><div class="tblwrap"><table class="ym"><thead><tr><th>廠區</th><th>未結事件</th><th>待接班</th><th>未確認通知</th><th>本月合格率</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note">點廠區名稱切換查看。各廠的組長、督導只看得到自己廠區。</p>`}
+}
+function rWho(){
+  const grp=[['全區',D.users.filter(u=>!u.site)],...D.sites.map(s=>[s,D.users.filter(u=>u.site===s)])].filter(g=>g[1].length);
+  openSheet(`<div class="head"><h3>切換身份（展示用）</h3><button class="del" data-act="y-close">關閉</button></div>
+  ${canSeeAllSites()?`<div class="card"><h4 style="margin:0 0 6px">查看廠區</h4><div class="btns">${D.sites.map(s=>`<button class="btn sm${s===D.activeSite?'':' ghost'}" data-act="y-site" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>`:''}
+  <p class="note">正式版每個人用自己的帳號登入，不能切換；這裡是讓你一支手機示範不同身份看到的畫面。</p>
+  ${grp.map(([g,us])=>`<h4 class="ygh">${esc(g)}</h4><div class="view" style="gap:6px">${us.map(u=>`<button class="yrow${u.id===me().id?' on':''}" data-act="y-as" data-id="${u.id}"><b>${esc(u.name)}</b><span class="pill sm ${u.role==='manager'?'bad':u.role==='super'?'star':u.role==='leader'?'ok':'none'}">${roleName(u.role)}</span><small>${esc(roleDesc(u.role))}</small></button>`).join('')}</div>`).join('')}`);
+}
+function roleDesc(r){return {manager:'所有廠區；收嚴重事件與升級通知；作廢事件、管理帳號與廠區',super:'本廠全部功能；收嚴重事件、需上報與逾時升級；可作廢事件、管理本廠帳號',leader:'本廠日常管理；不能刪除紀錄或佐證',deputy:'本廠評分、交接、記錄事件；看不到人員檔案和報表',auditor:'所有廠區唯讀：統計、儀表板、稽核紀錄',client:'只看自己廠區的客戶儀表板（不顯示人名）'}[r]}
+
+/* ---------- 稽核紀錄（依廠區範圍） ---------- */
+let auS='';
+function rAudit(){
+  const all=canSeeAllSites();
+  const scope=D.audit.filter(e=>all?(!auS||(e.site||D.sites[0])===auS):(e.site||D.sites[0])===me().site);
+  const L=scope.filter(e=>!auF||e.role===auF).slice().reverse();
+  const td=scope.filter(e=>e.ts.slice(0,10)===new Date(nowMs()).toISOString().slice(0,10)).length;
+  $('rs-audit').innerHTML=`<div class="card"><h3>稽核紀錄（誰、何時、做了什麼）</h3>
+    <p class="note">每一筆都包含前一筆的指紋（雜湊鏈）。只要有人偷改或刪掉任何一筆，「驗證」就會抓出來。正式版存在雲端，只能新增、不能修改刪除。${all?'':`你只看得到 ${esc(me().site)} 的紀錄。`}</p>
+    <div class="tiles"><div class="tile"><span>筆數</span><b>${scope.length}</b></div><div class="tile"><span>今天</span><b>${td}</b></div><div class="tile"><span>被拒絕的操作</span><b class="${scope.some(e=>e.act==='denied')?'bad':''}">${scope.filter(e=>e.act==='denied').length}</b></div></div>
+    <div class="btns"><button class="btn sm" data-act="y-verify">驗證完整性</button><button class="btn ghost sm" data-act="y-tamper">示範：有人偷改會怎樣</button><button class="btn ghost sm" data-act="y-au-csv">下載 CSV</button></div>
+    <p class="meta" id="y-vres"></p>
+    <div class="grid2">${all?`<label class="f">廠區<select id="y-aus"><option value="">全部廠區</option>${D.sites.map(s=>`<option${auS===s?' selected':''}>${esc(s)}</option>`).join('')}</select></label>`:''}
+    <label class="f">身份<select id="y-auf"><option value="">全部</option>${Object.entries(ROLES).map(([k,v])=>`<option value="${k}"${auF===k?' selected':''}>${v}</option>`).join('')}</select></label></div></div>
+    <div class="card"><div class="yau">${L.slice(0,200).map(e=>`<div class="ar${e.act==='denied'?' bad':''}"><small>#${e.n}・${tsFull(e.ts)}${e.site?'・'+esc(e.site):''}</small><b>${esc(e.name)}<span>（${roleName(e.role)}）</span></b><p>${AU_ACT[e.act]?`<span class="pill sm ${e.act==='denied'?'bad':'none'}">${AU_ACT[e.act]}</span> `:''}${esc(e.detail)}</p><code>${e.h.slice(0,12)}</code></div>`).join('')||'<p class="empty">還沒有紀錄。</p>'}</div>${L.length>200?`<p class="note">只顯示最近 200 筆，完整內容請下載 CSV。</p>`:''}</div>`;
+}
+document.addEventListener('change',ev=>{if(ev.target.id==='y-aus'){auS=ev.target.value;rAudit()}});
+AU_ACT.site='廠區';
+
+/* ---------- 設定：帳號、廠區、交接項目、規則 ---------- */
+function rYSettings(){
+  const r=role(),isM=r==='manager',isS=r==='super';
+  $('y-users').hidden=!(isM||isS);
+  if(isM||isS){const us=isM?D.users:D.users.filter(u=>u.site===me().site);
+    const roleOpts=Object.entries(ROLES).filter(([k])=>isM||['leader','deputy','client'].includes(k));
+    $('y-users').innerHTML=`<h3>帳號與身份${isS?`（${esc(me().site)}）`:''}</h3><p class="note">${isM?'經理管理所有廠區的帳號。':'駐廠督導只能管理本廠的組長、副組長和客戶帳號。'}正式版由管理者發邀請，對方用自己的 Google 帳號登入。</p>
+    ${us.map(u=>`<div class="yhl"><div><b>${esc(u.name)}</b> <small>${esc(u.site||'全區')}</small></div><span class="pill sm none">${roleName(u.role)}</span>${u.id===me().id?'<small>（你）</small>':`<button class="del" data-act="y-user-del" data-id="${u.id}">移除</button>`}</div>`).join('')}
+    <div class="grid2"><label class="f">姓名<input id="y-un" maxlength="12"></label><label class="f">身份<select id="y-ur">${roleOpts.map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label></div>
+    ${isM?`<label class="f">廠區<select id="y-us">${D.sites.map(s=>`<option${s===D.activeSite?' selected':''}>${esc(s)}</option>`).join('')}</select></label>`:''}
+    <button class="btn ghost sm" data-act="y-user-add">新增帳號</button>`}
+  $('y-siteset').hidden=!isM;
+  if(isM)$('y-siteset').innerHTML=`<h3>廠區</h3><p class="note">每個廠區的人員、評分、事件、交接、關懷資料完全分開。排班存檔名稱裡有廠區名（例如「台南廠日班」）就會歸到那個廠。</p>
+    ${D.sites.map(s=>{const d=siteData(s);return `<div class="yhl"><div><b>${esc(s)}</b> <small>人員 ${(d.people||[]).length}・事件 ${(d.events||[]).length}</small></div>${s===D.activeSite?'<span class="pill sm ok">查看中</span>':`<button class="del" data-act="y-site" data-s="${esc(s)}">切換</button>`}</div>`}).join('')}
+    <div class="grid2"><label class="f">新廠區名稱<input id="y-sn" maxlength="10" placeholder="例：高雄廠"></label><div style="align-self:end"><button class="btn ghost sm" data-act="y-site-add">新增廠區</button></div></div>`;
+  const canHo=['manager','super','leader'].includes(r);
+  $('y-hoset').innerHTML=`<h3>交接檢查項目（${esc(D.activeSite)}）</h3><label class="f">每行一項<textarea id="y-hoi" rows="5"${canHo?'':' disabled'}>${esc(D.hoItems.join('\n'))}</textarea></label>${canHo?'<button class="btn ghost sm" data-act="y-ho-items">儲存交接項目</button>':''}`;
+  const M=[['功能','經理','督導','組長','副組長','稽核','客戶'],['看得到的廠區','全部','本廠','本廠','本廠','全部','本廠'],['今日／評分／交接／事件','✔','✔','✔','✔','—','—'],['排班、人員檔案、關懷、訓練','✔','✔','✔','—','—','—'],['報表、客戶月報','✔','✔','✔','—','看','—'],['客戶儀表板（無人名）','✔','✔','✔','—','看','看'],['稽核紀錄','✔','✔','看','—','看','—'],['作廢事件','✔','✔','—','—','—','—'],['管理帳號','全部','本廠','—','—','—','—'],['刪除資料、管理廠區','✔','—','—','—','—','—']];
+  $('y-rules').innerHTML=`<h3>權限與升級規則</h3><div class="tblwrap"><table class="ym"><tbody>${M.map((row,i)=>`<tr>${row.map(c=>i?`<td>${c}</td>`:`<th>${c}</th>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <h4>事件自動通知與升級（只通知該廠區的人＋經理）</h4><ul class="yrl"><li><b>嚴重</b>：立即通知組長＋駐廠督導＋經理；30 分鐘沒人確認 → 再次升級給經理</li><li><b>一般</b>：通知組長；4 小時未結案 → 升級給駐廠督導</li><li><b>改為「需上報」</b>：立即通知駐廠督導＋經理</li><li><b>交接</b>：有異常通知組長；30 分鐘沒人接班確認 → 通知組長＋督導</li><li>每一次通知、確認、升級都有時間戳，寫進稽核紀錄</li></ul>`;
+}
 
 /* ===== 點擊 ===== */
 document.addEventListener('click',async ev=>{
